@@ -3,16 +3,16 @@
 \title{Computes madograms}
 \description{Computes the madogram for max-stable processes.}
 \usage{
-madogram(data, coord, n.lag = 13, gev.param = c(0, 1, 0), which =
-c("mado", "ext"), xlab, ylab, \dots)
+madogram(data, coord, bins, gev.param = c(0, 1, 0), which =
+c("mado", "ext"), xlab, ylab, angles = NULL, \dots)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
-  \item{n.lag}{Integer. The number of distance lags for which the
-    madogram is computed.}
+  \item{bins}{Numeric vector giving the bins for which the madogram is
+    computed.}
   \item{gev.param}{Numeric vector of length 3 specifying the location,
     scale and shape parameters for the GEV.}
   \item{which}{A character vector of maximum size 2. It specifies if the
@@ -20,6 +20,8 @@ c("mado", "ext"), xlab, ylab, \dots)
     plotted.}
   \item{xlab,ylab}{The x-axis and y-axis labels. May be missing. Note
     that \code{ylab} must have the same length has \code{which}.}
+  \item{angles}{A numeric vector. A partition of the interval
+    \eqn{(-\pi, \pi)}{(-\pi, \pi)} to help detecting anisotropy.}
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.} 
 }
@@ -61,18 +63,18 @@ c("mado", "ext"), xlab, ylab, \dots)
 }
 \examples{
 require(RandomFields)
-n.site <- 30
+n.site <- 50
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,30, .5), maxstable="extr",
+                   param=c(0,1,0,1, 2), maxstable="extr",
                    n = 40)
 ms0 <- t(ms0)
 
 ##Compute the madogram
-\dontrun{madogram(ms0, locations)}
+madogram(ms0, locations, angles = seq(-pi,pi, pi/4))
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

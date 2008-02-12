@@ -47,19 +47,18 @@ double lplikschlather(double *data, double *rho, double *jac,
 	pbm = (1 + fabs(dvecMixed)) * MINF;
 	dvecMixed = log(dvecMixed);
 
-	if (!R_FINITE(dvecMixed)){
+	if (!R_FINITE(dvecMixed))
 	  //printf("dvecMixed is erradic\n");
-	  dns += pbm;
-	}
+	  dns += pbm;	
 
-	else{
+	else
 	  //Now the final step, multiplying by Fvec and the gradient
 	  dns += dvecMixed + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
-	}
+
       }
     }
   }
-
+  
   return dns;
 
 }

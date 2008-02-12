@@ -35,6 +35,30 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 			 double *sill, double *range, double *smooth, double *dns);
 
 ///////////////////////////////////
+//  From geomgauss.c
+//
+void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
+		   int *nObs, double *locs, double *scales, double *shapes,
+		   double *sigma2, double *sill, double *range, double *smooth,
+		   int *fitmarge,double *dns);
+void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
+		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
+		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
+		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
+		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sigma2,
+		      double *sill, double *range, double *smooth, double *dns);
+
+///////////////////////////////////
+//  From nsgeomgauss.c
+//
+void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
+		     int *nObs, double *locs, double *scales, double *shapes,
+		     double *sigma2dsgnmat, double *sigma2coeff, int *nsigma2coeff,
+		     double *sill, double *range, double *smooth, int *fitmarge,
+		     double *dns);
+
+///////////////////////////////////
 //  From smith.c
 //
 void smithfull(double *data, double *distVec, int *nSite,
@@ -80,6 +104,10 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
 		     int nSite, int nloccoeff, int nscalecoeff,
 		     int nshapecoeff, double *locs, double *scales,
 		     double *shapes);
+void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff, 
+		   int nSite, int nalphacoeff, double *alphas);
+void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff, 
+		    int nSite, int nsigma2coeff, double *sigma2);
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 	 double *quant);
 
@@ -108,6 +136,9 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 double geomCovariance(double *dist, int nPairs, int covmod,
 		      double sigma2, double sill, double range,
 		      double smooth, double *rho);
+double nsgeomCovariance(double *dist, int nSite, int covmod,
+			double *sigma2, double sill, double range,
+			double smooth, double *rho);
 
 ///////////////////////////////////
 //  From mcmc.c

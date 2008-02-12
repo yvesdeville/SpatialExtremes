@@ -6,9 +6,9 @@
   the Smith and Schlather representations.
 }
 \usage{fitmaxstab(data,  coord, cov.mod, loc.form, scale.form,
-shape.form, marg.cov = NULL, \dots, fit.marge = FALSE, warn = TRUE,
-method = "Nelder", start, control = list(), std.err.type = "score", corr
-= FALSE)}
+shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
+= TRUE, method = "Nelder", start, control = list(), std.err.type =
+"score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
@@ -28,6 +28,9 @@ method = "Nelder", start, control = list(), std.err.type = "score", corr
   \item{marg.cov}{Matrix with named columns giving additional covariates
     for the GEV parameters. If \code{NULL}, no extra covariates are
     used.}
+  \item{iso}{Logical. If \code{TRUE} an isotropic model is fitted to
+    data. Otherwise (default), anisotropy is allowed. Currently, this is
+    only implemented for the Smith's model.}
   \item{\dots}{Several arguments to be passed to the \code{\link{optim}}
     function. See section details.}
   \item{fit.marge}{Logical. If \code{TRUE}, the GEV parameters

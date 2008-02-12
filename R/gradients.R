@@ -1,7 +1,7 @@
 .smithgrad <- function(par, data, distVec, loc.dsgn.mat,
                        scale.dsgn.mat, shape.dsgn.mat, fit.marge,
                        std.err.type = "score", fixed.param, param.names,
-                       jacobian = TRUE){
+                       jacobian = TRUE, iso = TRUE){
 
   ##data is a matrix with each column corresponds to one location
   ##distVec is the a matrix giving the "distance vector" for each pair
@@ -10,7 +10,16 @@
   n.obs <- nrow(data)
   n.pairs <- n.site * (n.site - 1) / 2
   dist.dim <- ncol(distVec)
+  n.param <- length(param.names)
 
+  if (iso){
+    if (dist.dim == 2)
+      n.param <- n.param + 2
+
+    else
+      n.param <- n.param + 5
+  }
+  
   cov11 <- par["cov11"]
   cov12 <- par["cov12"]
   cov22 <- par["cov22"]
@@ -52,7 +61,7 @@
                as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
                as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
                as.double(shape.param), as.double(cov11), as.double(cov12),
-               as.double(cov22), fit.marge, grad = double(n.obs * length(param.names)),
+               as.double(cov22), fit.marge, grad = double(n.obs * n.param),
                PACKAGE = "SpatialExtremes")$grad
 
   else
@@ -62,9 +71,21 @@
                as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
                as.double(shape.param), as.double(cov11), as.double(cov12), as.double(cov13),
                as.double(cov22), as.double(cov23), as.double(cov33), fit.marge,
-               grad = double(n.obs * length(param.names)), PACKAGE = "SpatialExtremes")$grad
+               grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")$grad
   
-  grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
+  grad <- matrix(grad, nrow = n.obs, ncol = n.param)
+
+  if (iso){
+    if (dist.dim == 2){
+      grad[,1] <- rowSums(grad[,c(1,3)])
+      grad <- grad[,-(2:3)]
+    }
+
+    if (dist.dim == 3){
+      grad[,1] <- rowSums(grad[,c(1,4,6)])
+      grad <- grad[,-(2:6)]
+    }
+  }
 
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){

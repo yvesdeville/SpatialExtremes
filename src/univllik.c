@@ -2,6 +2,8 @@
 
 void gevlik(double *data, int *n, double *loc, double *scale,
 	    double *shape, double *dns){
+
+  //It computes the log-likelihood for the GEV
   int i;
   double *dvec;
   
@@ -15,8 +17,11 @@ void gevlik(double *data, int *n, double *loc, double *scale,
   for(i=0;i<*n;i++)  {
     data[i] = (data[i] - *loc) / *scale;
     
-    if(*shape == 0.0) 
+    if(fabs(*shape) <= 1e-6){
+      *shape = 0.0;
       dvec[i] = -log(*scale) - data[i] - exp(-data[i]);
+    }
+
     else {
       data[i] = 1 + *shape * data[i];
       if(data[i] <= 0) {
@@ -36,6 +41,7 @@ void gevlik(double *data, int *n, double *loc, double *scale,
 
 void gpdlik(double *exceed, int *n, double *thresh, double *scale,
 	    double *shape, double *dns){
+  //It computes the log-likelihood for the GPD
   int i;
   double *dvec;
   
@@ -54,8 +60,10 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
       return;
     }
 
-    if(*shape == 0.0) 
+    if(fabs(*shape) <= 1e-6){
+      *shape = 0.0; 
       dvec[i] = -log(*scale) - exceed[i];
+    }
 
     else {
       exceed[i] = 1 + *shape * exceed[i];

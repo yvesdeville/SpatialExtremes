@@ -1,5 +1,10 @@
 #include "header.h"
 
+/* These function estimate the extremal coefficient by using: (a) the
+   method proposed by Smith in his unpublished manuscript and (b) the
+   schlather and tawn estimator.
+*/
+
 void extCoeffSmith(double *frech, int *nObs, int *nSite,
 		   double *extCoeff){
   int i, j, k, currentPair = 0;

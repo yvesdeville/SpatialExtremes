@@ -1,4 +1,4 @@
-fitcovmat <- function(data, coord, marge = "mle", start, ...){
+fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
 
   n.site <- ncol(data)
   n.pairs <- n.site * (n.site - 1) / 2
@@ -19,47 +19,80 @@ fitcovmat <- function(data, coord, marge = "mle", start, ...){
   dist <- distance(coord, vec = TRUE)[idx,]
 
   if (dist.dim == 2){
-    
-    param <- c("cov11", "cov12", "cov22")
-    
-    fun2d <- function(cov11, cov12, cov22)
-      .C("fitcovmat2d", as.double(cov11), as.double(cov12),
-         as.double(cov22), as.integer(n.pairs.real), as.double(dist),
-         as.double(extcoeff), as.double(weights), ans = double(1),
-         PACKAGE = "SpatialExtremes")$ans
+
+    if (iso){
+      param <- "cov"
+      
+      fun2diso <- function(cov)
+        .C("fitcovmat2d", as.double(cov), as.double(0.0),
+           as.double(cov), as.integer(n.pairs.real), as.double(dist),
+           as.double(extcoeff), as.double(weights), ans = double(1),
+           PACKAGE = "SpatialExtremes")$ans
+    }
+
+    else{
+      param <- c("cov11", "cov12", "cov22")
+      
+      fun2d <- function(cov11, cov12, cov22)
+        .C("fitcovmat2d", as.double(cov11), as.double(cov12),
+           as.double(cov22), as.integer(n.pairs.real), as.double(dist),
+           as.double(extcoeff), as.double(weights), ans = double(1),
+           PACKAGE = "SpatialExtremes")$ans
+    }    
   }
 
   if (dist.dim == 3){
-    param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33")
 
-    fun3d <- function(cov11, cov12, cov13, cov22, cov23, cov33)
-      .C("fitcovmat3d", as.double(cov11), as.double(cov12), as.double(cov13),
-         as.double(cov22), as.double(cov23), as.double(cov33),
-         as.integer(n.pairs.real), as.double(dist), as.double(extcoeff),
-         as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+    if (iso){
+      param <- "cov"
+      
+      fun3diso <- function(cov)
+        .C("fitcovmat3d", as.double(cov), as.double(0.0), as.double(0.0),
+           as.double(cov), as.double(0.0), as.double(cov),
+           as.integer(n.pairs.real), as.double(dist), as.double(extcoeff),
+           as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+    }
+
+    else{
+      param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33")
+      
+      fun3d <- function(cov11, cov12, cov13, cov22, cov23, cov33)
+        .C("fitcovmat3d", as.double(cov11), as.double(cov12), as.double(cov13),
+           as.double(cov22), as.double(cov23), as.double(cov33),
+           as.integer(n.pairs.real), as.double(dist), as.double(extcoeff),
+           as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+    }
   }
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   if (missing(start)){
-    if (dist.dim == 2){
-      if (any(names(fixed.param) == "cov12"))
-        start <- list(cov11 = 1 + 2 * abs(list(...)$cov12),
-                      cov12 = list(...)$cov12,
-                      cov22 = 1 + 2 * abs(list(...)$cov12))
-      
-      else{
-        a <- 2 * qnorm(extcoeff / 2)
-        sigma.start <- mean(rowSums(dist^2) / a)
-        start <- list(cov11 = sigma.start, cov12 = 0, cov22 = sigma.start)
-      }
-    }
-    
-    if (dist.dim == 3){
+    if (iso){
       a <- 2 * qnorm(extcoeff / 2)
       sigma.start <- mean(rowSums(dist^2) / a)
-      start <- list(cov11 = sigma.start, cov12 = 0, cov13 = 0, cov22 = sigma.start,
-                    cov23 = 0, cov33 = sigma.start)
+      start <- list(cov = sigma.start)
+    }
+
+    else{
+      if (dist.dim == 2){
+        if (any(names(fixed.param) == "cov12"))
+          start <- list(cov11 = 1 + 2 * abs(list(...)$cov12),
+                        cov12 = list(...)$cov12,
+                        cov22 = 1 + 2 * abs(list(...)$cov12))
+        
+        else{
+          a <- 2 * qnorm(extcoeff / 2)
+          sigma.start <- mean(rowSums(dist^2) / a)
+          start <- list(cov11 = sigma.start, cov12 = 0, cov22 = sigma.start)
+        }
+      }
+    
+      if (dist.dim == 3){
+        a <- 2 * qnorm(extcoeff / 2)
+        sigma.start <- mean(rowSums(dist^2) / a)
+        start <- list(cov11 = sigma.start, cov12 = 0, cov13 = 0, cov22 = sigma.start,
+                      cov23 = 0, cov33 = sigma.start)
+      }
     }
   }
 
@@ -74,11 +107,21 @@ fitcovmat <- function(data, coord, marge = "mle", start, ...){
   nm <- names(start)
   l <- length(nm)
 
-  if (dist.dim == 2)
-    f <- formals(fun2d)
+  if (dist.dim == 2){
+    if (iso)
+      f <- formals(fun2diso)
 
-  if (dist.dim == 3)
-    f <- formals(fun3d)
+    else
+      f <- formals(fun2d)
+  }
+
+  if (dist.dim == 3){
+    if (iso)
+      f <- formals(fun3diso)
+
+    else
+      f <- formals(fun3d)
+  }
   
   names(f) <- param
   m <- match(nm, param)
@@ -87,23 +130,47 @@ fitcovmat <- function(data, coord, marge = "mle", start, ...){
     stop("'start' specifies unknown arguments")
 
   if (dist.dim == 2){
-    formals(fun2d) <- c(f[m], f[-m])
-    obj.fun <- function(p, ...) fun2d(p, ...)
+    if (iso){
+      formals(fun2diso) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) fun2diso(p, ...)
     
 
-    if (l > 1)
-      body(obj.fun) <- parse(text = paste("fun2d(", paste("p[",1:l,
-                               "]", collapse = ", "), ", ...)"))
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("fun2diso(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
+
+    else{
+      formals(fun2d) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) fun2d(p, ...)
+    
+
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("fun2d(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
   }
 
   if (dist.dim == 3){
-    formals(fun3d) <- c(f[m], f[-m])
-    obj.fun <- function(p, ...) fun3d(p, ...)
-    
+    if (iso){
+      formals(fun3diso) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) fun3d(p, ...)
+      
 
-    if (l > 1)
-      body(obj.fun) <- parse(text = paste("fun3d(", paste("p[",1:l,
-                               "]", collapse = ", "), ", ...)"))
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("fun3diso(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
+
+    else{
+      formals(fun3d) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) fun3d(p, ...)
+      
+
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("fun3d(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
   }
     
   if(any(!(param %in% c(nm,names(fixed.param)))))
@@ -125,10 +192,24 @@ fitcovmat <- function(data, coord, marge = "mle", start, ...){
   param <- c(opt$estimate, unlist(fixed.param))
   param <- param[param.names]
 
+  if (iso){
+    if (dist.dim == 2){
+      param <- c(param["cov"], 0, param["cov"], param[-1])
+      names(param)[1:3] <- c("cov11", "cov12", "cov22")
+    }
+
+    else{
+      param <- c(param["cov"], 0, 0, param["cov"], 0, param["cov"],
+                 param[-1])
+      names(param)[1:6] <- c("cov11", "cov12", "cov13", "cov22", "cov23",
+                             "cov33")
+    }
+  }
+
   if (dist.dim == 2)
     Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
                       param["cov22"]), 2, 2)
-
+  
   else
     Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov13"],
                       param["cov12"], param["cov22"], param["cov23"],

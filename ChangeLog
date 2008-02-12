@@ -1,830 +1,198 @@
-2008-07-30 15:00  ribatet
+2008-12-02 17:02  mathieu_ribatet
 
-	* R/smith.R: Fix a stupid error - starting values were sometimes
-	  badly defined
+	* R/plots.R, man/qqextcoeff.Rd: Add a function that performs a
+	  QQ-plot for the extremal coefficient
 
-2008-07-30 08:49  ribatet
+2008-12-02 15:58  mathieu_ribatet
 
-	* R/fitmaxstable.R, R/schlather.R, R/smith.R, R/starting.values.R,
-	  man/fitmaxstab.Rd: Replace the "warn.inf" argument by warn. Now
-	  if TRUE, it warns also
-	  when standard errors are erradic
+	* src/nsgeomgauss.c: Change the way I deal with non-feasible
+	  regions
 
-2008-07-30 07:09  ribatet
+2008-12-02 15:58  mathieu_ribatet
 
-	* R/fitmaxstable.R, man/fitmaxstab.Rd: Set fit.marge to FALSE as
-	  default and passing it to TRUE if R formulas
-	  are given
+	* man/internals.Rd: Mask the non-stationary geom. gauss. model
 
-2008-07-30 07:06  ribatet
+2008-12-02 15:57  mathieu_ribatet
 
-	* man/posterior.Rd: Add the sill and renaming the "scale" parameter
-	  in the covariance
-	  function as "range".
+	* R/fitcovmat.R, R/fitmaxstable.R, R/gradients.R, R/smith.R,
+	  R/starting.values.R, man/fitcovmat.Rd, man/fitmaxstab.Rd:
+	  Implementation of an isotropic smith's model
 
-2008-07-30 07:05  ribatet
+2008-12-02 10:53  mathieu_ribatet
 
-	* R/smith.R: Update due to the MINF value in /src/header.h
+	* R/starting.values.R, src/covariance.c, src/fitcovmat.c,
+	  src/geomgauss.c, src/nsgeomgauss.c, src/pairwiselik.c,
+	  src/schlather.c, src/schlatherind.c, src/smith.c, src/smith3d.c,
+	  src/utils.c: Change the way starting values are defined - i.e.
+	  fixing the sill
+	  Change the way we deal with non feasible regions
 
-2008-07-30 07:04  ribatet
+2008-11-28 12:12  mathieu_ribatet
 
-	* R/fitmaxstable.R, man/fitmaxstab.Rd: Moving the fit.marge
-	  argument
+	* R/fitmaxstable.R, R/geomgauss.R, R/nsgeomgauss.R: Add the
+	  geometric gaussian model - non stationary
 
-2008-07-30 07:04  ribatet
+2008-11-28 12:11  mathieu_ribatet
 
-	* man/univfit.Rd: Documentation/code mismatch (dots argument in
-	  gpdmle)
+	* src/covariance.c, src/header.h, src/nsgeomgauss.c, src/utils.c:
 
-2008-07-30 07:03  ribatet
+2008-11-27 14:42  mathieu_ribatet
 
-	* R/covariance.R, R/gradients.R, R/mcmc.R, R/methods.R,
-	  R/schlather.R, inst/doc/SpatialExtremesGuide.Rnw,
-	  man/covariance.Rd, man/profile2d.maxstab.Rd: Add the sill and
-	  renaming the "scale" parameter in the covariance
-	  function as "range".
+	* src/covariance.c, src/extcoeff.c, src/fitcovmat.c,
+	  src/geomgauss.c, src/schlather.c, src/schlatherind.c,
+	  src/smith.c, src/smith3d.c, src/univllik.c, src/utils.c: Add
+	  comments within the code.
+	  Tweak how I deal with the unfeasible region when the GEV
+	  parameters
+	  are ill-defined
 
-2008-07-30 07:00  ribatet
+2008-11-19 13:58  mathieu_ribatet
 
-	* src/covariance.c, src/gradients.c, src/header.h, src/schlather.c:
-	  Add the sill and renaming the "scale" parameter in the covariance
-	  function as "range".
+	* R/starting.values.R: There was a duplicate of function
+	  .start.schlatherind
 
-2008-07-29 10:04  ribatet
+2008-11-19 11:36  mathieu_ribatet
 
-	* inst/doc/SpatialExtremesGuide.Rnw: Add the sill argument in the
-	  covariance function - adjusting the code
+	* src/covariance.c: Fix a bug in geomCovariance, sigma2 was not set
+	  to the right value
+	  when it tends to get large
 
-2008-07-29 10:03  ribatet
+2008-11-19 11:29  mathieu_ribatet
 
-	* R/covariance.R, R/methods.R, R/schlather.R, man/covariance.Rd,
-	  src/covariance.c, src/gradients.c, src/header.h, src/schlather.c:
-	  Add the sill component in the covariance function
+	* src/geomgauss.c: Update some comments in the code
 
-2008-07-28 09:51  ribatet
+2008-11-19 11:20  mathieu_ribatet
 
-	* src/header.h, src/pairwiselik.c, src/schlather.c: Minor change:
-	  * MINF is now -1e120
-	  * add comments
+	* DESCRIPTION: Pass the RandomFields packages as a dependence
 
-2008-07-28 09:50  ribatet
+2008-11-19 11:16  mathieu_ribatet
 
-	* R/smith.R: Changing the starting values for the covariance matrix
+	* R/extcoeff.R, man/madogram.Rd: Add an angle argument in
+	  madogram() to help in detecting anisotropy
 
-2008-07-28 09:49  ribatet
+2008-11-18 15:53  mathieu_ribatet
 
-	* R/univfit.R, man/univfit.Rd: Adding the ... argument to allow for
-	  hand fixed parameter in the GEV/GPD
+	* src/schlatherind.c: Fix a bug in schlatherinddsgnmat: the non
+	  feasible region was not
+	  penalized for all cases
 
-2008-07-26 11:38  ribatet
+2008-11-17 12:57  mathieu_ribatet
 
-	* src/pairwiselik.c: Compute the log before as for really small x,
-	  log(x) is not finite!
+	* src/covariance.c: Changing how to deal with smooth >= 2 for the
+	  powered exponential
+	  covariance model
 
-2008-07-26 11:19  ribatet
+2008-10-31 16:45  mathieu_ribatet
 
-	* man/fitmaxstab.Rd: Passing std.err.type = "none" to save time
-	  when running example
+	* src/covariance.c, src/fitcovmat.c, src/geomgauss.c, src/header.h,
+	  src/schlather.c, src/schlatherind.c, src/smith.c, src/smith3d.c,
+	  src/utils.c: Change the behaviour with non-feasible regions:
+	  seems to be more
+	  robust now...
 
-2008-07-26 11:19  ribatet
+2008-10-28 13:44  mathieu_ribatet
 
-	* R/schlather.R, R/smith.R: Wasn't able to tweak appropriately
-	  parscale
+	* src/covariance.c: Add an upper bound (i.e. 3) for the sigma2
+	  parameter in the geometric
+	  gaussian process
 
-2008-07-26 11:18  ribatet
+2008-10-24 07:54  mathieu_ribatet
 
-	* R/define.parscale.R: Wasn't able to tweak appropriately parscale
+	* R/covariance.R, src/covariance.c: Update the bounds for the
+	  covariance functions to avoid numerical
+	  issues
 
-2008-07-25 14:07  ribatet
+2008-10-22 16:05  mathieu_ribatet
 
-	* inst/doc/SpatialExtremesGuide.Rnw: Now uses the references.bib
-	  file for citations
+	* DESCRIPTION: Add a link to the project web page
 
-2008-07-25 14:07  ribatet
+2008-10-22 12:23  mathieu_ribatet
 
-	* inst/doc/references.bib: Add a .bib file for vignette references
+	* src/univllik.c, src/utils.c: Now the Gumbel distribution is
+	  considered whenever the shape parameter
+	  is <= 1-6
 
-2008-07-25 14:02  ribatet
+2008-10-22 12:22  mathieu_ribatet
 
-	* R/schlather.R, R/smith.R: Now the computation of starting values
-	  uses the same optimizer than
-	  for the model fitting.
-	  Uses the function define.parscale to help optimization procedures
+	* R/extcoeff.R, man/madogram.Rd: Change the madogram function. Now
+	  it is computed for each pairwise
+	  distance - bins can be optionnaly passed though
 
-2008-07-25 14:02  ribatet
+2008-10-16 12:39  mathieu_ribatet
 
-	* R/starting.values.R: Now the computation of starting values uses
-	  the same optimizer than
-	  for the model fitting.
-	  Fix a bug in schlather: only the whitmat cov.mod was used for the
-	  starting values...
+	* inst/doc/SpatialExtremesGuide.Rnw, man/condmap.Rd,
+	  man/covariance.Rd, man/extcoeffemp.Rd, man/fitcovariance.Rd,
+	  man/fitmaxstab.Rd, man/madogram.Rd, man/map.Rd,
+	  man/predict.maxstab.Rd, man/profile.maxstab.Rd: Modifying the
+	  vignette and example to reduce the time to build the
+	  package
 
-2008-07-25 14:00  ribatet
+2008-10-13 10:28  mathieu_ribatet
 
-	* src/pairwiselik.c: Minor change to optimize the code (smith's
-	  model)
+	* src/geomgauss.c, src/gradients.c, src/schlather.c,
+	  src/schlatherind.c, src/smith.c, src/smith3d.c: Cleaning the
+	  code: unused declared variables
+	  Fix a mistake in computing the gradient dz2shape instead of
+	  dz2scale
 
-2008-07-25 14:00  ribatet
+2008-10-11 22:45  mathieu_ribatet
 
-	* R/psplines.R, man/cv.Rd, man/rbpspline.Rd: Now we use the nlm
-	  function to optimize the cv
-	  When a one-dimensional p-spline is fitted, we arrange the output
-	  so
-	  that a simple "lines(fitted)" will draw the p-spline
+	* man/prior.Rd: remove one copy of prior.Rd
 
-2008-07-25 13:58  ribatet
+2008-10-11 22:44  mathieu_ribatet
 
-	* R/define.parscale.R: Add a function to define appropriate scaling
-	  values for the
-	  optimization routine
+	* man/posterior.Rd: remove one copy of posterior.Rd
 
-2008-07-17 16:33  ribatet
+2008-10-09 08:53  mathieu_ribatet
 
-	* R/smith.R: Removing the new definition of starting values as it
-	  is too CPU
-	  demanding
+	* R/mcmc.R: moving mcmc.R to the development folder
 
-2008-07-17 16:32  ribatet
+2008-10-07 13:45  mathieu_ribatet
 
-	* R/mcmc.R, man/posterior.Rd: Add the adjustment of the posterior
-	  distribution. The output is now a
-	  list $mc, $mc.adj
+	* R/psplines.R: Misplace conditional if resulting in cv = NA even
+	  when penalty = "gcv"
+	  or "cv"
 
-2008-07-17 16:31  ribatet
+2008-10-06 22:12  mathieu_ribatet
 
-	* src/schlather.c, src/smith.c, src/smith3d.c: Removing useless
-	  initializations
+	* R/fitmaxstable.R, R/plots.R, man/SpatialExtremes.Rd,
+	  man/anova.Rd, man/condmap.Rd, man/fitmaxstab.Rd: Add the
+	  conditional quantile map and refine the documentation
 
-2008-07-17 16:30  ribatet
+2008-10-06 20:08  mathieu_ribatet
 
-	* src/mcmc.c: Cleaning the gibbs code
+	* doc: Moving the package to the /pkg folder
 
-2008-07-17 16:29  ribatet
+2008-10-06 20:07  mathieu_ribatet
 
-	* man/fitmaxstab.Rd: Fix an error (example section) due to changes
-	  in the code
+	* R: Moving the package to the /pkg folder
 
-2008-07-09 16:27  ribatet
+2008-10-06 20:07  mathieu_ribatet
 
-	* inst/doc/SpatialExtremesGuide.Rnw: Some minor changes in the
-	  vignette
+	* doc, doc/SpatialExtremesGuide.Rnw, doc/references.bib: Moving the
+	  package to the /pkg folder
 
-2008-07-09 16:26  ribatet
+2008-10-06 20:07  mathieu_ribatet
 
-	* R/smith.R: Try to define more relevant starting values as the
-	  identity matrix may
-	  be really poor
+	* inst: Moving the package to the /pkg folder
 
-2008-07-09 16:25  ribatet
+2008-10-06 20:06  mathieu_ribatet
 
-	* R/mcmc.R, man/posterior.Rd: Try to adjust the composite posterior
-	  distribution
+	* man: Moving the package to the /pkg folder
 
-2008-07-09 13:08  ribatet
+2008-10-06 20:06  mathieu_ribatet
 
-	* R/psplines.R: The optimize function gives a list with arg minimum
-	  not value
+	* src: Moving the package to the /pkg folder
 
-2008-07-09 13:04  ribatet
+2008-10-06 19:59  mathieu_ribatet
 
-	* R/mcmc.R: Add the adjuting method for the posterior distribution
+	* DESCRIPTION: Move the package to the r-forge repo
 
-2008-07-09 12:49  ribatet
+2008-10-06 19:59  mathieu_ribatet
 
-	* R/psplines.R, man/cv.Rd, man/rbpspline.Rd: Change the upper bound
-	  for the optimization stage of the smoothing
-	  parameter.
-	  rbpspline function now warns if the smoothing parameter estimate
-	  is
-	  equal to this upper bound.
+	* ChangeLog: Move the package to the r-forge repo
 
-2008-07-09 12:37  ribatet
+2008-10-06 19:51  mathieu_ribatet
 
-	* R/selection.R: Multiply TIC by 2 so that it's more similar to AIC
-
-2008-07-07 06:30  ribatet
-
-	* R/schlather.R, R/smith.R: Add a "control" argument for the optim
-	  function. It allows to
-	  normalized auto-magically the parameters to avoid numerical
-	  issues. If
-	  users supply parscale, values won't be overwritten.
-
-2008-07-07 06:30  ribatet
-
-	* R/fitmaxstable.R, man/fitmaxstab.Rd: Add a "control" argument for
-	  the optim function. It allows to
-	  normalized auto-magically the parameters to avoid numerical
-	  issues. If
-	  users supply parscale, values won't be overwritten.
-
-2008-07-07 06:28  ribatet
-
-	* man/madogram.Rd: Fix an outdated link to a function
-
-2008-07-07 06:26  ribatet
-
-	* man/excofun.Rd:
-
-2008-07-02 14:40  ribatet
-
-	* R/extcoeff.R, R/fitmaxstable.R: Add some tests to check for wrong
-	  use of the code
-
-2008-06-30 15:13  ribatet
-
-	* R/schlather.R, R/smith.R: Refining the "message" for the
-	  optimization procedure
-
-2008-06-30 15:13  ribatet
-
-	* R/plots.R: Stop if we are not in a 2d case
-
-2008-06-30 15:12  ribatet
-
-	* R/extcoeff.R, man/extcoeffemp.Rd: Renaming excofun in
-	  extcoeff.emp
-
-2008-06-30 15:02  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Keep on writing the vignette
-
-2008-06-17 14:10  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Adding Simone as a co-authors,
-	  a model selection section and little changes
-
-2008-06-17 14:09  ribatet
-
-	* src/header.h, src/pairwiselik.c, src/schlather.c, src/smith.c,
-	  src/smith3d.c, src/univllik.c: Using MINF as a C #define for non
-	  feasible points
-
-2008-06-17 14:08  ribatet
-
-	* man/extcoeff.Rd: Improving the example
-
-2008-06-17 14:07  ribatet
-
-	* R/schlather.R, R/smith.R: Fix a bug while testing is.na
-
-2008-06-17 08:28  ribatet
-
-	* man/TIC.Rd: Can now compute TIC for several fitted models
-
-2008-06-17 08:28  ribatet
-
-	* R/utils.R, src/utils.c: No error when the GEV scale parameter is
-	  <=0, it warns and return NA
-
-2008-06-17 08:27  ribatet
-
-	* R/starting.values.R: Removing the computations of the standard
-	  errors when defining the
-	  starting values
-
-2008-06-17 08:26  ribatet
-
-	* R/selection.R: Can now compute TIC for several fitted models
-
-2008-06-17 08:25  ribatet
-
-	* R/schlather.R, R/smith.R: Minor changes
-
-2008-06-17 08:24  ribatet
-
-	* R/predict.R, man/predict.maxstab.Rd: Allowing for return level
-	  predictions
-
-2008-06-17 08:23  ribatet
-
-	* R/plots.R: Computes appropriate ranges using linear algebra
-	  arguments
-
-2008-06-17 08:18  ribatet
-
-	* R/gradients.R, src/gradients.c, src/header.h: Allowing for
-	  smith3d gradient computation
-
-2008-06-17 08:16  ribatet
-
-	* R/fitmaxstable.R, man/fitmaxstab.Rd: Passing std.err.type =
-	  "score" as default now
-
-2008-06-17 08:16  ribatet
-
-	* R/covariance.R, src/covariance.c: Change the smooth upper bound
-	  for the Whittle-Matern covariance
-	  function
-
-2008-06-13 12:04  ribatet
-
-	* man/extcoeff.Rd: Default is now to plot 200 points - for
-	  aesthetic purposes
-
-2008-06-13 12:02  ribatet
-
-	* src/smith3d.c: Allowing for 3 by 3 covariance matrices
-
-2008-06-13 12:02  ribatet
-
-	* src/header.h: Allowing for 3 by 3 covariance matrices
-
-2008-06-13 12:02  ribatet
-
-	* src/covariance.c: Allowing for 3 by 3 covariance matrices
-
-2008-06-13 12:01  ribatet
-
-	* man/excofun.Rd: Adding new arguments to control the display
-
-2008-06-13 12:01  ribatet
-
-	* R/smith.R: Allowing for 3 by 3 covariance matrices
-
-2008-06-13 12:00  ribatet
-
-	* R/schlather.R: Minor changes: typos
-
-2008-06-13 12:00  ribatet
-
-	* R/plots.R: Computes the x and y ranges appropriately - using
-	  linear algebra
-
-2008-06-13 11:59  ribatet
-
-	* R/methods.R: Some minor changes subject to modifications of the
-	  code (for example
-	  allowing for 3 by 3 covariance matrices in the Smith's model)
-
-2008-06-13 11:57  ribatet
-
-	* R/extcoeff.R: Computes the x and y ranges appropriately - using
-	  linear algebra
-
-2008-06-12 08:01  ribatet
-
-	* src/gradients.c: Removing uselesss comments
-
-2008-06-12 08:00  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Changing the examples: more
-	  relevant now
-
-2008-06-12 07:58  ribatet
-
-	* man/covariance.Rd, man/internals.Rd, man/logLik.maxstab.Rd,
-	  man/predict.maxstab.Rd: Changing the examples: more relevant now
-
-2008-06-12 07:55  ribatet
-
-	* R/extcoeff.R: Improving the madogram function and creating the
-	  excofun one
-
-2008-06-12 07:53  ribatet
-
-	* man/TIC.Rd, man/excofun.Rd, man/madogram.Rd: Improving the
-	  madogram function and creating the excofun one
-
-2008-06-11 08:43  ribatet
-
-	* R/extcoeff.R: Using unit Frechet margins for the madogram
-
-2008-06-11 08:42  ribatet
-
-	* R/extcoeff.R: Trying to write a function for a non parametric
-	  estimation of the
-	  extremal coefficient
-
-2008-06-11 08:41  ribatet
-
-	* man/predict.maxstab.Rd: Changing the example: more relevant now
-
-2008-06-06 08:16  ribatet
-
-	* R/extcoeff.R: A first attempt to produce madogram plots
-
-2008-06-06 08:13  ribatet
-
-	* R/smith.R: The analytical gradient is not passed in the optim
-	  function anymore
-
-2008-06-06 08:13  ribatet
-
-	* R/utils.R: Modify the gev2frech and frech2gev functions to allow
-	  for a null shape
-	  parameter
-
-2008-06-03 14:24  ribatet
-
-	* R/utils.R, man/gev2frech.Rd: Add a frech2gev function
-
-2008-06-02 08:41  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Fix some typos and LaTeX
-	  formatting
-
-2008-06-02 08:40  ribatet
-
-	* src/schlather.c, src/smith.c: Initializing array to 0s. Is it
-	  really useful?
-
-2008-06-02 08:40  ribatet
-
-	* src/pairwiselik.c: Minor changes: optmizing purposes
-
-2008-06-02 08:39  ribatet
-
-	* src/covariance.c: Refining the C code.
-
-2008-06-02 08:38  ribatet
-
-	* R/fitmaxstable.R, R/gradients.R, R/mcmc.R, R/modeldef.R,
-	  R/plots.R, R/predict.R, R/schlather.R, R/smith.R,
-	  R/starting.values.R, R/univfit.R, man/fitmaxstab.Rd, man/map.Rd:
-	  Convert arguments of a C code before invoking it - e.g. as.double
-	  and
-	  so on.
-	  Allow for additional covariate when modelling the GEV margins
-
-2008-05-31 15:46  ribatet
-
-	* src/utils.c: Fix an error while writing the GEV CDF
-
-2008-05-31 15:45  ribatet
-
-	* src/header.h, src/smith.c: Substiute "icov" for "cov"
-
-2008-05-30 17:58  ribatet
-
-	* R/selection.R: Add a function for model selection
-
-2008-05-30 17:56  ribatet
-
-	* R/gradients.R, R/methods.R, R/schlather.R, R/smith.R,
-	  R/starting.values.R, inst/doc/SpatialExtremesGuide.Rnw,
-	  man/internals.Rd, src/gradients.c, src/pairwiselik.c,
-	  src/schlather.c, src/smith.c, src/utils.c: Some improvements due
-	  to applying these models on US data
-
-2008-05-28 17:57  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Keep on writing the vignette
-
-2008-05-28 17:57  ribatet
-
-	* R/gradients.R, R/schlather.R, src/gradients.c: Add the
-	  computation of the gradient for the Schlather's model and a
-	  polynomial response surface
-
-2008-05-28 08:45  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Keep on writing the vignette
-
-2008-05-27 14:09  ribatet
-
-	* src/header.h: Remove the gradient computations when the
-	  parametrisation uses the
-	  inverse of the covariance matrix
-
-2008-05-27 14:08  ribatet
-
-	* R/gradients.R, R/smith.R, src/gradients.c: Add the computation of
-	  the standard errors for the Smith's model when
-	  we use a polynomial response surface
-
-2008-05-26 15:13  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Keep on writing the vignette:
-	  vignette output, error in the Smith's
-	  gradient
-
-2008-05-26 15:12  ribatet
-
-	* R/fitmaxstable.R: Add a test if ``loc.form'', ``scale.form'' and
-	  ``shape.form'' are
-	  valid R formulas
-
-2008-05-26 09:12  ribatet
-
-	* src/pairwiselik.c: Add a test if the log pairwise likelihood is
-	  infinite
-
-2008-05-26 09:09  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Keep on writing the vignette
-
-2008-05-23 13:25  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Keep on writing the vignette
-
-2008-05-23 13:24  ribatet
-
-	* man/covariance.Rd: The covariance function now produces a plot -
-	  and thus takes more
-	  arguments
-
-2008-05-23 13:23  ribatet
-
-	* R/schlather.R: Minor changes related to the modification of the
-	  covariance function -
-	  no plot.
-
-2008-05-23 13:23  ribatet
-
-	* R/covariance.R: The covariance function now produces a plot
-
-2008-05-23 08:22  ribatet
-
-	* R/starting.values.R: Changes (again) how the default x and y-axis
-	  ranges are computed
-
-2008-05-23 08:21  ribatet
-
-	* src/covariance.c: Add a test if the Mahalanobis distance is
-	  degenerate
-
-2008-05-23 08:20  ribatet
-
-	* src/pairwiselik.c: Replace log(a/b) by log(a) - log(b) for
-	  potential numerical issues
-
-2008-05-23 08:19  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Keep on writing the vignette
-
-2008-05-21 20:59  ribatet
-
-	* R/plots.R: Change the default ranges for the x and y axis
-
-2008-05-21 20:55  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Keep on writing the vignette
-
-2008-05-19 21:43  ribatet
-
-	* man/posterior.Rd: Minor change: change the init values of the
-	  Markov chain so that
-	  convergence to the stationary distribution is more clear cut
-
-2008-05-19 21:42  ribatet
-
-	* man/extcoeff.Rd: Minor change: change the example
-
-2008-05-19 21:41  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Extend the documentation
-
-2008-05-19 21:41  ribatet
-
-	* src/header.h: Removing useless argument in a C function
-
-2008-05-19 21:40  ribatet
-
-	* R/utils.R, src/utils.c: Add a function that computes quantiles
-	  from a GEV distribution
-
-2008-05-19 21:39  ribatet
-
-	* R/starting.values.R: Add a modification in the starting values
-	  definition if there are any
-	  negative scale parameter estimates.
-
-2008-05-19 21:38  ribatet
-
-	* R/smith.R: Minor changes: moving the coeff.ext function
-	  definition to another
-	  place.
-
-2008-05-19 21:37  ribatet
-
-	* R/predict.R: Add the coordinates in the output
-
-2008-05-19 21:36  ribatet
-
-	* R/methods.R: Change the message when we do not fit the marges
-
-2008-05-19 21:36  ribatet
-
-	* R/plots.R, man/map.Rd: Adding a new function "map" that produces
-	  contour plots for the GEV
-	  parameters as well as for return levels.
-
-2008-05-18 21:32  ribatet
-
-	* .: set property to ignore for the DESCRIPTION file
-
-2008-05-18 21:30  ribatet
-
-	* DESCRIPTION: Add a suggestion entry e.g. coda
-
-2008-05-18 21:29  ribatet
-
-	* man/internals.Rd: Removing entries for the functions that are now
-	  documented
-
-2008-05-18 21:28  ribatet
-
-	* src/mcmc.c: Removing the use of the log-normal proposal
-	  distribution for some
-	  parameters.
-
-2008-05-18 21:27  ribatet
-
-	* src/header.h, src/schlather.c: There was an useless argument in
-	  the schlather functions
-
-2008-05-18 21:27  ribatet
-
-	* inst/doc/SpatialExtremesGuide.Rnw: Add the Sweave package in the
-	  preambule
-
-2008-05-18 21:26  ribatet
-
-	* R/schlather.R, R/smith.R: Minor changes: renaming the function
-	  for the extremal coefficient.
-
-2008-05-18 21:25  ribatet
-
-	* R/mcmc.R: Changes to allow for mcmc computations while the
-	  margins are not
-	  fitted.
-	  Smith model can now be considered.
-
-2008-05-18 21:23  ribatet
-
-	* man/gev2frech.Rd, man/posterior.Rd, man/prior.Rd, man/rb.Rd: Add
-	  documentation files of already existing codes
-
-2008-05-18 21:15  ribatet
-
-	* R/plots.R, man/extcoeff.Rd: Add function (and doc) for plotting a
-	  contour plot of the extremal
-	  coefficient
-
-2008-05-18 15:22  ribatet
-
-	* src/covariance.c, src/gradients.c, src/header.h, src/mcmc.c,
-	  src/pairwiselik.c, src/schlather.c, src/smith.c, src/utils.c: Fix
-	  the bug in the gibbs sampler
-	  Cleaning C codes - structures are now avoided
-
-2008-05-18 15:21  ribatet
-
-	* R/mcmc.R: Fix the bug in the gibbs sampler
-
-2008-05-18 15:20  ribatet
-
-	* inst/removeCodes: Remove this folder useless as svn is
-	  implemented now
-
-2008-05-09 08:31  ribatet
-
-	* inst/doc/SpatialExtremesGuide.pdf: Removing the pdf vignette
-
-2008-05-09 08:31  ribatet
-
-	* inst/doc/SpatialExtremesGuide.pdf: New vignette - but will be
-	  ignored soon
-
-2008-05-09 08:18  ribatet
-
-	* R/mcmc.R, src/mcmc.c: Some improvements in the mcmc procedures.
-	  The bug is still present
-	  though - "REAL() can only be applied to a 'numeric', not a 'list'
-	  or
-	  not a 'integer' or whatever...
-
-2008-05-09 08:14  ribatet
-
-	* man/covariance.Rd, man/predict.maxstab.Rd,
-	  man/predict.pspline.Rd, man/print.maxstab.Rd: Changes in the
-	  example section
-
-2008-05-09 08:13  ribatet
-
-	* R/starting.values.R: Removing unnecessary materials
-
-2008-05-09 08:13  ribatet
-
-	* R/schlather.R, R/smith.R: Some improvements in detecting
-	  optimizations problems
-
-2008-05-09 08:12  ribatet
-
-	* R/fitmaxstable.R, man/fitmaxstab.Rd: Changing the argument. Now
-	  the Smith's or Schlather's
-	  characterisations are directly selected from the cov.mod
-	  argument.
-
-2008-05-07 15:57  ribatet
-
-	* inst/derivatives.aux, inst/derivatives.log, inst/derivatives.pdf,
-	  inst/derivatives.tex: Removing unnecessary files
-
-2008-05-07 15:57  ribatet
-
-	* inst/auto: Removing unnecessary files
-
-2008-05-07 15:55  ribatet
-
-	* man, src: Ignoring the header.h and internals.Rd files
-
-2008-05-07 15:54  ribatet
-
-	* inst/doc: Ignoring the pdf file
-
-2008-05-07 15:54  ribatet
-
-	* inst/doc, inst/doc/SpatialExtremesGuide.Rnw,
-	  inst/doc/SpatialExtremesGuide.pdf: Add a inst/doc directory for
-	  package vignette
-
-2008-05-07 15:53  ribatet
-
-	* man/internals.Rd, src/header.h: Passing src/header.h and
-	  man/internals.Rd with "ignore" prop. to svn
-
-2008-05-07 15:51  ribatet
-
-	* src/utils.c: Improve how obs. are transformed to unit Frechet
-
-2008-05-07 15:50  ribatet
-
-	* src/schlather.c: Minor changes: adding some comments (non
-	  feasible cases)
-
-2008-05-07 15:50  ribatet
-
-	* src/pairwiselik.c: Improve how the pairwise likelihood is
-	  computed
-	  Cleaning the codes
-
-2008-05-07 15:49  ribatet
-
-	* src/gradients.c: New function to compute the gradient for the
-	  Schlather's model
-
-2008-05-07 15:48  ribatet
-
-	* src/covariance.c: Improve how covariance functions are computed -
-	  more stable
-
-2008-05-07 15:47  ribatet
-
-	* R/utils.R: gev2frech can return 0 values
-
-2008-05-07 15:46  ribatet
-
-	* R/starting.values.R: Changing the way starting values are
-	  computed. Now it's "quite"
-	  impossible the log-likelihood is infinite at starting values
-
-2008-05-07 15:45  ribatet
-
-	* R/modeldef.R, R/schlather.R, R/smith.R: Improving the way how
-	  formulas are interpreted
-
-2008-05-07 15:44  ribatet
-
-	* R/mcmc.R, R/methods.R: Changing the names of the param "icovxx"
-	  --> "covxx"
-
-2008-05-07 15:42  ribatet
-
-	* R/gradients.R: Add the gradient computation for the schlather's
-	  model.
-	  Renaming function gradxxx to .gradxxxx
-
-2008-05-05 08:48  ribatet
-
-	* src/schlather.c: Use the rb penalization matrix as the default
-
-2008-05-05 08:46  ribatet
-
-	* R/schlather.R: Use "BFGS" as the default method for optimization
-
-2008-05-05 08:37  ribatet
-
-	* src/pairwiselik.c: Remove useless computations in the pairwise
-	  likelihood
-
-2008-04-28 15:01  ribatet
-
-	* ., DESCRIPTION, R, R/covariance.R, R/fitmaxstable.R,
-	  R/gradients.R, R/mcmc.R, R/methods.R, R/modeldef.R, R/predict.R,
-	  R/profile.R, R/psplines.R, R/schlather.R, R/smith.R,
-	  R/starting.values.R, R/univfit.R, R/utils.R, R/zzz.R, inst,
-	  inst/auto, inst/auto/derivatives.el, inst/derivatives.aux,
-	  inst/derivatives.log, inst/derivatives.pdf, inst/derivatives.tex,
-	  inst/removeCodes, inst/removeCodes/oldcodes.R,
-	  inst/removeCodes/oldcodes.c, man, man/covariance.Rd, man/cv.Rd,
-	  man/distances.Rd, man/fitmaxstab.Rd, man/internals.Rd,
-	  man/logLik.maxstab.Rd, man/modeldef.Rd, man/predict.maxstab.Rd,
-	  man/predict.pspline.Rd, man/print.maxstab.Rd,
-	  man/print.pspline.Rd, man/profile.maxstab.Rd,
-	  man/profile2d.maxstab.Rd, man/rbpspline.Rd, man/univfit.Rd, src,
-	  src/covariance.c, src/gradients.c, src/header.h, src/mcmc.c,
-	  src/pairwiselik.c, src/penalizations.c, src/schlather.c,
-	  src/smith.c, src/univllik.c, src/utils.c: Initial Import
+	* .: re-creating the pkg folder
 

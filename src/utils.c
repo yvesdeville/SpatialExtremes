@@ -40,7 +40,7 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
 
   //This function transforms the GEV observations to unit Frechet ones
   //and computes the log of the jacobian of each transformation
-  //When flag == 1, the GEV parameters are invalid.
+  //When ans > 0.0, the GEV parameters are invalid.
   
   int i, j;
   double ans = 0.0;
@@ -49,7 +49,8 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
     for (j=0;j<nObs;j++){
       frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
       
-      if(shapes[i] == 0.0){
+      if(fabs(shapes[i]) <= 1e-6){
+	shapes[i] = 0.0;
 	jac[i * nObs + j] = frech[i * nObs + j] - log(scales[i]);
 	frech[i * nObs + j] = exp(frech[i * nObs + j]);
       }
@@ -59,14 +60,14 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
 	
 	if (frech[i * nObs + j] <= 0) {
 	  //printf("1 + shape * (data - loc) <= 0!\n");
-	  ans += R_pow_di(1 - frech[i * nObs + j], 2) * MINF;
+	  ans += R_pow_di(1.01 - frech[i * nObs + j], 2);
+	  frech[i * nObs + j] = 1.0;
 	}
 	
-	else{
-	  jac[i * nObs + j] = (1/ shapes[i] -1) * 
-	    log(frech[i * nObs + j]) - log(scales[i]);
-	  frech[i * nObs + j] = R_pow(frech[i * nObs + j], 1/ shapes[i]);
-	}
+	jac[i * nObs + j] = (1/ shapes[i] - 1) * 
+	  log(frech[i * nObs + j]) - log(scales[i]);
+	frech[i * nObs + j] = R_pow(frech[i * nObs + j], 1/ shapes[i]);
+	
       }
     }
   }
@@ -81,6 +82,8 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
 		     int nshapecoeff, double *locs, double *scales,
 		     double *shapes){
 
+  //This function computes the GEV parameters from the design matrix
+  //when ans > 0.0, the GEV parameters are invalid
   int i, j;
   double ans = 0.0;
 
@@ -100,13 +103,13 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
       shapes[i] += shapecoeff[j] * shapedsgnmat[i + nSite * j];
     
     if (scales[i]<=0){
-      //printf("scale <= 0\n");
-      ans += R_pow_di(1 - scales[i], 2) * MINF;
+      ans += R_pow_di(1.01 - scales[i], 2);
+      scales[i] = 1;
     }
-
+    
     if (shapes[i] <= -1){
-      //printf("shape <= 0\n");
-      ans += R_pow_di(shapes[i], 2) * MINF;
+      ans += R_pow_di(shapes[i] - 0.02, 2);
+      shapes[i] = 0.0;
     }
   }
 
@@ -115,6 +118,8 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
   
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 	 double *quant){
+
+  //This function computes the GEV quantiles
   
   int i;
   
@@ -135,3 +140,48 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 }
 
 	
+void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff, 
+		   int nSite, int nalphacoeff, double *alphas){
+
+  //This function computes the 'alpha' values from the design matrix
+  //the 'alphas' are used in the schlatherind model
+  //We use the expit function to ensure that the alphas always lie in
+  //(0,1)
+  int i, j;
+
+  for (i=0;i<nSite;i++){
+       
+    alphas[i] = 0.0;
+        
+    for (j=0;j<nalphacoeff;j++)
+      alphas[i] += alphacoeff[j] * alphadsgnmat[i + nSite * j];
+
+    //We use the expit function to ensure that the alphas lie in [0,1]
+    alphas[i] = exp(alphas[i]) / (1 + exp(alphas[i]));
+  
+  }
+    
+  return;
+}
+
+void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff, 
+		    int nSite, int nsigma2coeff, double *sigma2){
+
+  //This function computes the 'sigma2' values from the design matrix
+  //the 'sigma2' are used in the non-stationary geometric gaussian model
+  int i, j;
+  
+  for (i=0;i<nSite;i++){
+       
+    sigma2[i] = 0.0;
+        
+    for (j=0;j<nsigma2coeff;j++)
+      sigma2[i] += sigma2coeff[j] * sigma2dsgnmat[i + nSite * j];
+
+    //We use a log link function to ensure that the sigma2s lie are positive
+    sigma2[i] = exp(sigma2[i]);
+  
+  }
+    
+  return;
+}

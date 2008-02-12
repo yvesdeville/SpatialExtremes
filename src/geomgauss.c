@@ -4,7 +4,8 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locs, double *scales, double *shapes,
 		   double *sigma2, double *sill, double *range, double *smooth,
 		   int *fitmarge,double *dns){
-  //This is the schlater model. It computes the pairwise log-likelihood
+  //This is the geometric gaussian model. It computes the pairwise
+  //log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
@@ -14,17 +15,21 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   rho = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
+  *dns = 1.0;
+  
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
-	*dns += R_pow_di(1 - scales[i], 2) * MINF;
+	*dns += R_pow_di(1 - scales[i], 2);
+	scales[i] = 1.0;
       }
       
       if (shapes[i] <= -1){
 	//printf("shapes <= -1!!!\n");
-	*dns += R_pow_di(shapes[i], 2) * MINF;
+	*dns += R_pow_di(shapes[i], 2);
+	shapes[i] = 0.0;
       }
     }
   }
@@ -44,10 +49,11 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
       jac[i] = 0.0;
     }
   }
+
+  *dns *= lpliksmith(frech, rho, jac, *nObs, *nSite);
   
-  if (*dns == 0.0)
-    //Stage 2: Bivariate density computations
-    *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
+  if (!R_FINITE(*dns))
+    *dns = MINF;
 
   return;
 
@@ -60,7 +66,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sigma2,
 		      double *sill, double *range, double *smooth, double *dns){
-  //This is the schlater model
+  //This is the geometric gaussian model
   //The GEV parameters are defined using a polynomial response surface
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
@@ -73,13 +79,12 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
+  *dns = 1.0;
+
   //Stage 1: Compute the covariance at each location
-  *dns = geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
+  *dns += geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
 			*smooth, rho);
     
-  if (*dns != 0.0)
-    return;
-
   //Stage 2: Compute the GEV parameters using the design matrix
   *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
 			loccoeff, scalecoeff, shapecoeff, *nSite,
@@ -90,28 +95,27 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		    jac, frech);
     
-  if (*dns == 0.0){
-
-    //Stage 4: Bivariate density computations
-    *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
+  *dns *= lpliksmith(frech, rho, jac, *nObs, *nSite);
     
-    //Stage 5: Removing the penalizing terms (if any)
-    // 1- For the location parameter
-    if (*locpenalty > 0)
-      *dns -= penalization(locpenmat, loccoeff, *locpenalty,
-			   *nloccoeff, *npparloc);
-    
-    // 2- For the scale parameter
-    if (*scalepenalty > 0)    
-      *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
-			   *nscalecoeff, *npparscale);
-    
-    // 3- For the shape parameter
-    if (*shapepenalty > 0)
-      *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
-			   *nshapecoeff, *npparshape);
-  }
+  //Stage 5: Removing the penalizing terms (if any)
+  // 1- For the location parameter
+  if (*locpenalty > 0)
+    *dns -= penalization(locpenmat, loccoeff, *locpenalty,
+			 *nloccoeff, *npparloc);
   
+  // 2- For the scale parameter
+  if (*scalepenalty > 0)    
+    *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
+			 *nscalecoeff, *npparscale);
+  
+  // 3- For the shape parameter
+  if (*shapepenalty > 0)
+    *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
+			 *nshapecoeff, *npparshape);
+  
+  if (!R_FINITE(*dns))
+    *dns = MINF;
+
   return;
   
 }

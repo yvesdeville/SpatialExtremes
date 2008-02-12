@@ -9,6 +9,9 @@
 \alias{schlatherindfull}
 \alias{geomgaussform}
 \alias{geomgaussfull}
+\alias{fitnsmaxstab}
+\alias{nsgeomgaussfull}
+\alias{nsgeomgaussform}
 
 \title{Internal functions and methods for the maxstable package.}
 \description{A set of functions that should not be used directly by the

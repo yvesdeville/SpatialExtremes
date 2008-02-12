@@ -322,7 +322,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   scale.form <- update(scale.form, y ~ .)
   shape.form <- update(shape.form, y ~ .)
 
-   if (is.null(marg.cov))
+  if (is.null(marg.cov))
     covariables <- data.frame(coord)
 
   else

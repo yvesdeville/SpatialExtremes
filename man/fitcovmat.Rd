@@ -6,7 +6,7 @@
   non-parametric estimates of the pairwise extremal coefficients.
 }
 \usage{
-fitcovmat(data, coord, marge = "mle", start, \dots)
+fitcovmat(data, coord, marge = "mle", iso = FALSE, start, \dots)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -16,6 +16,8 @@ fitcovmat(data, coord, marge = "mle", start, \dots)
    \item{marge}{Character string specifying how margins are transformed
     to unit Frechet. Must be one of "emp", "frech" or "mle" - see
     function \code{\link{fitextcoeff}}.}
+  \item{iso}{Logical. If \code{TRUE}, isotropy is supposed. Otherwise
+    (default), anisotropy is allowed.}
   \item{start}{A named list giving the initial values for the
     parameters over which the weighted sum of square is to be
     minimized. If \code{start} is omitted the routine attempts to find
@@ -54,7 +56,7 @@ n.obs <- 100
 locations <- matrix(runif(2*n.site, 0, 40), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
-sigma <- matrix(c(200, 10, 10, 300),ncol = 2)
+sigma <- matrix(c(200, 0, 0, 200),ncol = 2)
 sigma.inv <- solve(sigma)
 sqrtCinv <- t(chol(sigma.inv))
 
@@ -65,6 +67,9 @@ ms1 <- MaxStableRF(locations, model = model, maxstable = "Bool", grid = FALSE, n
 ms1 <- t(ms1)
 
 fitcovmat(ms1, locations, marge = "emp")
+
+##Force an isotropic model
+fitcovmat(ms1, locations, marge = "emp", iso = TRUE)
 }
 \keyword{htest}
 
