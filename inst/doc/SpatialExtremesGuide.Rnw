@@ -1,0 +1,1561 @@
+\documentclass[a4paper]{report}
+\usepackage{Sweave}
+\usepackage[utf8]{inputenc}
+\usepackage{fullpage}
+\usepackage{amsmath,amsfonts}
+\usepackage{hyperref}
+\usepackage[square]{natbib}
+
+\setlength{\parskip}{0.7ex plus0.1ex minus0.1ex}
+\setlength{\parindent}{0em}
+
+\renewcommand{\floatpagefraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+
+\begin{document}
+% \VignetteIndexEntry{A R Package for Modelling Spatial Extremes} 
+% \VignetteDepends{SpatialExtremes,RandomFields}
+% \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes} 
+% \VignettePackage{SpatialExtremes}
+
+\begin{titlepage}
+  \vspace*{2cm}
+  \begin{center}
+    \LARGE A User's Guide to the SpatialExtremes Package\\
+    \vspace{1em}
+    \Large Mathieu Ribatet$^\dag$ \& Simone Padoan$^\ast$\\
+    \vspace{1em}
+    Copyright \copyright{2008}\\
+    \vspace{2em}
+    \large
+    $^\dag$Chair of Statistics\\
+    École Polytechnique Fédérale de Lausanne\\
+    Switzerland\\
+    $^\ast$Laboratory of Environmental Fluid Mechanics and Hydrology\\
+    École Polytechnique Fédérale de Lausanne\\
+    Switzerland\\
+  \end{center}
+  \hfill
+  \begin{center}
+<<echo=FALSE,fig=TRUE>>=
+library(SpatialExtremes)
+library(RandomFields)
+image(volcano, col = terrain.colors(100), xaxt = "n", yaxt="n")
+contour(volcano, add = TRUE)
+@ 
+  \end{center}
+  \vspace{2em}
+\end{titlepage}
+
+
+\pagenumbering{roman}
+\normalsize
+
+\tableofcontents
+%%\listoftables
+\listoffigures
+
+\pagenumbering{arabic}
+
+\chapter*{Introduction}
+\label{cha:introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+
+
+\section*{What is the SpatialExtremes package?}
+\label{sec:what-spat-pack}
+
+The \textbf{SpatialExtremes} package is an add-on package for the R
+\citep{Rsoft} statistical computing system. It provides functions for
+the analysis of spatial extremes.
+
+All comments, criticisms and queries on the package or associated
+documentation are gratefully received.
+
+\section*{Obtaining the package/guide}
+\label{sec:obta-pack}
+
+The package can be downloaded from CRAN (The Comprehensive R Archive
+Network) at \url{http://cran.r-project.org/}.  This guide (in pdf)
+will be in the directory \verb+SpatialExtremes/doc/+ underneath
+wherever the package is installed. You can get it by invoking
+<<eval=FALSE>>=
+vignette("SpatialExtremesGuide")
+@ 
+
+\section*{Contents}
+
+This guide contains a few elements of theory on the modelling of
+spatial extremes as well as examples on the use of the
+\textbf{SpatialExtremes}
+package. Section~\ref{cha:an-introduction-max} gives an (light)
+introduction to max-stable processes and defines two different
+characterisations of such processes. Section~\ref{sec:fit-maxstab}
+presents the methodology used in the package to fit max-stable
+processes to data while section~\ref{cha:manip-visu-fitt} describes
+useful functions for prediction and visualizing fitted models. Details
+for the computation of the pairwise density and gradient are reported
+into the Annex~\ref{cha:dens-grad-comp}.
+
+\section*{Caveat}
+
+I have checked these functions as best I can but, as ever, they may
+contain bugs.  If you find a bug or suspected bug in the code or the
+documentation please report it to me at
+\href{mailto:mathieu.ribatet@epfl.ch}{mathieu.ribatet@epfl.ch}.
+Please include an appropriate subject line.
+
+\section*{Legalese}
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 3
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but without any warranty; without even the implied warranty of
+merchantability or fitness for a particular purpose.  
+See the GNU General Public License for more details.
+
+
+A copy of the GNU General Public License can be obtained from 
+\url{http://www.gnu.org/copyleft/gpl.html}.
+
+\section*{Acknowledgements}
+
+This work has been supported by the
+\href{http://www.cces.ethz.ch/index}{Competence Center Environment and
+  Sustainability} within the
+\href{http://www.cces.ethz.ch/projects/hazri/EXTREMES}{EXTREMES}
+project.
+
+\chapter{An Introduction to Max-Stable Processes}
+\label{cha:an-introduction-max}
+
+A max-stable process $Z(\cdot)$ is the limit process of maxima of
+independent identically distributed random fields $Y_i(x)$, $x \in
+\mathbb{R}^d$. Namely, for suitable $a_n(x) > 0$ and $b_n(x) \in
+\mathbb{R}$,
+\begin{equation}
+  \label{eq:maxstab-def}
+  Z(x) = \lim_{n \rightarrow +\infty} \frac{\max_{i=1}^n Y_i(x) -
+    b_n(x)}{a_n(x)}, \qquad x \in \mathbb{R}^d
+\end{equation}
+Note that \eqref{eq:maxstab-def} does not ensure that the limit
+exists. However, provided it does and from \eqref{eq:maxstab-def}, we
+can see that max-stable processes might be appropriate models for
+modelling annual maxima of spatial data.
+
+Currently, there are two different characterisations of a max-stable
+process. The first one, often referred to the \emph{rainfall-storm}
+model, as first been introduced by \citet{Smith1991}. More recently,
+\citet{Schlather2002} introduced a new characterisation of a
+max-stable process allowing for a random shape.
+
+It is out of the scope of this document to describe fully the main
+differences between the two canonical constructions. We will restrict
+our attention to particular cases of these characterisations.
+
+Unfortunately, closed forms for the density of these two models are
+only known for two different points in $\mathbb{R}^d$. Consequently,
+fitting max-stable processes to data is not straightforward and the
+SpatialExtremes package provides convenient tools for it.
+
+\section{The Smith's Model}
+\label{sec:smiths-char}
+
+The Smith's model\footnote{There's another form of the Smith's model
+  that uses a Student distribution instead of the Normal one. However,
+  it is not currently implemented.} is given by:
+\begin{equation}
+  \label{eq:smith}
+  \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
+    \left(\frac{a}{2} + \frac{1}{a} \log \frac{z_2}{z_1} \right) -
+    \frac{1}{z_2} \Phi \left(\frac{a}{2} + \frac{1}{a}
+      \log\frac{z_1}{z_2} \right) \right]
+\end{equation}
+where $\Phi$ is the standard normal cumulative distribution function
+and, for two given locations \#1 and \#2  
+\begin{equation*}
+  a^2 = \Delta x^T \Sigma^{-1} \Delta x \quad \text{and} \quad 
+  \Sigma = 
+  \begin{bmatrix}
+    cov_{11} & cov_{12}\\
+    cov_{12} & cov_{22}
+  \end{bmatrix}
+  \quad \text{or} \quad \Sigma = 
+  \begin{bmatrix}
+    cov_{11} & cov_{12} & cov_{13}\\
+    cov_{12} & cov_{22} & cov_{23}\\
+    cov_{13} & cov_{23} & cov_{33}
+  \end{bmatrix}
+  \quad \text{and so forth}
+\end{equation*}
+where $\Delta x$ is the distance vector between location \#1 and
+location \#2.
+
+The derivation of the density is reported in section
+\ref{sec:density-computation-smith}. Currenlty, the package only
+handle 2 by 2 or 3 by 3 covariance matrix $\Sigma$.
+
+\section{The Schlather's Model}
+\label{sec:schl-char}
+
+The Schlather's model is given by:
+\begin{equation}
+  \label{eq:schlather}
+  \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
+    \left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left(1 + \sqrt{1 - 2
+        (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
+\end{equation}
+where $h$ is the distance between location \#1 and location \#2 and
+$\rho(h)$ is a valid correlation function such as $-1 \leq \rho(h)
+\leq 1$.
+
+Currently, there is three types of covariance functions implemented:
+
+\bigskip
+\begin{tabular}{ll}
+  \textbf{Whittle-Matérn} & $\rho(h) = sill
+  \frac{2^{1-smooth}}{\Gamma(smooth)} \left(\frac{h}{range}
+  \right)^{smooth} K_{smooth}\left(\frac{h}{range} \right)$\\ 
+  \textbf{Cauchy} & $\rho(h) = sill \left[1 + \left(\frac{h}{range}
+    \right)^2 \right]^{-smooth}$\\
+  \textbf{Powered Exponential} & $\rho(h) = sill \exp\left[-
+    \left(\frac{h}{range} \right)^{smooth} \right]$
+\end{tabular}
+\bigskip
+
+where $h$ is the distance between locations \#1 and \#2, $sill$,
+$range$ and $smooth$ are the sill, the range and the smooth parameters
+of the covariance function, $\Gamma$ is the gamma function and
+$K_{smooth}$ is the modified Bessel function of the third kind with
+order $smooth$.
+
+The derivation of the density is reported in section
+\ref{sec:density-computation-schlather}.
+
+\chapter{Fitting a Max-Stable Process to Data}
+\label{sec:fit-maxstab}
+
+As stated in the previous chapter, the densities of the two max-stable
+characterisations are only known for two different locations. The
+strategy used in the package is to use pairwise-likelihood instead of
+the ``full'' likelihood. Namely, the log pairwise-likelihood is given
+by:
+\begin{equation}
+  \label{eq:lplik}
+  \ell_p(\mathbf{y};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
+  \log f(y_k^{(i)}, y_k^{(j)})
+\end{equation}
+where $\mathbf{y}$ is the data available on the whole region,
+$n_{i,j}$ is the number of common observations between sites $i$ and
+$j$, $y_k^{(i)}$ is the $k$-th observation of the $i$-th site and
+$f(\cdot, \cdot)$ is the bivariate distribution of the max-stable
+process - see Annex~\ref{cha:dens-grad-comp} for the analytical forms.
+
+Consequently, the max-stable process is fitted to data by maximizing
+the log pairwise-likelihood\footnote{This is why the fitting procedure
+  may be time consuming with large region.}. Properties of the maximum
+composite likelihood estimator\footnote{In our case, the maximum
+  pairwise likelihood estimator} are well known
+\citep{Lindsay1988,Cox2004}. In particular, because each pairwise
+score equation is unbiased, the sum of these score equations is
+unbiased too and leads to consistent estimations.
+
+If one is interested only in fitting the covariance matrix $\Sigma$ or
+the covariance function $\rho$ to data, another fitting procedure is
+available. The strategy is estimate the extremal coefficient and to
+fit either the Smith's or the Schlather's models using a least square
+criterion.
+
+\section{Assuming Unit Fréchet Margins}
+\label{sec:simple-case-study}
+
+To start working with the SpatialExtremes package, let consider a
+simple case study for which each location is unit Fréchet
+distributed. M. Schlather developed a R package called
+\emph{RandomFields} to simulate spatial random fields from a
+max-stable process. Consequently, all we need is to define the
+coordinate of each location as well as the parameters of the
+covariance function in equation \eqref{eq:schlather}.
+
+<<>>=
+library(RandomFields)
+n.site <- 40
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
+param=c(0,1,.2,3, 1.2), maxstable="extr", n = 80)
+ms0 <- t(ms0)
+@
+
+For this application, the covariance function is taken to be the
+Whittle-Matérn covariance function with sill, range and smooth
+parameters equal to 0.8 (1 - 0.2), 3 and 1.2 respectively. The
+locations are distributed uniformly on the square $[0,10]^2$.
+
+To fit a max-stable process using pairwise likelihood and assuming
+unit Fréchet margins, all we have to do is to invoke:
+<<>>=
+fitmaxstab(ms0, locations, cov.mod = "whitmat", fit.marge = FALSE)
+@ 
+
+From this output, we can see that we indeed use the Schlather's
+representation with a Whittle-Matérn covariance function. The pairwise
+deviance is given and the Takeuchi's information criterion (TIC) is
+not available (NA) - see section~\ref{sec:model-selection} for more
+details. The convergence was successful and the estimates of the
+covariance function are accessible. Note that large deviations from
+the theoretical values are not fatal as the parameters of the
+Whittle-Matérn covariance function are far from orthogonal. Thus, the
+range and smooth estimates may be totally different while leading
+(approximately) to the same covariance function.
+
+When using the Whittle-Matérn covariance function, it is sometimes
+preferable to fix the smooth parameter using prior knowledge on the
+process smoothness \citep{Diggle2007}. This can be done by:
+<<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2, fit.marge = FALSE)
+@ 
+
+Despite the Whittle-Matérn is a flexible covariance function, one may
+want to consider other types of covariance functions. This is achieved
+by invoking:
+<<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE)
+fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE)
+@ 
+
+One may also consider the Smith's characterisation instead of the
+Schlather's one:
+<<eval=FALSE>>=
+sigma = matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv = solve(sigma)
+sqrtCinv = t(chol(sigma.inv))
+model = list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+msSmith <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
+maxstable="Bool", n = 50)
+msSmith <- t(msSmith)                   
+fitmaxstab(msSmith, locations, cov.mod = "gauss", fit.marge = FALSE)
+@ 
+
+Obvisously, for each covariance model, one can fix any parameter; so
+that all the two following codes are valid:
+<<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, fit.marge = FALSE)
+fitmaxstab(ms0, locations, cov.mod = "cauchy", range = 3, fit.marge = FALSE)
+@ 
+
+Note that passing \verb|fit.marge = TRUE| in all the previous codes
+will result in fitting the GEV parameters for each location. However,
+be careful as it will be really CPU demanding as there will be
+\verb|3 n.site + p| parameters to estimate - where \verb|p| is the
+number of parameters for the covariance part.
+
+It is also possible to used different optimization routines to fit the
+model to data. This is achieved by passing the \verb|method|
+argument. For instance, if one want to use the \verb|BFGS| method:
+<<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, fit.marge = FALSE, method = "BFGS")
+@
+Instead of using the \verb|optim| function, one may want to use the
+\verb|nlm| or \verb|nlminb| functions. This is done as before using
+the \verb|method = "nlm"| or \verb|method = "nlminb"| option.
+
+If now, we want to fit the model using the least square criterion:
+<<eval=FALSE>>=
+##Smith's model
+fitcovmat(ms0, locations)
+##Schlather's model with Powered exponential covariance function
+fitcovariance(ms0, locations, "whitmat")
+@ 
+
+\section{With Unknown GEV Margins}
+\label{sec:with-unknown-gev}
+
+In practice, the observations will never be drawn from a unit Fréchet
+distribution so that the previous section won't help much with
+concrete applications. One way to avoid this problem is to fit a GEV
+to each location and then transform all data to unit Fréchet. This is
+done using the \verb|gev2frech| function and the following code:
+<<>>=
+x <- c(2.2975896, 1.6448808, 1.3323833, -0.4464904, 2.2737603, -0.2581876, 9.5184398, -0.5899699, 0.4974283, -0.8152157)
+gev2frech(x, 1, 2, .2)
+@ 
+
+The drawback of this approach is that standard errors are definitively
+lost as the margins are first fitted and then the covariance
+structure. Consequently, the standard errors related to the covariance
+function are underestimated as we suppose that data are originally
+unit Fréchet.
+
+Fortunately, the SpatialExtremes solves this problem by fitting in
+\emph{one step} both GEV and covariance parameters. This could be done
+in two ways. First, one can pass the option \verb|fit.marge = TRUE|.
+However, as said in the previous section this will be really
+time consuming. Another drawback is that prediction at ungauged
+location won't be possible.
+
+Another way may be to fit a \emph{response surface} for the GEV
+parameters. Currently, the response surfaces allowed by the package
+are polynomial surfaces or a penalized smoothing spline\footnote{this
+  is an exclusive ``or'' (or \emph{xor}) i.e. a response surface with
+  a polynomial and a spline is not possible}.
+
+The SpatialExtremes package defines response surfaces using the
+\emph{R formula} approach e.g.
+<<eval=FALSE>>=
+y ~ lat + I(lon^2)
+@ 
+for a polynomial surface and
+<<eval=FALSE>>=
+n.knots <- 5
+knots <- quantile(locations[,2], prob = 1:n.knots/(n.knots+1))
+y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
+@ for a penalized smoothing spline with degree 3, 5 knots and a
+penalty coefficient (also known as the smoothing parameter) equals to
+0.5.
+
+Let start with a simple polynomial surface. For this purpose, we need
+to simulate a max-stable process and then transform the observations
+to the desired GEV scale. This could be done by the following lines:
+<<eval=FALSE>>=
+n.site <- 20
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+sigma = matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv = solve(sigma)
+sqrtCinv = t(chol(sigma.inv))
+model = list(list(model = "gauss", var = 1,
+aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2],
+grid=FALSE, model=model,
+maxstable="Bool",
+n = 50)
+ms1 <- t(ms0)
+param.loc <- -10 + 2 * locations[,2]
+param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
+param.shape <- rep(0.2, n.site)
+
+for (i in 1:n.site)
+ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + param.loc[i]
+@ 
+
+Once the data are appropriately generated, we need to define the
+response surface for the fitted max-stable model. This is done
+invoking:
+<<eval=FALSE>>=
+loc.form <- y ~ lat
+scale.form <- y ~ lon + I(lat^2)
+shape.form <- y ~ 1
+@ 
+Lastly, one can easily fit the model to data using:
+<<eval=FALSE>>=
+fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form, shape.form= shape.form)
+@ 
+
+If we want to fit a spline for the location GEV parameter while
+preserving the polynomials for the scale and shape parameters, this
+will require a little more steps as the knots and the penalty
+coefficient must be defined\footnote{Currently, an automatic criteria
+  for defining the ``best'' penalty coefficient does not exist.}.
+<<eval = FALSE>>=
+n.knots <- 5
+knots <- quantile(locations[,2], 1:n.knots/(n.knots+1))
+loc.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
+fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form, shape.form= shape.form)
+@ 
+
+Obviously, all these steps still remain valid when fitting the
+Schlather's model. Note that you can fix any parameter as before for
+example, if one want to suppose that \verb|scaleCoeff3 = 1|, this is
+done by invoking the following line:
+<<eval=FALSE>>=
+fitmaxstab(ms1, locations, "powexp", loc.form = loc.form, scale.form = scale.form,
+           shape.form= shape.form, scaleCoeff3 = 1)
+@ 
+
+Please note that when using 3 smoothing splines for the GEV
+parameters, you might have to tweak the \verb|ndeps| option in the
+\verb|optim| function if you use the \verb|BFGS| optimization
+procedure:
+<<eval=FALSE>>=
+fitmaxstab(ms1, locations, "powexp", loc.form = loc.form,
+           scale.form = scale.form, shape.form= shape.form,
+           control = list(ndeps = rep(10^-6, n.par)), method = "BFGS")
+@ 
+where \verb|n.par| is the number of parameters to be estimated.
+
+\section{Assessing Uncertainties}
+\label{sec:assess-uncert}
+
+As stated in section~\ref{sec:fit-maxstab}, because the model is
+fitted by maximizing the pairwise likelihood instead of the ``full''
+likelihood, the model is \emph{misspecified}. Consequently, the
+maximum pairwise likelihood estimator is still asymptotically normally
+distributed but with a different asymptotic covariance matrix. Namely,
+the maximum pairwise likelihood estimator $\hat{\psi}_p$ satisfies the
+following relation:
+\begin{equation}
+  \label{eq:lplikAsymp}
+  \hat{\psi}_p \sim \mathcal{N}\left(\psi, H(\psi)^{-1} J(\psi)
+    H(\psi)^{-1} \right), \qquad n \rightarrow +\infty
+\end{equation}
+where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ (the
+Hessian matrix) and $J(\psi) = \mbox{Var}[\nabla
+\ell_p(\psi;\mathbf{Y})]$, where the expectations are with respect to
+the ``full'' density.
+
+In practice, to get the standard errors we need to get efficient
+estimates of $H(\psi)$ and $J(\psi)$. The estimation of the former is
+straightforward and is given by $\hat{H}(\hat{\psi}_p) = \nabla^2
+\ell_p(\hat{\psi}_p;\mathbf{y})$; that is the Hessian matrix evaluated
+at $\hat{\psi}_p$. 
+
+The estimation of $J(\psi)$ can be done in two different ways. First,
+it can be estimated using the ``naive'' estimator
+$\hat{J}(\hat{\psi}_p) = \nabla \ell_p(\hat{\psi}_p;\mathbf{y})
+{\ell_p(\hat{\psi}_p;\mathbf{y})}^T$. In the SpatialExtremes package,
+this estimator is tagged \verb|grad| as it uses the gradient of the
+log pairwise likelihood. Another estimator is given by noticing that
+$J(\psi)$ corresponds to the variance of the pairwise score equations
+$\ell_p(\psi;\mathbf{Y}) = 0$. Consequently, a second estimator,
+tagged \verb|score|, is given by the sample variance of each
+contribution to the pairwise score function. Note that the second
+estimator is only accessible if independent replications of
+$\mathbf{Y}$ are available\footnote{which will mostly be the case for
+  spatial extremes.}.
+
+These two types of standard errors are available by invoking the
+following two lines:
+<<echo=FALSE>>=
+n.site <- 20
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+sigma = matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv = solve(sigma)
+sqrtCinv = t(chol(sigma.inv))
+model = list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
+                   maxstable="Bool", n = 50)
+ms0 <- t(ms0)
+@ 
+<<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "score")
+fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "grad")
+@ 
+
+\section{Model Selection}
+\label{sec:model-selection}
+
+It is sometimes useful to fit several models to data and then compare
+the models together. To this aim, the well-known Akaike information
+criterion (AIC) is often used. Because we work under
+miss-specification, AIC is not appropriate anymore. Instead, we will
+use a generalization of the Takeuchi's information
+criterion. \citet{Varin2005} show that, under miss-specification, an
+appropriate selection statistic is given by:
+\begin{equation}
+  \label{eq:TIC}
+  \mbox{TIC} = - \ell_p (\psi_p) - \mbox{tr}\left\{J H^{-1} \right\}
+\end{equation}
+In accordance with the AIC, the best model will corresponds to the one
+that minimizes equation~\eqref{eq:TIC}.
+
+In practice, one can have a look at the output of the
+\verb|fitmaxstab| function or use the \verb|TIC| function.
+
+<<eval=FALSE>>=
+n.site <- 40
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="stable",
+                   param=c(0,1,0,3, 1.2), maxstable="extr", n = 80)
+ms0 <- t(ms0)
+model1 <- fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE, sill = 1)
+model2 <- fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE, sill = 1)
+TIC(model1, model2)
+@ 
+
+TIC is useful when comparing different models. However, it may lack of
+power if the two models are nested. When dealing with nested models,
+one may prefer using the so called likelihood ratio statistics.
+
+Because we are working with a misspecified model, the usual asymptotic
+$\chi^2_p$ distribution, where $p$ is the number of parameter to be
+estimated, doesn't hold anymore. There's two way to solve this issue:
+(a) adjusting the $\chi^2$ distribution or (b) adjusting the composite
+likelihood so that the usual $\chi^2_p$ holds - see \citet{Cox2004}.
+
+<<eval=FALSE>>=
+require(RandomFields)
+
+##Define the coordinates of each location
+n.site <- 30
+locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+##Simulate a max-stable process - with unit Frechet margins
+sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
+                   maxstable = "Bool", n = 50)
+ms0 <- t(ms0)
+
+##Fit three nested models
+M0 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE)
+M1 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE, cov11 =
+100)
+anova(M0, M1)
+@ 
+
+\chapter{Manipulating and Visualising Fitted Models}
+\label{cha:manip-visu-fitt}
+
+\section{Prediction of the GEV parameters}
+\label{sec:pred-gev-param}
+
+Once the model is fitted, one may want to get the estimates of the GEV
+parameters at any locations. This is achieved using the
+\textsl{predict} function:
+<<echo=FALSE,eval=FALSE>>=
+n.site <- 20
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+sigma = matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv = solve(sigma)
+sqrtCinv = t(chol(sigma.inv))
+model = list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model, maxstable="Bool",n = 50)
+ms1 <- t(ms0)
+param.loc <- -10 + 2 * locations[,2]
+param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
+param.shape <- rep(0.2, n.site)
+
+for (i in 1:n.site)
+ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + param.loc[i]
+
+loc.form <- y ~ lat
+scale.form <- y ~ lon + I(lat^2)
+shape.form <- y ~ 1
+@ 
+<<eval=FALSE>>=
+fitted <- fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form, shape.form = shape.form)
+predict(fitted)
+@ 
+
+If one want to get estimates of the GEV parameters at an ungauged
+locations, this is done by adding a matrix giving the new
+coordinates. Be careful, if new coordinates are supplied, the column
+names of the new coordinates should match with the ones of the original
+coordinates. For our application, this could be done as follows:
+<<eval=FALSE>>=
+new.coord <- cbind(3:6, 7:10)
+colnames(new.coord) <- c("lon", "lat")
+predict(fitted, new.coord)
+@ 
+
+\section{Visualising the Extremal Coefficient}
+\label{sec:visu-extr-coeff}
+
+The extremal coefficient is a useful quantity to assess the dependence
+between two locations $x_1$ and $x_2 \in \mathbb{R}^d$. Assuming that
+the data could be modeled by a max-stable process with unit Fréchet
+margin, the extremal coefficient $\theta(x_1 - x_2)$ satisfies:
+\begin{equation}
+  \label{eq:extcoeff}
+  \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z\right] = \exp\left(-
+    \frac{\theta(x_1 - x_2)}{z} \right)
+\end{equation}
+where $1 \leq \theta(x_1 - x_2) \leq 2$ with the lower and upper
+bounds corresponding to complete dependence and independence between
+locations $x_1$ and $x_2$.
+
+Consequently, the extremal coefficient function $\theta(\cdot)$ is a
+natural way to know how evolves the dependence between extremes in
+space.
+
+The SpatialExtremes package proposes two way to plot the evolution of
+the extremal coefficient as the distance increases. The first one is
+to use an empirical estimation of the extremal coefficient; while the
+second uses a parametric estimation using the Smith's and Schlather's
+models.
+
+\citet{Schlather2003} introduced a methodology to estimate non
+parametrically the extremal coefficient. The \verb|fitextcoeff|
+function uses this methodology to get estimates for each pair of
+stations within the region and plots the evolution of these estimates
+as the distance increases. In addition, by default, a \emph{lowess}
+curve can also be plotted to help detecting trends. This is done using
+the following lines and Figure~\ref{fig:fitextcoeff} plots the
+resulting output.
+<<label=fitextcoeff>>=
+n.site <- 30
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+##Simulates a max-stable process - with unit Frechet margins
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
+                   param=c(0,1,0,30, .5), maxstable="extr",
+                   n = 40)
+ms0 <- t(ms0)
+
+##Plots the extremal coefficient function
+exco <- fitextcoeff(ms0, locations, estim = "Smith")
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE>>=
+<<fitextcoeff>>
+@   
+  \caption{Evolution of the (non-parametric) estimates of the extremal
+    coefficient as the distance increases.}
+  \label{fig:fitextcoeff}
+\end{figure}
+
+The closed form of the extremal coefficient function is known for both
+Smith's and Schlather's models. Namely, the function is given by:
+
+\bigskip
+\begin{tabular}{ll}
+  \textbf{Smith} & $\theta(x_1 - x_2) = 2
+  \Phi\left(\frac{\sqrt{(x_1 - x_2)^T \Sigma^{-1} (x_1 - x_2)}}{2}
+  \right)$\\
+  \textbf{Schlather} & $\theta(||x_1 - x_2||) = 1 + \sqrt{\frac{1 -
+      \rho(||x_1 - x_2||)}{2}}$
+\end{tabular}
+\bigskip
+
+The SpatialExtremes package allows to plot the evolution of the
+extremal coefficient function using the \verb|extcoeff| function - see
+Fig.~\ref{fig:extcoeff}.
+<<label=extcoeff>>=
+fitted <- fitmaxstab(ms0, locations, "whitmat", fit.marge = FALSE)
+extcoeff(fitted)
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE>>=
+<<extcoeff>>
+@ 
+  \caption{Evolution of the extremal coefficient function in $\mathbb{R}^2$.}
+  \label{fig:extcoeff}
+\end{figure}
+
+\section{Visualising the Covariance Function}
+\label{sec:visu-covar-funct}
+
+Another way to assess how evolves the dependence between extremes as
+the distance increases is to plot the covariance function. This is
+done using the \verb|covariance| function. Note that this function is
+(currently) only available for the Schlather's model.
+
+Basically, there are two ways to call the \verb|covariance|
+function. We can call it once we have fitted a max-stable process or
+by specifying directly the covariance parameters.
+
+For illustration purpose, Fig.~\ref{fig:covfun} compares the fitted
+covariance function to the theoretical one.
+
+<<label=covfun>>=
+covariance(fitted, ylim = c(0,1))
+covariance(sill = 1, range = 30, smooth = 0.5, cov.mod = "whitmat", col = 3, add = TRUE)
+legend("topright", c("Fitted","Theo"), lty = 1, col = c(1,3), inset = .05)
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE>>=
+<<covfun>>
+@ 
+  \caption{Comparison between the fitted covariance function and the
+    theoretical one.}
+  \label{fig:covfun}
+\end{figure}
+
+Note that one can also compute the covariance at a given distance by invoking:
+<<>>=
+rbind(fitted = covariance(fitted, dist = seq(0,10, 3))$cov.val,
+      theo = covariance(sill = 1, range = 30, smooth = 0.5, cov.mod = "whitmat", dist = seq(0,10, 3))$cov.val)
+@ 
+
+\section{Producing a map of the GEV parameters and return levels}
+\label{sec:poroducing-map-gev}
+
+Most often, practitioners will like to have a map of the GEV
+parameters or a map of return levels with a given return period. This
+is done using the \verb|map| function.
+
+To illustrate this feature, let use the previous fitted model.  One
+can have a contour plot the evolution of the GEV parameters in
+$\mathbb{R}^d$ by invoking the following code:
+<<eval=FALSE,label=mapGEV>>=
+par(mfrow=c(1,3))
+map(fitted, "loc", col = rainbow(80))
+title("Location")
+map(fitted, "scale", col = heat.colors(80))
+title("Scale")
+map(fitted, "shape", col = topo.colors(100))
+title("Shape")
+@ 
+
+Note that tuning the option \verb|col| will allow users to choose an
+appropriate color palette.
+
+In addition, it is possible to plot a map of the 50-year return level
+while focusing on a specific part of the region under study:
+<<eval=FALSE,label=mapQ50>>=
+new.ranges <- cbind(c(3, 9), c(2, 10))
+colnames(new.ranges) <- c("lon", "lat")
+
+map(fitted, "quant", ret.per = 50 , ranges = new.ranges)
+@ 
+
+\appendix
+
+\chapter{Density and Gradient Computations}
+\label{cha:dens-grad-comp}
+
+\section{The Smith's Model}
+\label{sec:smith-char}
+
+Let us recall that the Smith's model is given by:
+\begin{equation}
+  \label{eq:smith}
+  \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
+    \left(\frac{a}{2} + \frac{1}{a} \log \frac{z_2}{z_1} \right) -
+    \frac{1}{z_2} \Phi \left(\frac{a}{2} + \frac{1}{a}
+      \log\frac{z_1}{z_2} \right) \right]
+\end{equation}
+where $\Phi$ is the standard normal cumulative distribution function
+and, for two locations \#1 and \#2  
+\begin{equation*}
+  a^2 = \Delta x^T \Sigma^{-1} \Delta x \quad \text{and} \quad 
+  \Sigma = 
+  \begin{bmatrix}
+    cov_{11} & cov_{12}\\
+    cov_{12} & cov_{22}
+  \end{bmatrix}
+  \quad \text{or} \quad \Sigma = 
+  \begin{bmatrix}
+    cov_{11} & cov_{12} & cov_{13}\\
+    cov_{12} & cov_{22} & cov_{23}\\
+    cov_{13} & cov_{23} & cov_{33}
+  \end{bmatrix}
+\end{equation*}
+where $\Delta x$ is the distance vector between location \#1 and
+location \#2.
+
+\subsection{Useful quantities}
+\label{sec:usefull-quantities}
+
+Computation of the density as well as the gradient of the density is
+not difficult but ``heavy'' though. For computation facilities and to
+help readers, we define:
+\begin{eqnarray}
+  \label{eq:1}
+  c_1 = \frac{a}{2} + \frac{1}{a} \log \frac{z_2}{z_1} \quad
+  \text{and} \quad
+  c_2 = \frac{a}{2} + \frac{1}{a} \log \frac{z_1}{z_2}
+\end{eqnarray}
+From these definitions, we note that $c_1 + c_2 = a$.
+
+\subsection{Density computation}
+\label{sec:density-computation-smith}
+
+From \eqref{eq:smith}, we note the standard normal distribution
+appears. Consequently, we need to compute its derivatives at $c_1$ and
+$c_2$ with respect to $z_1$ and $z_2$.
+\begin{eqnarray}
+  \label{eq:2}
+  \frac{\partial c_1}{\partial z_1} = \frac{1}{a} \left(-
+    \frac{z_2}{z_1^2} \frac{z_1}{z_2} \right) = -\frac{1}{az_1} &\qquad&
+  \frac{\partial c_1}{\partial z_2} = \frac{1}{a} \frac{1}{z_1}
+  \frac{z_1}{z_2} = \frac{1}{az_2}\\
+  \frac{\partial c_2}{\partial z_1} = - \frac{\partial c_1}{\partial z_1}
+  = \frac{1}{az_1} &\qquad&
+  \frac{\partial c_2}{\partial z_2} = - \frac{\partial c_1}{\partial z_2}
+  = - \frac{1}{az_2}  
+\end{eqnarray}
+
+As the normal distribution appears in the Smith's characterisation,
+the following quantities will be useful:
+\begin{eqnarray}
+  \label{eq:6}
+  \frac{\partial \Phi(c_1)}{\partial z_1} = \frac{\partial
+    \Phi(c_1)}{\partial c_1}
+  \frac{\partial c_1}{\partial z_1} =  -\frac{\varphi(c_1)}{az_1} &\qquad&
+  \frac{\partial \Phi(c_1)}{\partial z_2} = \frac{\partial
+    \Phi(c_1)}{\partial c_1}
+  \frac{\partial c_1}{\partial z_2} =  \frac{\varphi(c_1)}{az_2}\\
+  \frac{\partial \Phi(c_2)}{\partial z_1} = \frac{\partial \Phi(c_2)}{\partial c_2}
+  \frac{\partial c_2}{\partial z_1} =  \frac{\varphi(c_2)}{az_1} &\qquad&
+  \frac{\partial \Phi(c_2)}{\partial z_2} = \frac{\partial \Phi(c_2)}{\partial c_2}
+  \frac{\partial c_2}{\partial z_2} =  -\frac{\varphi(c_2)}{az_2}\\
+  \frac{\partial \varphi(c_1)}{\partial z_1} = \frac{\partial \varphi(c_1)}{\partial c_1}
+  \frac{\partial c_1}{\partial z_1} = \frac{c_1 \varphi(c_1)}{az_1} &\qquad& 
+  \frac{\partial \varphi(c_1)}{z_2} = \frac{\partial
+    \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial z_2} = -
+  \frac{c_1 \varphi(c_1)}{a z_2}\\
+  \frac{\partial \varphi(c_2)}{\partial z_1} = \frac{\partial \varphi(c_2)}{\partial c_2}
+  \frac{\partial c_2}{\partial z_1} = - \frac{c_2 \varphi(c_2)}{a z_1} &\qquad&
+  \frac{\partial \varphi(c_2)}{\partial z_2} = \frac{\partial \varphi(c_2)}{\partial c_2}
+  \frac{\partial c_2}{\partial z_2} = \frac{c_2 \varphi(c_2)}{a z_2}
+\end{eqnarray}
+
+Define
+\begin{equation}
+  \label{eq:3}
+  A = \frac{1}{z_1}\Phi(c_1) \quad \text{and} \quad B = \frac{1}{z_2}\Phi(c_2)
+\end{equation}
+Consequently, $F(z_1, z_2) = exp(-A -B)$ and
+\begin{equation}
+  \label{eq:4}
+  \frac{\partial F}{\partial z_1} (z_1, z_2) = - \left(\frac{\partial
+      A}{\partial z_1} + \frac{\partial B}{\partial z_1} \right)
+  F(z_1, z_2)\qquad
+  \frac{\partial F}{\partial z_2} (z_1, z_2) = - \left(\frac{\partial
+      A}{\partial z_2} + \frac{\partial B}{\partial z_2} \right)
+  F(z_1, z_2)
+\end{equation}
+By noting that
+\begin{eqnarray}
+  \label{eq:5}
+  \frac{\partial A}{\partial z_1} &=& -\frac{\Phi(c_1)}{z_1^2} +
+  \frac{1}{z_1} \left(-\frac{\varphi(c_1)}{az_1}\right) =
+  -\frac{\Phi(c_1)}{z_1^2} - \frac{\varphi(c_1)}{az_1^2}\\
+  \frac{\partial B}{\partial z_1} &=& \frac{1}{z_2}
+  \frac{\varphi(c_2)}{az_1} = \frac{\varphi(c_2)}{az_1z_2}\\
+  \frac{\partial A}{\partial z_2} &=& \frac{1}{z_1}
+  \frac{\varphi(c_1)}{az_2} = \frac{\varphi(c_1)}{az_1z_2}\\
+  \frac{\partial B}{\partial z_2} &=& -\frac{\Phi(c_2)}{z_2^2} +
+  \frac{1}{z_2} \left(- \frac{\varphi(c_2)}{az_2}\right) =
+  -\frac{\Phi(c_2)}{z_2^2} - \frac{\varphi(c_2)}{az_2^2}
+\end{eqnarray}
+and
+\begin{eqnarray}
+  \label{eq:10}
+  \frac{\partial^2 A}{\partial z_2 \partial z_1} &=& 
+  \frac{\partial }{\partial z_2} \left(-\frac{\Phi(c_1)}{z_1^2} -
+    \frac{\varphi(c_1)}{az_1^2}\right) = -\frac{\varphi(c_1)}{a z_1^2
+    z_2} + \frac{c_1\varphi(c_1)}{a^2 z_1^2 z_2} = -\frac{c_2
+    \varphi(c_1)}{a^2z_1^2z_2}\\
+  \frac{\partial^2 B}{\partial z_2 \partial z_1} &=& \frac{\partial
+  }{\partial z_2} \frac{\varphi(c_2)}{az_1z_2} =
+  -\frac{c_1\varphi(c_2)}{a^2z_1z_2^2}
+\end{eqnarray}
+So that,
+\begin{eqnarray}
+  \label{eq:7}
+  \frac{\partial F}{\partial z_1} (z_1, z_2) &=&  \left(
+    \frac{\Phi(c_1)}{z_1^2} + \frac{\varphi(c_1)}{az_1^2} -
+    \frac{\varphi(c_2)}{az_1z_2} \right) F(z_1, z_2)\\
+  \frac{\partial F}{\partial z_2} (z_1, z_2) &=& \left(
+    \frac{\Phi(c_2)}{z_2^2} + \frac{\varphi(c_2)}{az_2^2}
+    -\frac{\varphi(c_1)}{az_1z_2} \right) F(z_1, z_2)
+\end{eqnarray}
+Finally,
+\begin{equation}
+  \label{eq:9}
+  \frac{\partial^2 F}{\partial z_2 \partial z_1} (z_1,
+  z_2) = - \left(\frac{\partial^2 A}{\partial z_2 \partial z_1} +
+    \frac{\partial^2 B}{\partial z_2 \partial z_1} \right) F(z_1, z_2)
+  - \left(\frac{\partial A}{\partial z_1} + \frac{\partial B}{\partial
+      z_1} \right) \frac{\partial F}{\partial z_2} (z_1, z_2)
+\end{equation}
+Thus, it leads to the following relation:
+\begin{equation}
+  \label{eq:11}
+  f(z_1, z_2) = \left[ \frac{c_2 \varphi(c_1)}{a^2z_1^2z_2} + \frac{c_1
+      \varphi(c_2)}{a^2z_1z_2^2} + \left(\frac{\Phi(c_1)}{z_1^2} +
+      \frac{\varphi(c_1)}{az_1^2} - \frac{\varphi(c_2)}{az_1z_2} \right)
+    \left(\frac{\Phi(c_2)}{z_2^2} + \frac{\varphi(c_2)}{az_2^2} -
+      \frac{\varphi(c_1)}{az_1z_2} \right) \right] F(z_1, z_2)
+\end{equation}
+
+\subsection{Gradient computation}
+\label{sec:gradient-computation-smith}
+
+As said in section \ref{sec:assess-uncert}, the maximum pairwise
+likelihood estimator $\psi_p$ satisfies:
+\begin{equation*}
+  \psi_p \sim \mathcal{N}\left(\psi, H^{-1} J H^{-1}\right)
+\end{equation*}
+where $H$ is the Fisher information matrix and $J$ as defined in
+Section~\ref{sec:assess-uncert}. This section aims to derive
+analytical form for $J$.
+
+Let us recall that the log pairwise likelihood is defined by:
+\begin{equation*}
+  \ell_p(\mathbf{z}, \Psi) = \sum_{k = 1}^{n_{obs}}
+  \sum_{i=1}^{n_{site}-1} \sum_{j=i+1}^{n_{site}} \log f(z_k^{(i)},
+  z_k^{(j)})
+\end{equation*}
+where $n_{obs}$ is the number of observations, $\mathbf{z}_k =
+(z_k^{(1)}, \ldots, z_k^{(n_{site})})$ is the $k$-th observation vector,
+$n_{site}$ is the number of site within the region and $f$ is the
+bivariate density.
+
+Consequently, the gradient of the log pairwise density is given by:
+\begin{equation*}
+  \nabla \ell_p(\Psi) = \sum_{i=1}^{n_{site}-1}
+  \sum_{j=i+1}^{n_{site}} \nabla \log f(z_k^{(i)}, z_k^{(j)})
+\end{equation*}
+
+Define:
+\begin{eqnarray*}
+  A &=& - \frac{\Phi(c1)}{z_1} - \frac{\Phi(c2)}{z_2}\\
+  B &=& \frac{\Phi(c_2)}{z_2^2} + \frac{\varphi(c_2)}{az_2^2} -
+  \frac{\varphi(c_1)}{az_1z_2}\\
+  C &=& \frac{\Phi(c_1)}{z_1^2} + \frac{\varphi(c_1)}{az_1^2} -
+  \frac{\varphi(c_2)}{az_1z_2}\\
+  D &=& \frac{c_2 \varphi(c_1)}{a^2z_1^2z_2} + \frac{c_1
+    \varphi(c_2)}{a^2z_1z_2^2}  
+\end{eqnarray*}
+so that,
+\begin{equation*}
+  \log f(z_k^{(i)}, z_k^{(j)}) = A + log(B C + D)
+\end{equation*}
+
+\subsubsection{With Unit Fréchet Margins}
+\label{sec:with-unit-frechet}
+
+For clarity purposes, let start our computations assuming that the
+observations have unit Fréchet margins. For this special case, the
+logarithm of the bivariate density $f$ is only a function of the
+Mahalanobis distance $a$, the gradient w.r.t. the covariance matrix
+elements $cov_{11}$, $cov_{12}$ and $cov_{22}$ is given through the
+following relation\footnote{algebra operators are defined
+  component-wise.}:
+\begin{equation*}
+  \nabla_\Sigma \log f(z_k^{(i)}, z_k^{(j)}) = \frac{\partial}{\partial a}
+  \log f(z_k^{(i)}, z_k^{(j)}) {\nabla_\Sigma a}^T
+\end{equation*}
+where $\nabla_\Sigma a$ is the gradient of the Mahalanobis distance
+w.r.t. the covariance matrix element i.e. $( \frac{\partial
+  a}{\partial cov_{11}}, \frac{\partial a}{\partial cov_{12}},
+\frac{\partial a}{\partial cov_{22}})$.
+
+For clarity purposes, we first compute the following quantities:
+\begin{eqnarray*}
+  \frac{\partial c_1}{\partial a} = \frac{1}{2} - \frac{1}{a^2} \log
+  \frac{z_2}{z_1} = \frac{c_2}{a} &\qquad& \frac{\partial c_2}{\partial
+    a} = \frac{c_1}{a}\\
+  \frac{\partial \Phi(c_1)}{\partial a} = \frac{\partial
+    \Phi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial a} =
+  \frac{c_2 \varphi(c_1)}{a} &\qquad& \frac{\partial
+    \Phi(c_2)}{\partial a} = \frac{c_1 \varphi(c_2)}{a}\\
+  \frac{\partial \varphi(c_1)}{\partial a} = \frac{\partial
+    \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial a} =
+  -\frac{c_1c_2 \varphi(c_1)}{a} &\qquad& \frac{\partial
+    \varphi(c_2)}{\partial a} = -\frac{c_1c_2 \varphi(c_2)}{a}\\
+  \frac{\partial c_2\varphi(c_1)}{\partial a} = \frac{c_1(1 -
+    c_2^2)\varphi(c_1)}{a} &\qquad& \frac{\partial
+    c_1\varphi(c_2)}{\partial a} = \frac{(1-c_1^2)c_2\varphi(c_2)}{a}
+\end{eqnarray*}
+
+Consequently, we have:
+\begin{eqnarray*}
+  dA_a &=& \frac{\partial A}{\partial a} = - \frac{1}{z_1} \frac{c_2
+    \varphi(c_1)}{a} - \frac{1}{z_2} \frac{c_1 \varphi(c_2)}{a} =
+  -\frac{c_2 \varphi(c_1)}{az_1} - \frac{c_1 \varphi(c_2)}{az_2}\\
+  dC_a &=& \frac{\partial C}{\partial a} = \frac{1}{z_1^2} \frac{c_2
+    \varphi(c_1)}{a} + \frac{1}{z_1^2}
+  \frac{-\frac{c_1c_2\varphi(c_1)}{a} a  - \varphi(c_1)}{a^2} -
+  \frac{1}{z_1z_2} \frac{-\frac{c_1c_2 \varphi(c_2)}{a}a -
+    \varphi(c_2)}{a^2}\\
+  &=& \frac{c_2 \varphi(c_1)}{az_1^2} -
+  \frac{(1+c_1c_2)\varphi(c_1)}{a^2z_1^2} +
+  \frac{(1+c_1c_2)\varphi(c_2)}{a^2z_1z_2}\\
+  &=& \frac{\left[c_2(a - c_1)-1\right] \varphi(c_1)}{a^2z_1^2} +
+  \frac{(1+c_1c_2)\varphi(c_2)}{a^2z_1z_2}\\
+  &=& \frac{(c_2^2 - 1) \varphi(c_1)}{a^2z_1^2} +
+  \frac{(1+c_1c_2)\varphi(c_2)}{a^2z_1z_2}\\
+  dB_a &=& \frac{\partial B}{\partial a} = \frac{(c_1^2 - 1)
+    \varphi(c_2)}{a^2z_2^2} +
+  \frac{(1+c_1c_2)\varphi(c_1)}{a^2z_1z_2}\\
+  dD_a &=& \frac{\partial D}{\partial a} = \frac{1}{z_1^2z_2}\frac{\frac{c_1(1 -
+      c_2^2)\varphi(c_1)}{a}a^2 - 2a c_2\varphi(c_1)}{a^4} +
+  \frac{1}{z_1z_2^2}\frac{\frac{(1-c1^2)c_2\varphi(c_2)}{a}a^2 - 2a
+    c_1\varphi(c_2)}{a^4}\\
+  &=& \frac{(c_1- 2 c_2 - c_1c_2^2) \varphi(c_1)}{a^3z_1^2z_2} +
+  \frac{(c_2- 2 c_1 - c_1^2c_2) \varphi(c_2)}{a^3z_1z_2^2}
+\end{eqnarray*}
+
+Finally,
+\begin{equation*}
+  \nabla_\Sigma \log f(x_k^{(i)}, x_k^{(j)}) = \left[dA_a + \frac{(C
+      dB_a + B dC_a +dD_a)}{BC + D} \right] \cdot{\nabla_\Sigma a}^T
+\end{equation*}
+
+\subsubsection{With Ordinary GEV Margins}
+\label{sec:with-ordinary-gev}
+
+In the previous section, we derived the gradient assuming unit Fréchet
+margins. Now, we consider the more general case where margins are
+supposed to be ordinary GEV. 
+
+We have to be aware that the bivariate density changes when we do not
+suppose unit Fréchet margins anymore. For instance, the bivariate
+density evaluated at two observations $y_1$ and $y_2$ with ordinary
+GEV margins is now given by:
+\begin{equation}
+  \label{eq:densSmithOrdGEV}
+  f(y_1,y_2) = f(z_1, z_2) |J(y_1, y_2)|
+\end{equation}
+where $z_1$ (resp. $z_2$) is the transformation of $y_1$ (resp. $y_2$)
+to the unit Fréchet scale and $|J(y_1, y_2)|$ is the determinant of
+the Jacobian related to the transformation $(y_1,y_2) \mapsto
+(z_1,z_2)$.
+
+For clarity purpose, we can write the logarithm of the bivariate
+density as follows:
+\begin{equation*}
+  \log f(y_1,y_2) = A + \log \left(BC + D\right) + E
+\end{equation*}
+where $E = \log |J(y_1, y_2)|$ and the quantities $A$,
+$B$, $C$ and $D$ are the same as in the previous section.
+
+The transformation from $y_i$ to $z_i$ is given by:
+\begin{equation}
+  z_i = \left(1 + \xi_i \frac{y_i - \mu_i}{\sigma_i}
+  \right)_+^{\frac{1}{\xi_i}}
+\end{equation}
+where $\mu_i$, $\sigma_i$ and $\xi_i$ are the GEV location, scale and
+shape parameters and $x_+ = \min(0,x)$.
+
+Consequently, we need a response surface
+(see section~\ref{sec:with-unknown-gev}) to model the evolution of the
+GEV parameters in space. Let suppose that we have a polynomial
+response surface for each GEV parameter, one can write:
+\begin{eqnarray}
+  \label{eq:polynomSurface}
+  \mu &=& X_\mu \beta_\mu\\
+  \sigma &=& X_\sigma \beta_\sigma\\
+  \xi &=& X_\xi \beta_\xi
+\end{eqnarray}
+where $\mu = (\mu_1, \ldots, \mu_{n_{site}})$, $\sigma = (\sigma_1,
+\ldots, \sigma_{n_{site}})$ and $\xi = (\xi_1, \ldots,
+\xi_{n_{site}})$ are the vector for the location, scale and shape GEV
+parameters for all the sites within the region study, $X_\mu$,
+$X_\sigma$ and $X_\xi$ are the design matrices for each GEV parameters
+and $\beta_\mu$, $\beta_\sigma$ and $\beta_\xi$ are the regression
+coefficients to be estimated.
+
+Consequently, from one ordinary GEV observation $\mathbf{y}$, one can
+transform it to unit Fréchet margins using the following
+transformation:
+\begin{equation}
+  \label{eq:gev2frech}
+  \mathbf{z}_i=\left\{1+\frac{X^{(i)}_\xi
+      \beta_\xi(\mathbf{y}_i -X^{(i)}_\mu
+      \beta_\mu)}{X^{(i)}_\sigma \beta_\sigma}\right\}^{1/(X^{(i)}_\xi
+    \beta_\xi)}, \qquad i=1,\ldots,n_{site} 
+\end{equation}
+where $X^{(i)}$ stands for the $i$-th row of the design matrix $X$ and
+$\mathbf{z}_i$ denotes the $i$-th element of the vector
+$\mathbf{z}$.
+
+Consequently, $|J(y_1, y_2)|$ is given by:
+\begin{equation}
+  \label{eq:jacGev2frech}
+  |J(y_1, y_2)| = \frac{1}{X^{(i)}_\sigma \beta_\sigma X^{(j)}_\sigma
+    \beta_\sigma} \left(1 + X^{(i)}_\xi \beta_\xi \frac{y_i -
+      X^{(i)}_\mu \beta_\mu}{X^{(i)}_\sigma \beta_\sigma}
+  \right)_+^{\frac{1}{X^{(i)}_\xi \beta_\xi}-1} \left(1 +
+    X^{(j)}_\xi \beta_\xi \frac{y_2 - X^{(j)}_\mu
+      \beta_\mu}{X^{(j)}_\sigma \beta_\sigma}
+  \right)_+^{\frac{1}{X^{(j)}_\xi \beta_\xi}-1}
+\end{equation}
+
+
+It is easy to see that:
+\begin{eqnarray*}
+  \frac{\partial \mathbf{z}_i}{\partial \beta_\mu} &=&
+  -\frac{\mathbf{z}_i^{1 - X^{(i)}_\xi \beta_\xi} X^{(i)}_\mu}{
+    X^{(i)}_\sigma \beta_\sigma}\\
+  &=& -\frac{\mathbf{z}_i^{1-\xi_i}}{\sigma_i}\cdot
+  X^{(i)}_\mu\\
+  \frac{\partial \mathbf{z}_i}{\partial \beta_\sigma} &=&
+  -\frac{\mathbf{z}_i^{1 - X^{(i)}_\xi \beta_\xi}
+    \left(\mathbf{y}_i - X^{(i)}_\mu
+      \beta_\mu\right)}{X^{(i)}_\sigma \beta^2_\sigma}\\
+  &=& - \frac{\mathbf{z}_i^{1-\xi_i} \left(\mathbf{y}_i -
+      \mu_i \right)}{\sigma_i} \cdot \frac{1}{\beta_\sigma}\\ 
+  \frac{\partial \mathbf{z}_i}{\partial \beta_\xi} &=& -
+  \frac{\mathbf{z}_i \log \mathbf{z}_i}{\beta_\xi} +
+  \frac{\mathbf{z}^{(i)} \left(\mathbf{y}_i - X^{(i)}_\mu
+      \beta_\mu\right)}{\beta_\xi X^{(i)}_\sigma \beta_\sigma
+    \mathbf{z}_i^{X^{(i)}_\xi \beta_\xi}}\\
+  &=& \left[ \mathbf{z}_i^{1 - \xi_i}
+    \frac{\left(\mathbf{y}_i - \mu_i\right)}{\sigma_i} -
+    \mathbf{z}_i \log \mathbf{z}_i\right] \cdot
+  \frac{1}{\beta_\xi}
+  % \frac{\partial c_1}{\partial \beta_\mu} &=& \frac{1}{a}
+%   \left(\frac{X^{(i)}_\mu}{X^{(i)}_\sigma \beta_\sigma
+%       (\mathbf{z}^{(i)})^{X^{(i)}_\xi \beta_\xi}} -
+%     \frac{X^{(j)}_\mu}{X^{(j)}_\sigma \beta_\sigma
+%       (\mathbf{z}^{(j)})^{X^{(j)}_\xi \beta_\xi}} \right)\\
+%   &=& \frac{1}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot X^{(i)}_\mu
+%   - \frac{1}{a \sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu\\
+%   \frac{\partial c_1}{\partial \beta_\sigma} &=& \frac{1}{a}
+%   \left(\frac{\mathbf{y}^{(i)} - X^{(i)}_\mu \beta_\mu}{X^{(i)}_\sigma
+%       \beta^2_\sigma (\mathbf{z}^{(i)})^{X^{(i)}_\xi \beta_\xi}} -
+%     \frac{\mathbf{y}^{(j)} - X^{(j)}_\mu \beta_\mu}{X^{(j)}_\sigma
+%       \beta^2_\sigma (\mathbf{z}^{(j)})^{X^{(j)}_\xi \beta_\xi}}
+%   \right)\\
+%   &=& \frac{1}{a} \left[\frac{\mathbf{y}^{(i)} - \mu_i}{\sigma_i
+%       (\mathbf{z}^{(i)})^{\xi_i}} - \frac{\mathbf{y}^{(j)} -
+%       \mu_j}{\sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial c_1}{\partial \beta_\xi} &=& \frac{1}{a}
+%   \left[\frac{\log \mathbf{z}^{(i)}}{\beta_\xi} -
+%     \frac{\mathbf{y}^{(i)} - X^{(i)}_\mu \beta_\mu}{\beta_\xi
+%       X^{(i)}_\sigma \beta_\sigma (\mathbf{z}^{(i)})^{X^{(i)}_\xi
+%         \beta_\xi}} - \frac{\log \mathbf{z}^{(j)}}{\beta_\xi} +
+%     \frac{\mathbf{y}^{(j)} - X^{(j)}_\mu \beta_\mu}{\beta_\xi
+%       X^{(j)}_\sigma \beta_\sigma (\mathbf{z}^{(j)})^{X^{(j)}_\xi
+%         \beta_\xi}}\right]\\
+%   &=& \frac{1}{a} \left[\log \frac{\mathbf{z}^{(i)}}{\mathbf{z}^{(j)}}
+%     + \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}}- \frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot
+%   \frac{1}{\beta_\xi}
+\end{eqnarray*}
+where the operator $\cdot$ performs operations component-wise.
+% Note that the partial derivatives for $c_2$ are easily obtained as:
+% \begin{equation*}
+%   \frac{\partial c_2}{\partial \beta_\mu} = - \frac{\partial
+%     c_1}{\partial \beta_\mu}, \quad \frac{\partial c_2}{\partial
+%     \beta_\sigma} = - \frac{\partial c_1}{\partial \beta_\sigma},
+%   \quad \frac{\partial c_2}{\partial \beta_\xi} = - \frac{\partial
+%     c_1}{\partial \beta_\xi}
+% \end{equation*}
+
+To obtain the gradient of the logarithm of the bivariate density, we
+need to compute the partial derivatives of $A$, $B$, $C$, $D$ and $E$
+w.r.t. $\beta_\mu$, $\beta_\sigma$ and $\beta_\xi$.
+% \begin{eqnarray*}
+%   \frac{\partial \Phi(c_1)}{\partial \beta_\mu} &=& \frac{\partial
+%     \Phi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial \beta_\mu}\\
+%   &=&
+%   \frac{\varphi(c_1)}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot
+%   X^{(i)}_\mu - \frac{\varphi(c_1)}{a \sigma_j
+%     (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu\\
+%   \frac{\partial \Phi(c_2)}{\partial \beta_\mu} &=& \frac{\varphi(c_2)}{a
+%     \sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu -
+%   \frac{\varphi(c_2)}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot
+%   X^{(i)}_\mu\\
+%   \frac{\partial \Phi(c_1)}{\partial \beta_\sigma} &=& \frac{\partial
+%     \Phi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial
+%     \beta_\sigma}\\
+%   &=& \frac{\varphi(c_1)}{a} \left[\frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} -
+%     \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial \Phi(c_2)}{\partial \beta_\sigma} &=&
+%   \frac{\varphi(c_2)}{a} \left[\frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}} - \frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial \Phi(c_1)}{\partial \beta_\xi} &=& \frac{\partial 
+%     \Phi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial \beta_\xi}\\
+%   &=&
+%   \frac{\varphi(c_1)}{a} \left[\log \frac{\mathbf{z}^{(i)}}{\mathbf{z}^{(j)}}
+%     + \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}}- \frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot
+%   \frac{1}{\beta_\xi} \\
+%   \frac{\partial \Phi(c_2)}{\partial \beta_\xi} &=&
+%   \frac{\varphi(c_2)}{a} \left[\log
+%     \frac{\mathbf{z}^{(j)}}{\mathbf{z}^{(i)}} + \frac{\mathbf{y}^{(i)}
+%       - \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}}-
+%     \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot \frac{1}{\beta_\xi}\\
+%   \frac{\partial \varphi(c_1)}{\partial \beta_\mu} &=& \frac{\partial 
+%     \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial \beta_\mu}\\
+%   &=&
+%   - \frac{c_1 \varphi(c_1)}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot
+%   X^{(i)}_\mu + \frac{c_1 \varphi(c_1)}{a \sigma_j
+%     (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu\\ 
+%   \frac{\partial \varphi(c_2)}{\partial \beta_\mu} &=& \frac{\partial 
+%     \varphi(c_2)}{\partial c_2} \frac{\partial c_2}{\partial \beta_\mu}\\
+%   &=&
+%   \frac{c_2 \varphi(c_2)}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot
+%   X^{(i)}_\mu - \frac{c_2 \varphi(c_2)}{a \sigma_j
+%     (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu\\
+%   \frac{\partial \varphi(c_1)}{\partial \beta_\sigma} &=& \frac{\partial 
+%     \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial
+%     \beta_\sigma}\\
+%   &=& - \frac{c_1 \varphi(c_1)}{a}
+%   \left[\frac{\mathbf{y}^{(i)} - \mu_i}{\sigma_i
+%       (\mathbf{z}^{(i)})^{\xi_i}} - \frac{\mathbf{y}^{(j)} -
+%       \mu_j}{\sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial \varphi(c_2)}{\partial \beta_\sigma} &=& \frac{c_2
+%     \varphi(c_2)}{a} \left[\frac{\mathbf{y}^{(i)} - \mu_i}{\sigma_i
+%       (\mathbf{z}^{(i)})^{\xi_i}} - \frac{\mathbf{y}^{(j)} -
+%       \mu_j}{\sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial \varphi(c_1)}{\partial \beta_\xi} &=& \frac{\partial
+%     \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial \beta_\xi}\\
+%   &=&
+%   - \frac{c_1 \varphi(c_1)}{a} \left[\log
+%     \frac{\mathbf{z}^{(i)}}{\mathbf{z}^{(j)}} + \frac{\mathbf{y}^{(j)}
+%       - \mu_j}{\sigma_j (\mathbf{z}^{(j)})^{\xi_j}}-
+%     \frac{\mathbf{y}^{(i)} - \mu_i}{\sigma_i
+%       (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot \frac{1}{\beta_\xi}\\
+%   \frac{\partial \varphi(c_2)}{\partial \beta_\xi} &=& \frac{c_2
+%     \varphi(c_2)}{a} \left[\log \frac{\mathbf{z}^{(i)}}{\mathbf{z}^{(j)}}
+%     + \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}}- \frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot
+%   \frac{1}{\beta_\xi}
+% \end{eqnarray*}
+
+For shortness, we do it in ``one step'' with the convention $\beta =
+(\beta_\mu, \beta_\sigma, \beta_\xi)$.
+\begin{eqnarray*}
+  \frac{\partial A}{\partial \beta} &=& \frac{\partial A}{\partial z_1}
+  \cdot \nabla_\beta z_1 + \frac{\partial A}{\partial z_2} \cdot
+  \nabla_\beta z_2\\
+  \frac{\partial B}{\partial \beta} &=& \frac{\partial B}{\partial z_1}
+  \cdot \nabla_\beta z_1 + \frac{\partial B}{\partial z_2} \cdot
+  \nabla_\beta z_2\\
+  \frac{\partial C}{\partial \beta} &=& \frac{\partial C}{\partial z_1}
+  \cdot \nabla_\beta z_1 + \frac{\partial C}{\partial z_2} \cdot
+  \nabla_\beta z_2\\
+  \frac{\partial D}{\partial \beta} &=& \frac{\partial D}{\partial z_1}
+  \cdot \nabla_\beta z_1 + \frac{\partial D}{\partial z_2} \cdot
+  \nabla_\beta z_2\\
+\end{eqnarray*}
+where $\nabla_\beta z_1$ (resp. $\nabla_\beta z_2$) is the gradient of
+$z_1$ (reps. $z_2$) w.r.t. $\beta$ and the partial derivatives of $A$,
+$B$, $C$ and $D$ w.r.t. $z_1$ are given by the following equations:
+\begin{eqnarray*}
+  dA_{z_1} &=& \frac{\partial A}{\partial z_1} = \frac{\varphi(c_1) +
+    a \Phi(c_1)}{a z_1^2} - \frac{\varphi(c_2)}{a z_1 z_2}\\
+  dB_{z_1} &=& \frac{\partial B}{\partial z_1} = \frac{c_1
+    \varphi(c_2)}{a^2 z_1 z_2^2} + \frac{c_2 \varphi(c_1)}{a^2 z_1^2
+    z_2}\\
+  dC_{z_1} &=& \frac{\partial C}{\partial z_1} = \frac{(a + c_2)
+    \varphi(c_2)}{a^2 z_1^2 z_2} - \frac{2\Phi(c_1)}{z_1^3} -
+  \frac{(2a+c_2)\varphi(c_1)}{a^2z_1^3}\\
+  dD_{z_1} &=& \frac{\partial D}{\partial z_1} = \frac{\left[1 - c_2
+      (a + c_2) \right] \varphi(c_1)}{a^2 z_1^3 z_2} - \frac{\left[1 +
+    c_1 (a + c_2) \right] \varphi(c_2)}{a^3 z_1^2 z_2^2}
+\end{eqnarray*}
+while the partial derivatives of $A$, $B$, $C$ and $D$ w.r.t. $z_2$
+are given by:
+\begin{eqnarray*}
+  dA_{z_2} &=& \frac{\partial A}{\partial z_2} = \frac{\varphi(c_2) +
+    a \Phi(c_2)}{a z_2^2} - \frac{\varphi(c_1)}{a z_1 z_2}\\
+  dB_{z_2} &=& \frac{\partial B}{\partial z_2} = \frac{(a + c_1)
+    \varphi(c_1)}{a^2 z_1 z_2^2} - \frac{2\Phi(c_2)}{z_2^3} -
+  \frac{(2a+c_1)\varphi(c_2)}{a^2z_2^3}\\
+  dC_{z_2} &=& \frac{\partial C}{\partial z_2} = \frac{c_1
+    \varphi(c_2)}{a^2 z_1 z_2^2} + \frac{c_2 \varphi(c_1)}{a^2 z_1^2
+    z_2}\\
+  dD_{z_2} &=& \frac{\partial D}{\partial z_2} = \frac{\left[1 - c_1
+      (a + c_1) \right] \varphi(c_2)}{a^2 z_1 z_2^3} - \frac{\left[1 +
+    c_2 (a + c_1) \right] \varphi(c_1)}{a^3 z_1^2 z_2^2}
+\end{eqnarray*}
+
+For the Jacobian part $E$, we have:
+\begin{eqnarray*}
+  dE_\mu &=& \frac{\partial E}{\partial \beta_\mu} = 
+  \frac{\xi_1-1}{\sigma_1 z_1^{\xi_1}} \cdot X^{(1)}_\mu +
+  \frac{\xi_2-1}{\sigma_2 z_2^{\xi_2}} \cdot X^{(2)}_\mu\\
+  dE_\sigma &=& \frac{\partial E}{\partial \beta_\sigma} =  \left(
+    \frac{(y_1 - \mu_1)(\xi_1-1)}{\sigma_1z_1^{\xi_1}} +
+    \frac{(y_2-\mu_2)(\xi_2-1)}{\sigma_2 z_2^{\xi_2}} - 2\right)
+  \cdot \frac{1}{\beta_\sigma}\\
+  dE_\xi &=& \frac{\partial E}{\partial \beta_\xi} =
+  \frac{(1-\xi_1)(y_1 - \mu_1)}{\sigma_1 \xi_1 z_1^{\xi_1}} \cdot
+  X^{(1)}_\xi + \frac{(1-\xi_2)(y_2 - \mu_2)}{\sigma_2 \xi_2
+    z_2^{\xi_2}} \cdot X^{(2)}_\xi - \log z_1 \cdot
+  \frac{1}{\beta_\xi} - \log z_2 \frac{1}{\beta_\xi}\\
+\end{eqnarray*}
+
+Finally, we have:
+\begin{equation}
+  \nabla_\beta \log f(y_1,y_2) = \frac{\partial A}{\partial \beta} +
+  \frac{C \frac{\partial B}{\partial \beta} + B \frac{\partial
+      C}{\partial \beta}}{BC + D} + \frac{\partial E}{\partial \beta}  
+\end{equation}
+where
+\begin{equation*}
+  \frac{\partial E}{\partial \beta} = (dE_\mu, dE_\sigma, dE_\xi)^T  
+\end{equation*}
+
+
+\section{The Schlather's Model}
+\label{sec:schlather-char}
+
+The Schlather's model is given by:
+\begin{equation}
+  \label{eq:schlather}
+  \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
+    \left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left(1 + \sqrt{1 - 2
+        (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
+\end{equation}
+where $h$ is the distance between location \#1 and location \#2 and
+$\rho(h)$ is a valid correlation function such as $-1 \leq \rho(h)
+\leq 1$.
+
+\subsection{Density computation}
+\label{sec:density-computation-schlather}
+
+Computation of the density as well as the gradient of the density is
+not difficult but ``heavy'' though.
+
+By noting that, 
+\begin{equation*}
+  \frac{\partial^2 }{\partial z_1 \partial z_2} \exp(V(z_1, z_2)) =
+  \left[\frac{\partial^2}{\partial z_1 \partial z_2} V(z_1, z_2) +
+    \left(\frac{\partial }{\partial z_1} V(z_1, z_2) \right)
+    \left(\frac{\partial }{\partial z_2} V(z_1, z_2) \right) \right]
+  \exp(V(z_1, z_2))
+\end{equation*}
+where $V(z_1, z_2)$ is any function in $\mathcal{C}^2$.
+
+Consequently, to compute the (bivariate) density, we only need to
+compute the partial derivatives and the mixed partial derivatives. For
+our case, it turns out to be:
+
+\begin{equation*}
+  V(z_1, z_2) = -\frac{1}{2} \left(\frac{1}{z_1} + \frac{1}{z_2} \right)
+  \left(1 + \sqrt{1 - 2 (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}}
+  \right)
+\end{equation*}
+
+
+\begin{equation*}
+  \frac{\partial}{\partial z_1} V(z_1, z_2) = -\frac{\rho(h) z_1 -
+    c1 - z_2}{2 c_1 z_1^2} \quad
+  \frac{\partial}{\partial z_2} V(z_1, z_2) = -\frac{\rho(h) z_2 -
+    c1 - z_1}{2 c_1 z_2^2} \quad
+  \frac{\partial^2}{\partial z_1\partial z_2} V(z_1, z_2) =
+  \frac{1 - \rho(h)^2}{2 c_1^3}
+\end{equation*}
+where
+\begin{equation*}
+  c_1 = \sqrt{z_1^2 + z_2^2 - 2 z_1 z_2 \rho(h)}
+\end{equation*}
+
+Lastly,
+\begin{equation}
+  \label{eq:schlatherDens}
+  f(z_1, z_2) = \left[ \frac{1 - \rho(h)^2}{2 c_1^3} +
+    \left(-\frac{\rho(h) z_1 - c1 - z_2}{2 c_1 z_1^2} \right) \left(
+      -\frac{\rho(h) z_2 - c1 - z_1}{2 c_1 z_2^2} \right) \right]
+  \exp(V(z_1, z_2))
+\end{equation}
+
+\subsection{Gradient computation}
+\label{sec:gradient-computation-schlather}
+
+\subsubsection{With Unit Fréchet Margins}
+\label{sec:with-unit-frechet-1}
+
+From equation \eqref{eq:schlatherDens}, we have:
+\begin{equation*}
+  \log f(z_1, z_2) = A + \log(B + C D)
+\end{equation*}
+where
+\begin{equation*}
+  A =  V(z_1, z_2) \quad
+  B = \frac{1 - \rho(h)^2}{2 c_1^3} \quad
+  C = -\frac{\rho(h) z_1 - c1 - z_2}{2 c_1 z_1^2} \quad
+  D = -\frac{\rho(h) z_2 - c1 - z_1}{2 c_1 z_2^2}
+\end{equation*}
+
+As the bivariate density is only a function of the covariance function
+$\rho(h)$, we have:
+\begin{equation*}
+  \nabla \log f(z_1, z_2) = \frac{\partial}{\partial \rho(h)} \log
+  f(z_1, z_2) \left(\nabla \rho(h) \right)^T
+\end{equation*}
+where $\nabla \rho(h)$ is the vector of the partial derivatives of the
+covariance function $\rho(h)$ with respect to its parameters.
+
+\begin{eqnarray*}
+  dA_\rho &=& \frac{\partial A}{\partial \rho(h)} = \frac{1}{2c_1}\\
+  dB_\rho &=& \frac{\partial B}{\partial \rho(h)}  = -\frac{\rho(h)}{c_1^3} +
+  \frac{3(1 - \rho(h))z_1 z_2}{c_1^5}\\
+  dC_\rho &=& \frac{\partial C}{\partial \rho(h)} = -\frac{z_1-z_2\rho(h)}{2
+    c_1^3}\\
+  dD_\rho &=& \frac{\partial D}{\partial \rho(h)} = -\frac{z_2-z_1\rho(h)}{2
+    c_1^3}\\
+\end{eqnarray*}
+So that,
+\begin{equation*}
+  \nabla \log f(z_1, z_2) = \left[dA_\rho + \frac{(C dB_\rho + B
+      dC_\rho + dD_\rho)}{BC + D} \right] \left(\nabla \rho(h)
+  \right)^T
+\end{equation*}
+
+Note that when using the Whittle-Matérn covariance function, the
+standard errors are not available if the \verb|smooth| parameter is
+hand fixed because the Bessel function is not derivable w.r.t. this
+parameter.
+
+\subsubsection{With Ordinary GEV Margins}
+\label{sec:with-ordinary-gev-1}
+
+For the derivation of the gradient with ordinary GEV margins, most of
+the computations have already been done in
+Section~\ref{sec:with-ordinary-gev}. Especially, we only need to
+compute the partial derivatives of $A$, $B$, $C$ and $D$ w.r.t. $z_1$
+and $z_2$.
+
+\begin{eqnarray*}
+  dA_{z_1} &=& \frac{\partial A}{\partial z_1} = -\frac{\rho(h) z_1 -
+    c1 - z_2}{2 c_1 z_1^2}\\
+  dB_{z_1} &=& \frac{\partial B}{\partial z_1} = \frac{3 (\rho(h)^2 -
+    1) (z_1 - \rho(h) z_2)}{2 c_1^5}\\
+  dC_{z_1} &=& \frac{\partial C}{\partial z_1} = \frac{2z_1^3 \rho(h)
+    + 6 z_1 z_2^2 \rho(h)^2 - 3 z_1^2 z_2 (1 + \rho(h)^2) - 2 c_1^3 -
+    2 z_2^3}{2 c_1^3 z_1^3}\\
+  dD_{z_1} &=& \frac{\partial C}{\partial z_2} = -\frac{(z_2 \rho(h) -
+    c_1 - z_1) (z_2 \rho(h) + c1 - z_1)}{2 c_1^3 z_2^2}  
+\end{eqnarray*}
+and
+\begin{eqnarray*}
+  dA_{z_2} &=& \frac{\partial A}{\partial z_2} = -\frac{\rho(h) z_2 -
+    c1 - z_1}{2 c_1 z_2^2}\\
+  dB_{z_2} &=& \frac{\partial B}{\partial z_2} = \frac{3 (\rho(h)^2 -
+    1) (z_2 - \rho(h) z_1)}{2 c_1^5}\\
+  dC_{z_2} &=& \frac{\partial C}{\partial z_2} = -\frac{(z_1 \rho(h) -
+    c_1 - z_2) (z_1 \rho(h) + c1 - z_2)}{2 c_1^3 z_1^2}\\
+  dD_{z_2} &=& \frac{\partial D}{\partial z_2} = \frac{2z_2^3 \rho(h)
+    + 6 z_1^2 z_2 \rho(h)^2 - 3 z_1 z_2^2 (1 + \rho(h)^2) - 2 c_1^3 -
+    2 z_1^3}{2 c_1^3 z_2^3}
+\end{eqnarray*}
+
+Finally, we have:
+\begin{equation}
+  \nabla_\beta \log f(y_1,y_2) = \frac{\partial A}{\partial \beta} +
+  \frac{C \frac{\partial B}{\partial \beta} + B \frac{\partial
+      C}{\partial \beta}}{BC + D} + \frac{\partial E}{\partial \beta}  
+\end{equation}
+where $\frac{\partial A}{\partial \beta}$, $\frac{\partial B}{\partial
+  \beta}$, $\frac{\partial C}{\partial \beta}$, $\frac{\partial
+  D}{\partial \beta}$ and $\frac{\partial E}{\partial \beta}$ have
+been already defined in Section~\ref{sec:with-ordinary-gev}.
+
+\bibliography{./references}
+\bibliographystyle{kluwer}
+\end{document}
+
