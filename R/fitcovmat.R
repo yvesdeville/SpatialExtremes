@@ -415,7 +415,7 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
     }
 
     if (cov.mod == "brown"){
-      range.start <- 0.75 * max(dist)
+      range.start <- 0.05 * max(dist)
       smooth.start <- 1
     }
 

@@ -192,6 +192,7 @@ map <- function(fitted, x, y, covariates = NULL, param = "quant",
     new.data[(n.y * (i - 1) + 1):(n.y * i),] <- cbind(x[i], y, covariates[i,,])
 
   colnames(new.data) <- c(colnames(fitted$coord), covariates.names)
+
   param.hat <- predict(fitted, new.data, std.err = FALSE)
 
   ans <- matrix(fun(param.hat), n.x, n.y, byrow = TRUE)
@@ -281,7 +282,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
     for (i in 1:(n.x * n.y)){
       delta <- fix.coord - new.data[i,1:2]
       a <- sqrt(delta %*% iSigma %*% delta)
-      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
+      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5))$root
     }
   }    
 
@@ -294,7 +295,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
 
     for (i in 1:(n.x * n.y)){
       h <- sqrt(sum((fix.coord - new.data[i,1:2])^2))
-      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
+      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5))$root
     }
   }    
 
@@ -310,7 +311,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
     for (i in 1:(n.x * n.y)){
       h <- sqrt(sum((fix.coord - new.data[i,1:2])^2))
       a <- sqrt(2 * fitted$par["sigma2"] * (1 - fitted$cov.fun(h)))
-      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
+      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5))$root
     }
   }
 
@@ -326,7 +327,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
     for (i in 1:(n.x * n.y)){
       h <- sqrt(sum((fix.coord - new.data[i,1:2])^2))
       a <- (h / fitted$param["range"])^(0.5 * fitted$param["smooth"])
-      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
+      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5))$root
     }
   }
   

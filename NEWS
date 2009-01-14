@@ -1,4 +1,12 @@
 
+		CHANGES IN SpatialExtremes VERSION 1.5-1
+
+BUG FIXES
+
+    o Fix a bug in computing the standard errors for the geometric
+    gaussian model (marginal part)
+
+
 		CHANGES IN SpatialExtremes VERSION 1.5-0
 
 

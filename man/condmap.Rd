@@ -27,7 +27,7 @@ ret.per2 = ret.per1, col = terrain.colors(64), plot.contour = TRUE,
   \item{plot.contour}{Logical. If \code{TRUE} (default), contour lines
     are added to the plot.}
   \item{\dots}{Several arguments to be passed to the \code{\link{image}}
-    and \code{\link{contour}} functions.}
+    function.}
 }
 \value{
   A plot. Additionally, a list with the details for plotting the map is

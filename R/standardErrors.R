@@ -135,13 +135,8 @@
   }
   
   if (std.err.type == "grad"){
-    var.score <- matrix(0, ncol(grad), ncol(grad))
-    for (i in 1:n.obs)
-      var.score <- var.score + grad[i,] %*% t(grad[i,])
-
-    hessian <- matrix(0, ncol(hess), ncol(hess))
-    for (i in 1:(n.obs * n.pairs))
-      hessian <- hessian + hess[i,] %*% t(hess[i,])
+    var.score <- crossprod(grad)
+    hessian <- crossprod(hess)
   }
   
   gradient <- as.double(colSums(grad))
@@ -243,13 +238,8 @@
   }
   
   if (std.err.type == "grad"){
-    var.score <- matrix(0, ncol(grad), ncol(grad))
-    for (i in 1:n.obs)
-      var.score <- var.score + grad[i,] %*% t(grad[i,])
-
-    hessian <- matrix(0, ncol(hess), ncol(hess))
-    for (i in 1:(n.obs * n.pairs))
-      hessian <- hessian + hess[i,] %*% t(hess[i,])
+    var.score <- crossprod(grad)
+    hessian <- crossprod(hess)
   }
 
   gradient <- as.double(colSums(grad))
@@ -352,18 +342,13 @@
   }
   
   if (std.err.type == "grad"){
-    var.score <- matrix(0, ncol(grad), ncol(grad))
-    for (i in 1:n.obs)
-      var.score <- var.score + grad[i,] %*% t(grad[i,])
-
-    hessian <- matrix(0, ncol(hess), ncol(hess))
-    for (i in 1:(n.obs * n.pairs))
-      hessian <- hessian + hess[i,] %*% t(hess[i,])
+    var.score <- crossprod(grad)
+    hessian <- crossprod(hess)
   }
 
   gradient <- as.double(colSums(grad))
 
-  return(list(var.score = var.score, hessian = hessian, gradient))
+  return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
 
 .geomgaussstderr <- function(par, data, dist, cov.mod, loc.dsgn.mat,
@@ -428,7 +413,7 @@
                   as.double(sigma2), as.double(sill), as.double(range),
                   as.double(smooth), as.double(smooth2), fit.marge,
                   hess = double(n.obs * n.param * n.pairs),
-                    grad = double(n.obs * n.param),
+                  grad = double(n.obs * n.param),
                   PACKAGE = "SpatialExtremes")
   
   else
@@ -464,18 +449,13 @@
   }
   
   if (std.err.type == "grad"){
-    var.score <- matrix(0, ncol(grad), ncol(grad))
-    for (i in 1:n.obs)
-      var.score <- var.score + grad[i,] %*% t(grad[i,])
-
-    hessian <- matrix(0, ncol(hess), ncol(hess))
-    for (i in 1:(n.obs * n.pairs))
-      hessian <- hessian + hess[i,] %*% t(hess[i,])
+    var.score <- crossprod(grad)
+    hessian <- crossprod(hess)
   }
   
   gradient <- as.double(colSums(grad))
 
-  return(list(var.score = var.score, hessian = hessian, gradient))
+  return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
 
 
@@ -556,18 +536,13 @@
   }
     
   if (std.err.type == "grad"){
-    var.score <- matrix(0, ncol(grad), ncol(grad))
-    for (i in 1:n.obs)
-      var.score <- var.score + grad[i,] %*% t(grad[i,])
-
-    hessian <- matrix(0, ncol(hess), ncol(hess))
-    for (i in 1:(n.obs * n.pairs))
-      hessian <- hessian + hess[i,] %*% t(hess[i,])
+    var.score <- crossprod(grad)
+    hessian <- crossprod(hess)
   }
   
   gradient <- as.double(colSums(grad))
 
-  return(list(var.score = var.score, hessian = hessian, gradient))
+  return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
 
 .spatgevstderr <- function(par, data, loc.dsgn.mat, scale.dsgn.mat,
@@ -620,13 +595,8 @@
   }
   
   if (std.err.type == "grad"){
-    var.score <- matrix(0, ncol(grad), ncol(grad))
-    for (i in 1:n.obs)
-      var.score <- var.score + grad[i,] %*% t(grad[i,])
-
-    hessian <- matrix(0, ncol(hess), ncol(hess))
-    for (i in 1:(n.obs * n.site))
-      hessian <- hessian + hess[i,] %*% t(hess[i,])
+    var.score <- crossprod(grad)
+    hessian <- crossprod(hess)
   }
 
   gradient <- as.double(colSums(grad))

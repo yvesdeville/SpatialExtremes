@@ -1,4 +1,80 @@
 ------------------------------------------------------------------------
+r522 | mathieu_ribatet | 2010-01-14 11:48:16 +0100 (jeu. 14 janv. 2010) | 2 lignes
+
+Fix a bug in the geomgaussstderr (marginal part)
+
+------------------------------------------------------------------------
+r521 | mathieu_ribatet | 2010-01-14 11:47:32 +0100 (jeu. 14 janv. 2010) | 2 lignes
+
+Slight optimizations of the C code
+
+------------------------------------------------------------------------
+r520 | mathieu_ribatet | 2010-01-13 23:40:16 +0100 (mer. 13 janv. 2010) | 2 lignes
+
+Fix a bug in the computation of standard errors for geomgauss
+
+------------------------------------------------------------------------
+r519 | mathieu_ribatet | 2010-01-13 23:39:19 +0100 (mer. 13 janv. 2010) | 2 lignes
+
+Minor typo in the documentation of map and condmap
+
+------------------------------------------------------------------------
+r518 | mathieu_ribatet | 2010-01-13 23:38:23 +0100 (mer. 13 janv. 2010) | 3 lignes
+
+gev2frech uses the rank instead of ppoints for the empirical
+distribution - better for the F-madogram
+
+------------------------------------------------------------------------
+r517 | mathieu_ribatet | 2010-01-13 23:37:25 +0100 (mer. 13 janv. 2010) | 2 lignes
+
+Add data sets and function to plot a map of Switzerland
+
+------------------------------------------------------------------------
+r516 | mathieu_ribatet | 2010-01-13 23:36:59 +0100 (mer. 13 janv. 2010) | 2 lignes
+
+Add data sets and function to plot a map of Switzerland
+
+------------------------------------------------------------------------
+r515 | mathieu_ribatet | 2010-01-13 23:35:43 +0100 (mer. 13 janv. 2010) | 2 lignes
+
+Forgot to put the names gradient in the std err computations
+
+------------------------------------------------------------------------
+r514 | mathieu_ribatet | 2010-01-13 23:34:52 +0100 (mer. 13 janv. 2010) | 2 lignes
+
+Remove the dots argument in uniroot in condmap
+
+------------------------------------------------------------------------
+r513 | mathieu_ribatet | 2010-01-13 23:33:46 +0100 (mer. 13 janv. 2010) | 2 lignes
+
+Define new values for the Brown-Resnick processes
+
+------------------------------------------------------------------------
+r512 | mathieu_ribatet | 2010-01-06 16:10:44 +0100 (mer. 06 janv. 2010) | 2 lignes
+
+Now we use 'crossprod' which is faster when std.err.type = 'grad'
+
+------------------------------------------------------------------------
+r511 | mathieu_ribatet | 2009-12-29 18:40:01 +0100 (mar. 29 déc. 2009) | 2 lignes
+
+Use the standard given by R for the NEWS file
+
+------------------------------------------------------------------------
+r510 | mathieu_ribatet | 2009-12-29 18:10:05 +0100 (mar. 29 déc. 2009) | 2 lignes
+
+Add a NEWS file
+
+------------------------------------------------------------------------
+r509 | mathieu_ribatet | 2009-12-29 17:51:55 +0100 (mar. 29 déc. 2009) | 2 lignes
+
+Update
+
+------------------------------------------------------------------------
+r508 | mathieu_ribatet | 2009-12-29 17:51:07 +0100 (mar. 29 déc. 2009) | 2 lignes
+
+Update the ChangeLog
+
+------------------------------------------------------------------------
 r507 | mathieu_ribatet | 2009-12-29 17:37:33 +0100 (mar. 29 déc. 2009) | 2 lignes
 
 Fix a typo

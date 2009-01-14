@@ -32,8 +32,8 @@ distance <- function(coord, vec = FALSE){
 gev2frech <- function(x, loc, scale, shape, emp = FALSE){
 
   if (emp){
-    probs <- ppoints(x)
-    x[order(x)] <- - 1 / log(probs)
+    probs <- rank(x) / (length(x) + 1)
+    x <- - 1 / log(probs)
     return(x)
   }
   

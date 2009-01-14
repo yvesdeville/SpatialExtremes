@@ -45,33 +45,31 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
   //When ans > 0.0, the GEV parameters are invalid.
   
   int i, j;
-    
+  
   for (i=nSite;i--;){
+    double iscale = 1 / scales[i], logScale = log(scales[i]);
+    
     if (shapes[i] == 0.0){
-            
       for (j=nObs;j--;){
-	frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
-	jac[i * nObs + j] = frech[i * nObs + j] - log(scales[i]);
+	frech[i * nObs + j] = (data[i * nObs + j] - locs[i]) * iscale;
+	jac[i * nObs + j] = frech[i * nObs + j] - logScale;
 	frech[i * nObs + j] = exp(frech[i * nObs + j]);
       }
     }
-      
+    
     else {
+      double ishape = 1 / shapes[i];
       for (j=nObs;j--;){
-	frech[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) /
-	  scales[i];
+	frech[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) * iscale;
 	
 	if (frech[i * nObs + j] <= 0)
 	  return MINF;
 	
-	jac[i * nObs + j] = (1/ shapes[i] - 1) * 
-	  log(frech[i * nObs + j]) - log(scales[i]);
-	frech[i * nObs + j] = R_pow(frech[i * nObs + j], 1/ shapes[i]);
-	
+	jac[i * nObs + j] = (ishape - 1) * log(frech[i * nObs + j]) - logScale;
+	frech[i * nObs + j] = R_pow(frech[i * nObs + j], ishape);
       }
     }
-  }
-  
+  } 
   return 0.0;
 }
 
@@ -86,22 +84,25 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
   //when ans > 0.0, the GEV parameters are invalid
   int i, j;
   
-  for (i=0;i<nSite;i++){
+  for (i=nSite;i--;){
        
     locs[i] = 0.0;
     scales[i] = 0.0;
     shapes[i] = 0.0;
     
-    for (j=0;j<nloccoeff;j++)
+    for (j=nloccoeff;j--;)
       locs[i] += loccoeff[j] * locdsgnmat[i + nSite * j];
     
-    for (j=0;j<nscalecoeff;j++)
+    for (j=nscalecoeff;j--;)
       scales[i] += scalecoeff[j] * scaledsgnmat[i + nSite * j];
     
-    for (j=0;j<nshapecoeff;j++)
+    if (scales[i] <= 0)
+      return MINF;
+
+    for (j=nshapecoeff;j--;)
       shapes[i] += shapecoeff[j] * shapedsgnmat[i + nSite * j];
     
-    if ((scales[i]<=0) || (shapes[i] <= -1))
+    if (shapes[i] <= -1)
       return MINF;
   }
 
@@ -114,8 +115,9 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
   //This function computes the GEV quantiles
   
   int i;
-  
-  for (i=0;i<*n;i++){
+  const double mlogProb = -log(*prob);
+
+  for (i=*n;i--;){
     
     if (scales[i] <= 0){
       quant[i] = R_NaReal;
@@ -123,10 +125,10 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
     }
 
     if (shapes[i] == 0)
-      quant[i] = locs[i] - scales[i] * log(-log(*prob));
+      quant[i] = locs[i] - scales[i] * log(mlogProb);
 
     else
-      quant[i] = locs[i] + scales[i] * (R_pow(-log(*prob), -shapes[i]) - 1) /
+      quant[i] = locs[i] + scales[i] * (R_pow(mlogProb, -shapes[i]) - 1) /
 	shapes[i];
   }
 }

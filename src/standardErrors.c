@@ -51,7 +51,7 @@ void smithstderr(double *data, double *distVec, int *nSite,
   }
 
   else
-    for (i=0;i<(*nSite * *nObs);i++)
+    for (i=(*nSite * *nObs);i--;)
       frech[i] = data[i];
   
   //Stage 2: Hessian computations
@@ -297,7 +297,7 @@ void smithstderr3d(double *data, double *distVec, int *nSite,
   }
 
   else
-    for (i=0;i<(*nSite * *nObs);i++)
+    for (i=(*nSite * *nObs);i--;)
       frech[i] = data[i];
   
   //Stage 2: Hessian computations
@@ -600,9 +600,8 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite,
   }
 
   else
-    for (i=0;i<*nSite;i++)
-      for (j=0;j<*nObs;j++)
-	frech[i * *nObs + j] = data[i * *nObs + j];
+    for (i=(*nSite * *nObs);i--;)
+      frech[i] = data[i];
   
   //Stage 2: Hessian computations;
   // a- Covariance part
@@ -889,9 +888,8 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite,
   }
 
   else
-    for (i=0;i<*nSite;i++)
-      for (j=0;j<*nObs;j++)
-	frech[i * *nObs + j] = data[i * *nObs + j];
+    for (i=(*nSite * *nObs);i--;)
+      frech[i] = data[i];
   
   //Stage 2: Hessian computations;
   // a- Covariance part
@@ -1173,9 +1171,8 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
   }
   
   else
-    for (i=0;i<*nSite;i++)
-      for (j=0;j<*nObs;j++)
-	frech[i * *nObs + j] = data[i * *nObs + j];
+    for (i=(*nSite * *nObs);i--;)
+      frech[i] = data[i];
   
   //Stage 2: Hessian computations;
   // a- Covariance part
@@ -1189,9 +1186,9 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
       rho = 1 - mahalDist[currentPair] * mahalDist[currentPair] /
 	  (2 * *sigma2);
 
-      for (k=0;k<*nObs;k++){
-	double ifrech1 = frech[k + i * *nObs],
-	  ifrech2 = frech[k + j * *nObs],
+      for (k=*nObs;k--;){
+	double ifrech1 = 1 / frech[k + i * *nObs],
+	  ifrech2 = 1 / frech[k + j * *nObs],
 	  ifrech1Square = ifrech1 * ifrech1,
 	  ifrech2Square = ifrech2 * ifrech2;	  
 
@@ -1299,14 +1296,14 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
 	double imahal = 1 / mahalDist[currentPair],
 	  imahalSquare = imahal * imahal;
 
-	for (k=0;k<*nObs;k++){
-	  double ifrech1 = frech[k + i * *nObs],
-	  ifrech2 = frech[k + j * *nObs],
+	for (k=*nObs;k--;){
+	  double ifrech1 = 1 / frech[k + i * *nObs],
+	  ifrech2 = 1 / frech[k + j * *nObs],
 	  ifrech1Square = ifrech1 * ifrech1,
 	    ifrech2Square = ifrech2 * ifrech2;
 	  	 
-	  c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
-	    mahalDist[currentPair] + mahalDist[currentPair] / 2;
+	  c1 = log(frech[k + j * *nObs] * ifrech1) * imahal +
+	    0.5 * mahalDist[currentPair];
 	  c2 = mahalDist[currentPair] - c1;
 	 
 	  double dnormc1 = dnorm(c1, 0., 1., 0),
@@ -1466,9 +1463,8 @@ void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs,
   }
   
   else
-    for (i=0;i<*nSite;i++)
-      for (j=0;j<*nObs;j++)
-	frech[i * *nObs + j] = data[i * *nObs + j];
+    for (i=(*nSite * *nObs);i--;)
+      frech[i] = data[i];
   
   //Stage 2: Hessian computations;
   // a- Covariance part

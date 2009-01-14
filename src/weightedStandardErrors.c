@@ -618,9 +618,8 @@ void wschlatherstderr(int *covmod, double *data, double *dist, int *nSite,
   }
 
   else
-    for (i=0;i<*nSite;i++)
-      for (j=0;j<*nObs;j++)
-	frech[i * *nObs + j] = data[i * *nObs + j];
+    for (i=(*nSite * *nObs);i--;)
+      frech[i] = data[i];
   
   //Stage 2: Hessian computations;
   // a- Covariance part
@@ -630,7 +629,7 @@ void wschlatherstderr(int *covmod, double *data, double *dist, int *nSite,
       currentPair++;
 
       if (weights[currentPair] != 0){
-	for (k=0;k<*nObs;k++){
+	for (k=*nObs;k--;){
 	  c1 = sqrt(frech[k + i * *nObs] * frech[k + i * *nObs] + 
 		    frech[k + j * *nObs] * frech[k + j * *nObs] -
 		    2 * frech[k + i * *nObs] * frech[k + j * *nObs] *
@@ -727,7 +726,7 @@ void wschlatherstderr(int *covmod, double *data, double *dist, int *nSite,
 	currentPair++;
 	
 	if (weights[currentPair] != 0){
-	  for (k=0;k<*nObs;k++){
+	  for (k=*nObs;k--;){
 	    c1 = sqrt(frech[k + i * *nObs] * frech[k + i * *nObs] + 
 		      frech[k + j * *nObs] * frech[k + j * *nObs] -
 		      2 * frech[k + i * *nObs] * frech[k + j * *nObs] *
@@ -913,9 +912,8 @@ void wschlatherindstderr(int *covmod, double *data, double *dist, int *nSite,
   }
 
   else
-    for (i=0;i<*nSite;i++)
-      for (j=0;j<*nObs;j++)
-	frech[i * *nObs + j] = data[i * *nObs + j];
+    for (i=(*nSite * *nObs);i--;)
+      frech[i] = data[i];
   
   //Stage 2: Hessian computations;
   // a- Covariance part
@@ -925,7 +923,7 @@ void wschlatherindstderr(int *covmod, double *data, double *dist, int *nSite,
       currentPair++;
 	
       if (weights[currentPair] != 0){
-	for (k=0;k<*nObs;k++){
+	for (k=*nObs;k--;){
 	  c1 = sqrt(frech[k + i * *nObs] * frech[k + i * *nObs] + 
 		    frech[k + j * *nObs] * frech[k + j * *nObs] -
 		    2 * frech[k + i * *nObs] * frech[k + j * *nObs] *
@@ -1038,7 +1036,7 @@ void wschlatherindstderr(int *covmod, double *data, double *dist, int *nSite,
 	currentPair++;
 	
 	if (weights[currentPair] != 0){
-	  for (k=0;k<*nObs;k++){
+	  for (k=*nObs;k--;){
 	    c1 = sqrt(frech[k + i * *nObs] * frech[k + i * *nObs] + 
 		      frech[k + j * *nObs] * frech[k + j * *nObs] -
 		      2 * frech[k + i * *nObs] * frech[k + j * *nObs] *
@@ -1207,9 +1205,8 @@ void wgeomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
   }
   
   else
-    for (i=0;i<*nSite;i++)
-      for (j=0;j<*nObs;j++)
-	frech[i * *nObs + j] = data[i * *nObs + j];
+    for (i=(*nSite * *nObs);i--;)
+      frech[i] = data[i];
   
   //Stage 2: Hessian computations;
   // a- Covariance part
@@ -1225,8 +1222,8 @@ void wgeomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
 
       if (weights[currentPair] != 0){
 	for (k=0;k<*nObs;k++){
-	  double ifrech1 = frech[k + i * *nObs],
-	    ifrech2 = frech[k + j * *nObs],
+	  double ifrech1 = 1 / frech[k + i * *nObs],
+	    ifrech2 = 1 / frech[k + j * *nObs],
 	    ifrech1Square = ifrech1 * ifrech1,
 	    ifrech2Square = ifrech2 * ifrech2;
 	  
@@ -1336,9 +1333,9 @@ void wgeomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
 	  imahalSquare = imahal * imahal;
 	
 	if (weights[currentPair] != 0){
-	  for (k=0;k<*nObs;k++){
-	    double ifrech1 = frech[k + i * *nObs],
-	      ifrech2 = frech[k + j * *nObs],
+	  for (k=*nObs;k--;){
+	    double ifrech1 = 1 / frech[k + i * *nObs],
+	      ifrech2 = 1 / frech[k + j * *nObs],
 	      ifrech1Square = ifrech1 * ifrech1,
 	      ifrech2Square = ifrech2 * ifrech2;	      
 	 
@@ -1508,9 +1505,8 @@ void wbrownresnickstderr(double *data, double *dist, int *nSite, int *nObs,
   }
   
   else
-    for (i=0;i<*nSite;i++)
-      for (j=0;j<*nObs;j++)
-	frech[i * *nObs + j] = data[i * *nObs + j];
+    for (i=(*nSite * *nObs);i--;)
+      frech[i] = data[i];
   
   //Stage 2: Hessian computations;
   // a- Covariance part
@@ -1522,7 +1518,7 @@ void wbrownresnickstderr(double *data, double *dist, int *nSite, int *nObs,
 	    imahalSquare = imahal * imahal;
 
       if (weights[currentPair] != 0){
-	for (k=0;k<*nObs;k++){
+	for (k=*nObs;k--;){
 	  double ifrech1 = 1 / frech[k + i * *nObs],
 	    ifrech2 = 1 / frech[k + j * *nObs],
 	    ifrech1Square = ifrech1 * ifrech1,
@@ -1579,7 +1575,7 @@ void wbrownresnickstderr(double *data, double *dist, int *nSite, int *nObs,
 	  imahalSquare = imahal * imahal;
 	
 	if (weights[currentPair] != 0){
-	  for (k=0;k<*nObs;k++){
+	  for (k=*nObs;k--;){
 	    double ifrech1 = 1 / frech[k + i * *nObs],
 	      ifrech2 = 1 / frech[k + j * *nObs],
 	      ifrech1Square = ifrech1 * ifrech1,

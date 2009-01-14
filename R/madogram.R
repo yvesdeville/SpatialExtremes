@@ -6,6 +6,10 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
     stop("You must either specify a fitted model OR 'data' and 'coord'")
 
   fit.curves <- FALSE
+
+  if (missing(fitted) & (marge == "model"))
+    stop("'marge' can be set to 'model' only if you supplied 'fitted'")
+  
   if (!missing(fitted)){
     data <- fitted$data
     coord <- fitted$coord
@@ -33,8 +37,8 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
   if (any(!(which %in% c("mado", "ext"))))
     stop("'which' must be either 'mado', 'ext' or both")
   
-  if (!(marge %in% c("mle", "emp")))
-    stop("'marge' must be either 'mle' or 'emp'")
+  if (!(marge %in% c("mle", "emp", "model")))
+    stop("'marge' must be either 'mle', 'emp' or 'model'")
   
   n.site <- ncol(data)
   n.obs <- nrow(data)
@@ -58,11 +62,17 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
   if (marge == "emp")
     data <- apply(data, 2, rank) / (n.obs + 1)
   
-  else{
+  else if (marge == "mle"){
     for (i in 1:n.site){
       param <- gevmle(data[,i])
       data[,i] <- pgev(data[,i], param[1], param[2], param[3])
     }
+  }
+
+  else{
+    param <- predict(fitted, std.err = FALSE)
+    for (i in 1:n.site)
+      data[,i] <- pgev(data[,i], param[i,"loc"], param[i,"scale"], param[i,"shape"])
   }
   
   data <- qgev(data, gev.param[1], gev.param[2], gev.param[3])
@@ -166,6 +176,9 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
     stop("You must either specify a fitted model OR 'data' and 'coord'")
 
   fit.curves <- FALSE
+
+  if (missing(fitted) & (marge == "model"))
+    stop("'marge' can be set to 'model' only if you supplied 'fitted'")
   
   if (!missing(fitted)){
     data <- fitted$data
@@ -194,8 +207,8 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
   if (any(!(which %in% c("mado", "ext"))))
     stop("'which' must be either 'mado', 'ext' or both")
 
-  if (!(marge %in% c("mle", "emp")))
-    stop("'marge' must be either 'mle' or 'emp'")
+  if (!(marge %in% c("mle", "emp", "model")))
+    stop("'marge' must be either 'mle', 'emp' or 'model'")
   
   n.site <- ncol(data)
   n.obs <- nrow(data)
@@ -219,11 +232,17 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
   if (marge == "emp")
     data <- apply(data, 2, rank) / (n.obs + 1)
 
-  else{
+  else if (marge == "mle"){
     for (i in 1:n.site){
       param <- gevmle(data[,i])
       data[,i] <- pgev(data[,i], param["loc"], param["scale"], param["shape"])
     }
+  }
+
+  else{
+    param <- predict(fitted, std.err = FALSE)
+    for (i in 1:n.site)
+      data[,i] <- pgev(data[,i], param[i,"loc"], param[i,"scale"], param[i,"shape"])
   }
 
   fmado <- .C("madogram", as.double(data), as.integer(n.obs),
@@ -348,14 +367,16 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
       unique.idx <- which(dist == unique.dist[i])
       lmadoBinned[,i] <- rowMeans(lmado[,unique.idx, drop = FALSE])
     }
-    
-    dist <- sort(unique.dist, index.return = TRUE)
-    idx <- dist$ix
-    dist <- dist$x
-    lmado <- lmadoBinned[,idx]
-    ##lmado <- lmado[,idx]
+
+    dist <- unique.dist
+    lmado <- lmadoBinned
   }
 
+  dist <- sort(dist, index.return = TRUE)
+  idx <- dist$ix
+  dist <- dist$x
+  lmado <- lmado[,idx]
+  
   if (!missing(n.bins)){
     bins <- unique(unname(c(0, quantile(dist, 1:n.bins/(n.bins + 1)), max(dist))))
     n.bins <- length(bins) - 2
