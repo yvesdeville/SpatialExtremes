@@ -62,7 +62,7 @@ double cauchy(double *dist, int nPairs, double sill, double range,
     return R_pow_di(sill, 2) * MINF;
 
   for (i=0;i<nPairs;i++)
-    rho[i] = sill * R_pow(1 + R_pow_di(dist[i] / range, 2), -smooth);
+    rho[i] = sill * R_pow(1 + dist[i] * dist[i] / range / range, -smooth);
     
   return 0.0;
 }
@@ -160,17 +160,18 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   
   for (i=0;i<nPairs;i++){
 
-    mahal[i] = (*cov11 * *cov22 * R_pow_di(distVec[2 * nPairs + i], 2) -
-		R_pow_di(*cov12 * distVec[2 * nPairs + i], 2) - 2 * *cov11 *
-		*cov23 * distVec[nPairs + i] * distVec[2 * nPairs + i] + 2 *
-		*cov12 * *cov13 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
-		2 * *cov12 * *cov23 * distVec[i] * distVec[2 * nPairs + i] - 2 *
-		*cov13 * *cov22 * distVec[i] * distVec[2 * nPairs + i] + *cov11 *
-		*cov33 * R_pow_di(distVec[nPairs + i], 2) - 
-		R_pow_di(*cov13 * distVec[nPairs + i], 2) - 2 * *cov12 * *cov33 *
-		distVec[i] * distVec[nPairs + i] + 2 * *cov13 * *cov23 *
-		distVec[i] * distVec[nPairs + i] + *cov22 * *cov33 * 
-		R_pow_di(distVec[i], 2) - R_pow_di(*cov23 * distVec[i], 2)) / det;
+    mahal[i] = (*cov11 * *cov22 * distVec[2 * nPairs + i] * distVec[2 * nPairs + i] -
+		*cov12 * *cov12 * distVec[2 * nPairs + i] * distVec[2 * nPairs + i] -
+		2 * *cov11 * *cov23 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
+		2 * *cov12 * *cov13 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
+		2 * *cov12 * *cov23 * distVec[i] * distVec[2 * nPairs + i] -
+		2 * *cov13 * *cov22 * distVec[i] * distVec[2 * nPairs + i] +
+		*cov11 * *cov33 * distVec[nPairs + i] * distVec[nPairs + i] - 
+		*cov13 * *cov13 * distVec[nPairs + i] * distVec[nPairs + i] -
+		2 * *cov12 * *cov33 * distVec[i] * distVec[nPairs + i] +
+		2 * *cov13 * *cov23 * distVec[i] * distVec[nPairs + i] +
+		*cov22 * *cov33 * distVec[i] * distVec[i] -
+		*cov23 * *cov23 * distVec[i] * distVec[i]) / det;
 
     mahal[i] = sqrt(mahal[i]);
   }

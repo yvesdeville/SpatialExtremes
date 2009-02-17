@@ -138,6 +138,16 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
   Cox, D. R. and Reid, N. (2004) A note on pseudo-likelihood constructed
   from marginal densities. \emph{Biometrika} \bold{91}: 729--737.
 
+  Gholam--Rezaee, M. (2009) Spatial extreme value: A composite
+  likelihood. PhD Thesis. Ecole Polytechnique Federale de Lausanne.
+
+  Padoan, S. A. (2008) Computational Methods for Complex Problems in
+  Extreme Value Theory. PhD Thesis. University of Padova.
+
+  Padoan, S. A., Ribatet, M. and Sisson, S. A. (2008) Likelihood-based
+  inference for max-stable processes. Under review. \emph{Journal of the
+  American Statistical Association (Theory and Methods)}.
+
   Schlather, M. (2002) Models for Stationary Max-Stable Random
   Fields. \emph{Extremes} \bold{5}:1,  33--44.
 

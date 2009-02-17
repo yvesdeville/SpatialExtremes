@@ -63,6 +63,16 @@ par(mar=c(5.1, 4.1, 1.1, 2.1))))
 \renewcommand{\chaptermark}[1]{\markboth{\thechapter\ $\cdot$\ #1}{}}
 \renewcommand{\sectionmark}[1]{\markright{\thesection\ $\cdot$\ #1}}
 
+%% To have completely blanck pages before the begining of a new
+%% chapter
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+  \hbox{}
+  \thispagestyle{empty}
+  \newpage
+  \if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\makeatother
+
 \chapter*{Introduction}
 \label{cha:introduction}
 \addcontentsline{toc}{chapter}{Introduction}
@@ -153,10 +163,10 @@ estimation of the asymptotic sandwich covariance matrix.
 \chapter{An Introduction to Max-Stable Processes}
 \label{cha:an-introduction-max}
 
-A max-stable process $Z(\cdot)$ is the limit process of maxima of
-independent identically distributed random fields $Y_i(x)$, $x \in
-\mathbb{R}^d$. Namely, for suitable $a_n(x) > 0$ and $b_n(x) \in
-\mathbb{R}$,
+A max-stable process\index{max-stable!process} $Z(\cdot)$ is the limit
+process of maxima of independent identically distributed random fields
+$Y_i(x)$, $x \in \mathbb{R}^d$. Namely, for suitable $a_n(x) > 0$ and
+$b_n(x) \in \mathbb{R}$,
 \begin{equation}
   \label{eq:maxstab-def}
   Z(x) = \lim_{n \rightarrow +\infty} \frac{\max_{i=1}^n Y_i(x) -
@@ -168,7 +178,7 @@ can see that max-stable processes might be appropriate models for
 modelling annual maxima of spatial data, for example.
 
 Theoretically speaking, there is no loss of generality in transforming
-the margins to have a unit Fréchet scale i.e.
+the margins to have a unit Fréchet\index{Fr\'echet!unit} scale i.e.
 \begin{equation}
   \label{eq:CDFFrechet}
   \Pr\left[Z(x) \leq z\right] = \exp\left(-\frac{1}{z} \right), \qquad
@@ -178,12 +188,12 @@ and we will first assume that the unit Fréchet assumption holds for
 which we have $a_n(x) = n$ and $b_n(x) = 0$.
 
 Currently, there are two different characterisations of a max-stable
-process. The first one, often referred to as the \emph{rainfall-storm}
-model, was first introduced by \citet{Smith1991}. More recently,
-\citet{Schlather2002} introduced a new characterisation of a
-max-stable process allowing for a random shape. In this Chapter, we
-will present several max-stable models that might be relevant in
-studying spatial extremes.
+process. The first one, often referred to as the
+\emph{rainfall-storm}\index{rainfall-storm process} model, was first
+introduced by \citet{Smith1991}. More recently, \citet{Schlather2002}
+introduced a new characterisation of a max-stable process allowing for
+a random shape. In this Chapter, we will present several max-stable
+models that might be relevant in studying spatial extremes.
 
 \section{The Smith Model}
 \label{sec:smiths-char}
@@ -192,10 +202,11 @@ studying spatial extremes.
 max-stable processes. Later, \citet{Smith1991} use this
 characterisation to provide a parametric model for spatial
 extremes. The construction was the following. Let $\{(\xi_i, y_i), i
-\geq 1\}$ denote the points of a Poisson process on $(0,+\infty)
-\times \mathbb{R}^d$ with intensity measure $\xi^{-2} d\xi \nu(dy)$,
-where $\nu(dy)$ is a positive measure on $\mathbb{R}^d$. Then one
-characterisation of a max-stable process with unit Fréchet margins is
+\geq 1\}$ denote the points of a Poisson process\index{Poisson
+  process} on $(0,+\infty) \times \mathbb{R}^d$ with intensity measure
+\index{intensity measure} $\xi^{-2} d\xi \nu(dy)$, where $\nu(dy)$ is
+a positive measure on $\mathbb{R}^d$. Then one characterisation of a
+max-stable process with unit Fréchet margins is
 \begin{equation}
   \label{eq:smithChar}
   Z(x) = \max_i \left\{ \xi_i f(y_i,x) \right\}, \qquad x \in
@@ -211,7 +222,8 @@ such that
 To see that equation~\eqref{eq:smithChar} defines a stationary
 max-stable process with unit Fréchet margins, we have to check that
 the margins are indeed unit Fréchet and $Z(x)$ has the max-stable
-property. Following Smith, consider the set defined by:
+property\index{max-stable!property}. Following Smith, consider the set
+defined by:
 \begin{equation*}
   E = \left\{(\xi, y) \in \mathbb{R}^+_* \times \mathbb{R}^d: \xi
     f(y,x) > z \right\}
@@ -237,15 +249,15 @@ we have:
 \end{equation*}
 
 The process defined by \eqref{eq:smithChar} is often referred to as
-the rainfall-storm process, as one can have a more physical
-interpretation of the above construction. Think of $y_i$ as
-realisations of rainfall storm centres in $\mathbb{R}^d$ and $\nu(dy)$
-as the spatial distribution of these storm centres over $\mathbb{R}^d$
-- usually $d = 2$. Each $\xi_i$ represents the intensity of the $i$-th
-storm and therefore $\xi_i f(y_i, x)$ represents the amount of
-rainfall for this specific event at location $x$. In other words,
-$f(y_i, \cdot)$ drives how the $i$-th storm centred at $y_i$ diffuses
-in space.
+the rainfall-storm process\index{rainfall-storm process}, as one can
+have a more physical interpretation of the above construction. Think
+of $y_i$ as realisations of rainfall storm centres in $\mathbb{R}^d$
+and $\nu(dy)$ as the spatial distribution of these storm centres over
+$\mathbb{R}^d$ - usually $d = 2$. Each $\xi_i$ represents the
+intensity of the $i$-th storm and therefore $\xi_i f(y_i, x)$
+represents the amount of rainfall for this specific event at location
+$x$. In other words, $f(y_i, \cdot)$ drives how the $i$-th storm
+centred at $y_i$ diffuses in space.
 
 Definition \eqref{eq:smithChar} is rather general and Smith considered
 a particular setting where $\nu(dy)$ is the Lebesgue measure and
@@ -280,7 +292,7 @@ and, for two given locations 1 and 2
 \end{equation*}
 where $\Delta x$ is the distance vector between location 1 and
 location 2. Figure~\ref{fig:Smith2sim} plots two simulations of
-Smith's model with different variance-covariance matrices.
+Smith's model with different covariance matrices.
 \begin{proof}
   \begin{eqnarray*}
     -\log \Pr \left[Z(x_1) \leq z_1, Z(x_2) \leq z_2 \right] &=&
@@ -368,28 +380,29 @@ image(x, y, ms1, col = terrain.colors(30))
   \label{fig:Smith2sim}
 \end{figure}
 
-In equation~\eqref{eq:smith}, $a$ is the Mahanalobis distance and is
-similar to the Euclidean distance except that it gives different
-weights to each component of $\Delta x$. It is positive and the
-limiting cases $a \rightarrow 0^+$ and $a \rightarrow +\infty$
-correspond respectively to perfect dependence and
-independence. Therefore, for $\Sigma$ fixed, the dependence decreases
-monotically and continuously as $||\Delta x ||$ increases. On the
-contrary, if $\Delta x$ is fixed, the dependence decreases monotically
-as $a$ increases.
+In equation~\eqref{eq:smith}, $a$ is the Mahanalobis
+distance\index{distance!Mahanalobis} and is similar to the Euclidean
+distance except that it gives different weights to each component of
+$\Delta x$. It is positive and the limiting cases $a \rightarrow 0^+$
+and $a \rightarrow +\infty$ correspond respectively to perfect
+dependence and independence. Therefore, for $\Sigma$ fixed, the
+dependence decreases monotically and continuously as $||\Delta x ||$
+increases. On the contrary, if $\Delta x$ is fixed, the dependence
+decreases monotically as $a$ increases.
 
 The covariance matrix $\Sigma$ plays a major role in
 equation~\eqref{eq:smith} as it determines the shape of the storm
 events. Indeed, due the use of a multivariate normal distribution, the
 storm events have an elliptical shape. Considering the
-eigen-decomposition of $\Sigma$, we can write
+eigen-decomposition\index{eigen-decomposition} of $\Sigma$, we can
+write
 \begin{equation}
   \label{eq:svdSigma}
   \Sigma = U \Lambda U^T,
 \end{equation}
 where $U$ is a rotation matrix and $\Lambda$ is a diagonal matrix of
-the eigenvalues. Thus, $U$ controls the direction of the principal
-axes and $\Lambda$ controls their lengths. 
+the eigenvalues\index{eigenvalues}. Thus, $U$ controls the direction
+of the principal axes and $\Lambda$ controls their lengths.
 
 If $\Sigma$ is diagonal and all the diagonal terms are identical, then
 $\Sigma = \Lambda$, so that the ellipsoids change to circles and
@@ -429,9 +442,10 @@ More recently, \citet{Schlather2002} introduced a second
 characterisation of max-stable processes. Let $Y(\cdot)$ be a
 stationary process on $\mathbb{R}^d$ such that $\mathbb{E}[\max\{0,
 Y(x)\}] = 1$ and $\{\xi_i, i \geq 1\}$ be the points of a Poisson
-process on $\mathbb{R}^+_*$ with intensity measure $\xi^{-2}
-d\xi$. Then Schlather shows that a stationary max-stable process with
-unit Fréchet margins can be defined by:
+process on $\mathbb{R}^+_*$ with intensity measure
+\index{intensity measure} $\xi^{-2} d\xi$. Then Schlather shows that a
+stationary max-stable process with unit Fréchet margins can be defined
+by:
 \begin{equation}
   \label{eq:SchlatherChar}
   Z(x) = \max_i \xi_i \max \left\{0, Y_i(x) \right\}
@@ -472,7 +486,7 @@ homogeneous Poisson process both in $\mathbb{R}^d$. With this
 particular setting, model~\eqref{eq:SchlatherChar} is identical to
 model~\eqref{eq:smithChar}.
 
-equation~\eqref{eq:SchlatherChar} is very general and we need
+Equation~\eqref{eq:SchlatherChar} is very general and we need
 additional assumptions to get practical models. Schlather proposed to
 take $Y_i(\cdot)$ to be a stationary Gaussian process with correlation
 function $\rho(x)$, scaled so that $\mathbb{E}[\max\{0, Y_i(x)\}] =
@@ -484,9 +498,10 @@ of process~\eqref{eq:SchlatherChar} is
     \left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left(1 + \sqrt{1 - 2
         (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
 \end{equation}
-where $h \in \mathbb{R}^+$ is the Euclidean distance between location
-1 and location 2. Usually, $\rho(h)$ is chosen from one of the valid
-parametric families, such as
+where $h \in \mathbb{R}^+$ is the Euclidean
+distance\index{distance!Euclidean} between location 1 and location
+2. Usually, $\rho(h)$ is chosen from one of the valid parametric
+families, such as
 
 <<label=covariances,echo=FALSE>>=
 par(mfrow=c(1,3))
@@ -541,25 +556,29 @@ legend("topright", c(expression(nu == 4), expression(nu == 2),
 
 \bigskip
 \begin{tabular}{lll}
-  \textbf{Whittle--Matérn} & $\rho(h) = c_1
-  \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{h}{c_2} \right)^{\nu}
-  K_{\nu}\left(\frac{h}{c_2} \right)$, & $0 \leq c_1 \leq 1$, $c_2>0$,
-  $\nu > 0$\\
-  \textbf{Cauchy} & $\rho(h) = c_1 \left[1 + \left(\frac{h}{c_2}
-    \right)^2 \right]^{-\nu}$, & $0 \leq c_1 \leq 1$, $c_2 >0$, $\nu >
-  0$\\
-  \textbf{Powered Exponential} & $\rho(h) = c_1 \exp\left[-
-    \left(\frac{h}{c_2} \right)^{\nu} \right]$, & $0 \leq c_1 \leq 1$,
-  $c_2 > 0$, $0 < \nu \leq 2$
+  \textbf{Whittle--Matérn}\index{covariance function!Whittle--Mat\'ern}
+  & $\rho(h) = c_1 \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{h}{c_2}
+  \right)^{\nu} K_{\nu}\left(\frac{h}{c_2} \right)$, & $0 \leq c_1
+  \leq 1$, $c_2>0$, $\nu > 0$\\
+  \textbf{Cauchy}\index{covariance function!cauchy} & $\rho(h) = c_1
+  \left[1 + \left(\frac{h}{c_2} \right)^2 \right]^{-\nu}$, & $0 \leq
+  c_1 \leq 1$, $c_2 >0$, $\nu > 0$\\
+  \textbf{Powered Exponential}\index{covariance function!powered
+    exponential} & $\rho(h) = c_1 \exp\left[- \left(\frac{h}{c_2}
+    \right)^{\nu} \right]$, & $0 \leq c_1 \leq 1$, $c_2 > 0$, $0 < \nu
+  \leq 2$
 \end{tabular}
 \bigskip
 
-where $c_1$, $c_2$ and $\nu$ are the sill, the range and the smooth
-parameters of the correlation function, $\Gamma$ is the gamma function
-and $K_{\nu}$ is the modified Bessel function of the third kind with
-order $\nu$. Figure~\ref{fig:covariances} plots the correlation
-functions for the parametric families introduced above. The left panel
-was generated with the following lines
+where $c_1$, $c_2$ and $\nu$ are the sill, 
+\index{covariance function!sill} the range
+\index{covariance function!range} and the smooth
+\index{covariance function!smooth} parameters of the correlation
+function, $\Gamma$ is the gamma function and $K_{\nu}$ is the modified
+Bessel function of the third kind with order
+$\nu$. Figure~\ref{fig:covariances} plots the correlation functions
+for the parametric families introduced above. The left panel was
+generated with the following lines
 <<eval=FALSE>>=
 covariance(sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
            xlim = c(0,6), ylim = c(0, 1))
@@ -649,8 +668,8 @@ contour(xs, ys, rho2, xlab = expression(paste(Delta, x)),
 The correlation functions introduced above are all isotropic, but
 model~\eqref{eq:schlather} doesn't require this assumption. From a
 valid correlation function $\rho$ it is always possible to get an
-elliptical correlation function $\rho_e$ by using the following
-transformation:
+elliptical correlation function\index{covariance function!elliptical}
+$\rho_e$ by using the following transformation:
 \begin{equation}
   \label{eq:ellipticalCorrFun}
   \rho_e(\Delta x) = \rho\left(\sqrt{{\Delta x}^T A \Delta x} \right)
@@ -679,236 +698,15 @@ correlation families don't allow negative values so that independence
 is never reached. The next two sections propose two alternatives based
 on characterisation~\eqref{eq:SchlatherChar} that bypass this hurdle.
 
-\section{Independent Schlather Process}
-\label{sec:indep-schl-proc}
 
-In the previous section, we mentioned that the model proposed by
-\citet{Schlather2002} cannot deal with independence. A first attempt
-to solve this issue is to consider a new random process that consists
-in a mixture of the Schlather model and a fully independent random
-process. This model, called the independent Schlather process, is
-defined by:
-\begin{equation}
-  \label{eq:indSchlatherChar}
-  Z(x) = \max \left\{ \alpha Y, (1- \alpha) Z^*(x) \right\}
-\end{equation}
-where $\alpha \in [0, 1]$ is the mixture proportion, $Y$ is a unit
-Fréchet random variable and $Z^*(\cdot)$ is the Schlather process as
-defined by equation~\eqref{eq:schlather}. It can be seen directly from
-equation~\eqref{eq:indSchlather} that independence occurs when $\alpha
-= 1$.
-
-$Z(\cdot)$ is a stationary max-stable process with unit Fréchet
-margins. Indeed,
-\begin{eqnarray*}
-  \Pr \left[Z(x) \leq z \right] &=& \Pr \left[ \alpha Y \leq z, (1 -
-    \alpha) Z^*(x) \leq z \right] = \Pr \left[ Y \leq z / \alpha \right]
-  \Pr \left[Z^*(x) \leq z / (1 - \alpha) \right]\\
-  &=& \exp \left[ - \alpha / z \right] \exp \left[ - (1-\alpha) / z
-  \right] = \exp \left(-1/z \right)
-\end{eqnarray*}
-so that $Z(\cdot)$ has unit Fréchet margins. The max-stability of
-$Z(\cdot)$ follows directly as $Y$ and $Z^*(x)$ are independent and
-both of them are max-stable.
-
-Using the additional assumptions mentioned in the previous section,
-the bivariate CDF is given by: {\small
-  \begin{equation}
-    \label{eq:indSchlather}
-    \Pr \left[Z(x_1) \leq z_1, Z(x_2) \leq z_2 \right] = \exp
-    \left[ -\left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left\{\alpha +
-        \frac{1-\alpha}{2} \left(1 + \sqrt{1 - 2 (\rho(h) + 1) \frac{z_1
-              z_2}{(z_1 + z_2)^2}} \right) \right\} \right]
-  \end{equation}
-}
-
-<<label=indSchlather2Sim,echo=FALSE>>=
-rfrechet <- function(n, loc = 0, scale = 1, shape = 1){
-  if (min(scale) < 0 || min(shape) <= 0) 
-    stop("invalid arguments")
-  loc + scale * rexp(n)^(-1/shape)
-}
-
-x <- y <- seq(0, 10, length = 100)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=TRUE, model="wh", param=c(0,1,0,1, 1), maxstable="extr")
-ms0 <- t(ms0)
-alpha <- 0.1
-z <- rfrechet(prod(dim(ms0)))
-ms0 <- apply(cbind((1-alpha) * as.numeric(ms0), alpha * z), 1, max)
-ms0 <- matrix(ms0, nrow = 100, ncol = 100)
-
-
-set.seed(12)
-ms1 <- MaxStableRF(x, y, grid=TRUE, model="wh", param=c(0,1,0,1, 1), maxstable="extr")
-ms1 <- t(ms1)
-alpha <- 0.9
-z <- rfrechet(prod(dim(ms1)))
-ms1 <- apply(cbind((1-alpha) * as.numeric(ms1), alpha * z), 1, max)
-ms1 <- matrix(ms1, nrow = 100, ncol = 100)
-
-breaks <- c(seq(0, 50, length = 30), 1500)
-par(mfrow=c(1,2))
-image(x, y, ms0, col = terrain.colors(31)[-31], breaks = breaks)
-image(x, y, ms1, col = terrain.colors(31)[-31], breaks = breaks)
-@ 
-
-\begin{figure}
-  \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
-<<indSchlather2Sim>>
-@ 
-\caption{Two simulations of the independent Schlather model having a
-  Whittle--Matérn correlation function such as $c_1 = c_2 = \nu =
-  1$. Left panel: $\alpha = 0.1$. Right panel: $\alpha = 0.9$.}
-  \label{fig:indSchlather2sim}
-\end{figure}
-
-There are two main drawbacks with the independent Schlather
-process. Firstly, although $Z(\cdot)$ is a valid stochastic process,
-its spatial structure is quite unnatural. Indeed, the $Y$ component
-can be thought as pure noise. Secondly, despite independence is
-reached, there is still a range of dependence that couldn't be taken
-into account. We will focus on this point in
-Section~\ref{sec:extremal-coefficient}. Figure~\ref{fig:indSchlather2sim}
-plots two simulated independent Schlather random fields but with two
-different values of $\alpha$.
-
-\section{Geometric Gaussian Process}
-\label{sec:geom-gauss-proc}
-
-To solve the issue of independence with the Schlather process,
-A.C. Davison proposed another model referred to as the geometric
-Gaussian model. The term geometric is by analogy with geometric
-brownian motion. The geometric Gaussian model is based on
-characterisation~\eqref{eq:SchlatherChar} but uses instead of Gaussian
-process for $Y_i(\cdot)$, a log-normal process. More precisely, the
-geometric Gaussian process is defined by:
-\begin{equation}
-  \label{eq:geomGaussChar}
-  Z(x) = \max_i \xi_i Y_i(x)
-\end{equation}
-where the $Y_i(\cdot)$ are i.i.d copies of
-\begin{equation*}
-  Y(x) = \exp\left(\sigma \epsilon(x) - \frac{\sigma^2}{2} \right)
-\end{equation*}
-where $\epsilon(\cdot)$ is a standard Gaussian process with
-correlation function $\rho$.
-
-Obviously this random process is a unit Fréchet max-stable
-process. Indeed, it shares the same construction as the Schlather
-characterisation. The only condition that need to be satisfied is that
-$\mathbb{E}[Y(x)]=1$. This is easily shown as the moment generating
-function of a normal random variable $X$ with mean $\mu$ and variance
-$\sigma^2$ is
-\begin{equation*}
-  M_X(t) = \mathbb{E} \left[ \exp(t X) \right] = \exp \left( \mu t +
-    \frac{\sigma^2 t^2}{2} \right)
-\end{equation*}
-so that, we have
-\begin{equation*}
-  \mathbb{E}[Y(x)] = \exp \left(-\frac{\sigma^2}{2} +
-    \frac{\sigma^2}{2} \right) = 1
-\end{equation*}
-
-\begin{figure}
-  \centering
-  \includegraphics[angle=-90,width=.6\textwidth]{Figures/geomGauss2Sim}
-  \caption{Two simulations of the geometric Gaussian random process
-    with the Whittle--Matérn correlation function such as $c_1 = c_2 =
-    \nu = 1$. Left panel: $\sigma^2 = 0.1$. Right panel: $\sigma^2 =
-    2$.}
-  \label{fig:geomGauss2Sim}
-\end{figure}
-
-As $\sigma \rightarrow 0^+$ or $\rho(h) \rightarrow 1$ complete
-dependence is reached while $\sigma \rightarrow +\infty$ leads to
-independence whatever the $\rho(h)$ value
-is. Figure~\ref{fig:geomGauss2Sim} plots two simulations of the
-geometric Gausian process with two different values for
-$\sigma^2$. Interestingly, the bivariate CDF
-for~\eqref{eq:geomGaussChar} is the same as equation~\eqref{eq:smith}
-where
-\begin{equation}
-  \label{eq:geomGaussAsSmith}
-  a^2 = 2 \sigma^2 \left(1 - \rho(h) \right)
-\end{equation}
-\begin{proof}
-  \begin{eqnarray*}
-    -\log \Pr \left[Z(x_1) \leq z_1, Z(x_2) \leq z_2 \right] &=&
-    \iint_{\min\{z_1/Y(x_1), z_2 / Y(x_2) \}}^{+\infty} \xi^{-2} d\xi
-    dP(Y(x_1),Y(x_2))\\
-    &=& \int \max\left\{\frac{Y(x_1)}{z_1}, \frac{Y(x_2)}{z_2} \right\}
-    dP(Y(x_1),Y(x_2))\\
-    &=& \int \frac{Y(x_1)}{z_1} \mathbb{I}\left(\frac{Y(x_1)}{z_1} >
-      \frac{Y(x_2)}{z_2} \right) dP(Y(x_1),Y(x_2))\\
-    &+& \int \frac{Y(x_2)}{z_2} \mathbb{I}\left(\frac{Y(x_1)}{z_1} \leq
-      \frac{Y(x_2)}{z_2} \right) dP(Y(x_1),Y(x_2))
-  \end{eqnarray*}
-
-  Let first notice that
-  \begin{equation*}
-    \frac{Y(x_1)}{Y(x_2)} = \exp\left[\sigma \{\epsilon(x_1) -
-      \epsilon(x_2)\} \right]
-  \end{equation*}
-  Define $W_a = \frac{\sigma}{2} \{\epsilon(x_1) - \epsilon(x_2) \}$
-  and $W_b = \frac{\sigma}{2} \{\epsilon(x_1) + \epsilon(x_2) \}$. As
-  $\epsilon(x_1)$ and $\epsilon(x_2)$ are both standard normal r.v.\
-  having correlation $\rho$, $W_a$ and $W_b$ are also normal r.v.\
-  with $0$ mean and their variances are equal to $\sigma^2 (1 - \rho)
-  / 2$ and $\sigma^2 (1 + \rho) / 2$ respectively. Moreover, it is
-  straightforward to see that $W_a$ and $W_b$ are independent.
-
-  We have
-  \begin{equation*}
-    Y(x_1) = \exp\left( - \frac{\sigma^2}{2} \right)
-    \exp\left(W_a\right) \exp\left(W_b\right) \qquad \text{and} \qquad 
-    \frac{Y(x_1)}{z_1} > \frac{Y(x_2)}{z_2} \Longleftrightarrow
-    W_a > \frac{1}{2} \log\left(\frac{z_1}{z_2}\right)
-  \end{equation*}
-  so that we get
-  \begin{eqnarray*}
-    A &:=&\int \frac{Y(x_1)}{z_1} \mathbb{I}\left(\frac{Y(x_1)}{z_1} >
-      \frac{Y(x_2)}{z_2} \right) dP(Y(x_1),Y(x_2))\\
-    &=& \frac{\exp(-\sigma^2/2)}{z_1} \iint \exp\left(W_a\right)
-    \exp\left(W_b\right) I\left\{W_a > \frac{1}{2} \log
-      \frac{z_1}{z_2}\right\} dP\left(W_a, W_b\right)\\
-    &=& \frac{\exp(-\sigma^2/2)}{z_1} \int \exp\left(W_b\right)
-    dP\left(W_b\right) \int \exp\left(W_a\right) I\left\{W_a >
-      \frac{1}{2} \log\frac{z_1}{z_2}\right\} dP\left(W_a\right)\\
-    &=& \frac{1}{z_1} \exp\left(-\frac{\sigma^2}{2} \right) \exp\left(
-      \frac{\sigma^2 (1 + \rho)}{4}\right) \frac{1}{2}
-    \exp\left(\frac{\sigma^2 (1 - \rho)}{4} \right)\left[1 -
-      \Phi\left(\frac{\log \frac{z_1}{z_2} - \sigma^2 (1 - \rho)}{\sigma
-          \sqrt{2 (1 - \rho)}} \right) \right]\\
-    &=& \frac{1}{z_1} \Phi\left(\frac{\sigma \sqrt{1 - \rho}}{\sqrt{2}}
-      - \frac{\log \frac{z_1}{z_2}}{\sigma \sqrt{2(1-\rho)}} \right)
-  \end{eqnarray*}
-  where we used that
-  \begin{equation*}
-    \int \exp\left(X\right) I\left\{X > c\right\}dP\left(X\right) =
-    \frac{1}{2} \exp\left(\frac{\sigma^2}{2} \right) \Phi\left(\frac{c -
-        \sigma^2}{2 \sigma} \right), \qquad \text{where } X \sim
-    N(0,\sigma^2)
-  \end{equation*}
-
-  By symmetry, we get
-  \begin{equation*}
-    \int \frac{Y(x_2)}{z_2} \mathbb{I}\left(\frac{Y(x_2)}{z_2} >
-      \frac{Y(x_1)}{z_1} \right) dP(Y(x_1),Y(x_2)) = \frac{1}{z_2}
-    \Phi\left(\frac{\sigma \sqrt{1 - \rho}}{\sqrt{2}} - \frac{\log
-        \frac{z_2}{z_1}}{\sigma \sqrt{2(1-\rho)}} \right)
-  \end{equation*}
-  This proves equation~\eqref{eq:geomGaussAsSmith}.
-\end{proof}
 
 \chapter{Spatial Dependence of Max-Stable Random Fields}
 \label{cha:spatial-depend-max}
 
 Sooner or later, statistical modellers will be interested in knowing
 how evolves dependence in space. When dealing with non-extremal data,
-a common tools is the (semi-)variogram $\gamma$
-\citep{Cressie1993}. Let $Y(\cdot)$ be a stationary Gaussian process
+a common tools is the (semi-)variogram\index{variogram} $\gamma$
+\citep{Cressie1993}. Let $Y(\cdot)$ be a stationary gaussian process
 with correlation function $\rho$ and variance $\sigma^2$. It is well
 known that $Y(\cdot)$ is fully characterized by its mean and its
 covariance. Consequently, the variogram defined as
@@ -932,8 +730,8 @@ to extremes.
 
 Let $Z(\cdot)$ be a stationary max-stable random field with unit
 Fréchet margins. The extremal dependence among $N$ fixed locations in
-$\mathbb{R}^d$ can be summarised by the extremal coefficient, which is
-defined as:
+$\mathbb{R}^d$ can be summarised by the extremal
+coefficient\index{extremal coefficient}, which is defined as:
 \begin{equation}
   \label{eq:extcoeff}
   \Pr\left[Z(x_1) \leq z, \ldots, Z(x_N) \leq z\right] = \exp\left(-
@@ -971,9 +769,9 @@ consider pairwise extremal coefficients, that is
 \end{equation}
 
 Following \citet{Schlather2003}, $\theta(\cdot)$ is called the
-extremal coefficient function; it provides sufficient information
-about extremal dependence for many problems although it does not
-characterise the full distribution.
+extremal coefficient function\index{extremal coefficient!function}; it
+provides sufficient information about extremal dependence for many
+problems although it does not characterise the full distribution.
 
 The extremal coefficient functions for max-stable models presented in
 Chapter~\ref{cha:an-introduction-max} can be derived directly from
@@ -987,11 +785,6 @@ we have:
   \right)$\\
   \textbf{Schlather} & $\theta(x_1 - x_2) = 1 + \sqrt{\frac{1 -
       \rho(x_1 - x_2)}{2}}$\\
-  \textbf{Independent Schlather} & $\theta(x_1 - x_2) = 2 \alpha +
-  \left(1 - \alpha \right) \left(1 + \sqrt{\frac{1 - \rho(x_1 -
-        x_2)}{2}} \right)$\\
-  \textbf{Geometric Gaussian} & $\theta(x_1 - x_2) = 2 \Phi
-  \left(\sqrt{\frac{\sigma^2 (1 - \rho(x_1 - x_2))}{2}} \right)$    
 \end{tabular}
 \bigskip
 
@@ -1001,18 +794,10 @@ cov.fun <- covariance(sill = 1, range = 1, smooth = 1, plot = FALSE)
 schlather <- function(h)
   1 + sqrt((1-cov.fun(h))/2)
 alpha <- 0.1
-ischlather <- function(h)
-  2 * alpha + (1 - alpha) * schlather(h)
-sigma2 <- 3
-geomGauss <- function(h)
-  2 * pnorm(sqrt(sigma2 * (1 - cov.fun(h)) / 2))
 
 plot(smith, from = 0, to = 5, xlab = "h", ylab = expression(theta(h)))
-plot(geomGauss, add = TRUE, col = 2, from = 0, to = 5)
-plot(ischlather, add = TRUE, col = 3, from = 0, to = 5)
-plot(schlather, add = TRUE, col = 4, from = 0, to = 5)
-legend("bottomright", c("Smith",  "Geom. Gauss", "Ind. Schlather", "Schlather"),
-       col = 1:4, lty = 1, inset = 0.05)
+plot(schlather, add = TRUE, col = 2, from = 0, to = 5)
+legend("bottomright", c("Smith", "Schlather"), col = 1:2, lty = 1, inset = 0.05)
 @ 
 
 \begin{figure}
@@ -1022,21 +807,14 @@ legend("bottomright", c("Smith",  "Geom. Gauss", "Ind. Schlather", "Schlather"),
 @ 
 \caption{Extremal coefficient functions for different max-stable
   models. $\Sigma$ is the $2\times 2$ identity matrix. Correlation
-  function: Whittle--Matérn with $c_1 = c_2 = \nu = 1$. $\alpha =
-  0.1$. $\sigma^2 = 3$.}
+  function: Whittle--Matérn with $c_1 = c_2 = \nu = 1$.}
   \label{fig:extCoeffModels}
 \end{figure}
 
 Figure~\ref{fig:extCoeffModels} plots the extremal coefficient
 function for the different max-stable models introduced. The Smith
 model covers the whole range of dependence while Schlather's model has
-an upper bound of $1 + \sqrt{1/2}$. Similarly, the independent
-Schlather model has an upper bound of $1 + \sqrt{1/2} + \alpha (1 -
-\sqrt{1/2})$ but induces a jump of $\alpha$ at the origin. Lastly, the
-geometric Gaussian model has an upper bound of $2
-\Phi(\sqrt{\sigma^2/2})$ but does not induce any jump at $h=0$. From a
-practical point of view, when $\sigma^2 \geq 15$, the geometric
-Gaussian model covers the whole range of dependence.
+an upper bound of $1 + \sqrt{1/2}$.
 
 
 \citet{Schlather2003} prove several interesting properties for
@@ -1057,7 +835,7 @@ coefficient function. For instance, the Gaussian correlation model,
 $\rho(h) = \exp(-h^2)$, $h\geq 0$, is not allowed since it is
 differentiable at $h = 0$.
 
-equation~\eqref{eq:extcoeff} forms the basis for a simple maximum
+Equation~\eqref{eq:extcoeff} forms the basis for a simple maximum
 likelihood estimator. Suppose we have $Z_1(\cdot)$, \ldots,
 $Z_n(\cdot)$, independent replications of $Z(\cdot)$ observed at a set
 $A = \{x_1, \ldots, x_{|A|} \}$ of locations. The log-likelihood based
@@ -1173,7 +951,7 @@ extra work to get reliable variogram-based tools.
 \label{sec:madogram}
 
 A standard tool in geostatistics, similar to the variogram, is the
-madogram \citep{Matheron1987}. The madogram is
+madogram\index{madogram} \citep{Matheron1987}. The madogram is
 \begin{equation}
   \label{eq:madogram}
   \nu(x_1 - x_2) = \frac{1}{2} \mathbb{E}\left[ |Z(x_1) - Z(x_2)|
@@ -1368,7 +1146,7 @@ In the previous subsection, we introduced the madogram as a summary
 statistic for the spatial dependence structure. However, the choice of
 the GEV parameters to compute this madogram is somewhat
 arbritrary. Instead, \citet{Cooley2006} propose a modified madogram
-called the $F$-madogram
+called the $F$-madogram\index{madogram!$F$-madogram}
 \begin{equation}
   \label{eq:F-madogram}
   \nu_F(x_1 - x_2) = \frac{1}{2} \mathbb{E}
@@ -1520,7 +1298,8 @@ The extremal coefficient, and thus the ($F$-)madogram, does not fully
 characterize the spatial dependence of a random field. Indeed, from
 equation~\eqref{eq:extcoeff}, it only considers $\Pr[Z(x_1) \leq z_1,
 Z(x_2) \leq z_2]$ where $z_1 = z_2 = z$. To solve this issue,
-\citet{Naveau2009} introduce the $\lambda$-madogram defined as
+\citet{Naveau2009} introduce the
+$\lambda$-madogram\index{madogram!$\lambda$-madogram} defined as
 \begin{equation}
   \label{eq:lambda-madogram}
   \nu_{\lambda}(x_1 - x_2) = \frac{1}{2} \mathbb{E} \left[
@@ -1720,8 +1499,8 @@ As stated by equations~\eqref{eq:smith} and~\eqref{eq:schlather}, the
 density of a max-stable process is analytically known only for the
 bivariate case so that maximum likelihood estimators are not
 available. This observation led \citet{Smith1991} to propose an
-estimator based on least squares. This fitting procedure consists in
-minimizing the objective function
+estimator based on least squares\index{least squares}. This fitting
+procedure consists in minimizing the objective function
 \begin{equation}
   \label{eq:extCoeffLeastSquares}
   C(\psi) = \sum_{i<j} \left(\frac{\theta_{i,j} -
@@ -1779,7 +1558,8 @@ presented in Chapter~\ref{cha:an-introduction-max} is not analytically
 known if the number of stations under consideration is greater or
 equal to three. However, as the bivariate density is analytically
 known, this suggests the use of the pairwise likelihood in place of
-the full likelihood. The log pairwise-likelihood is given by
+the full likelihood. The log
+pairwise-likelihood\index{pairwise-likelihood} is given by
 \begin{equation}
   \label{eq:lplik}
   \ell_p(\mathbf{z};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
@@ -1797,7 +1577,7 @@ max-stable process.
 Properties of the maximum composite likelihood estimator are well
 known \citep{Lindsay1988,Cox2004} and belong to the class of maximum
 likelihood estimation under misspecification\footnote{More rigorously
-  we should say \emph{partially specified}.}.
+  we should say \emph{partially specified}.}\index{misspecification}.
 
 A statistical model $\{f(y;\psi), \psi \in \mathbb{R}^p\}$ is said
 \emph{misspecified} if the observations $y_i$, $i=1$, \ldots, $n$ are
@@ -1815,7 +1595,7 @@ law of large numbers, we have
   \qquad n \rightarrow +\infty
 \end{equation}
 where $\psi_g$ is the value that minimizes the Kullback--Leibler
-discrepancy defined as
+discrepancy\index{Kullback--Leibler discrepancy} defined as
 \begin{equation}
   \label{eq:KullbackLeibler}
   D\left(f_\psi, g\right) = \int \log \left( \frac{g(y)}{f(y;\psi)}
@@ -1937,17 +1717,10 @@ fitmaxstab(ms0, locations, cov.mod = "cauchy")
 fitmaxstab(ms0, locations, cov.mod = "powexp")
 @ 
 
-One may also consider other types of max-stable models, this could be
-done as follows
+One may also consider the Smith model, this could be done as follows
 <<eval=FALSE>>=
 fitmaxstab(ms0, locations, cov.mod = "gauss")
-fitmaxstab(ms0, locations, cov.mod = "iwhithmat")
-fitmaxstab(ms0, locations, cov.mod = "gpowexp")
 @ 
-where \verb|iwhitmat| stands for the independent Schlather model
-with the Whittle--Matérn correlation family and \verb|gpowexp| for the
-geometric Gaussian model with the powered exponential correlation
-family.
 
 It is also possible to used different optimization routines to fit the
 model to data by passing the \verb|method| argument. For instance, if
@@ -1985,13 +1758,13 @@ Hessian matrix) and $J(\psi) = \mbox{Var}[\nabla
 \ell_p(\psi;\mathbf{Y})]$, where the expectations are with respect to
 the ``full'' density.
 
-In practice, to get the standard errors we need estimates of $H(\psi)$
-and $J(\psi)$. The estimation of $H(\psi)$ is straightforward and is
-$\hat{H}(\hat{\psi}_p) = \nabla^2 \ell_p(\hat{\psi}_p;\mathbf{y})$;
-that is, the Hessian matrix evaluated at $\hat{\psi}_p$. Usually,
-standard optimizers are able to get finite-difference based estimates
-for $H(\hat{\psi}_p)$ so that no extra work is needed to get
-$\hat{H}(\hat{\psi}_p)$.
+In practice, to get the standard errors\index{standard errors} we need
+estimates of $H(\psi)$ and $J(\psi)$. The estimation of $H(\psi)$ is
+straightforward and is $\hat{H}(\hat{\psi}_p) = \nabla^2
+\ell_p(\hat{\psi}_p;\mathbf{y})$; that is, the Hessian matrix
+evaluated at $\hat{\psi}_p$. Usually, standard optimizers are able to
+get finite-difference based estimates for $H(\hat{\psi}_p)$ so that no
+extra work is needed to get $\hat{H}(\hat{\psi}_p)$.
 
 The estimation of $J(\hat{\psi}_p)$ is a little bit more difficult and
 can be done in two different ways \citep{Varin2005}. First,
@@ -2000,13 +1773,13 @@ $\hat{J}(\hat{\psi}_p) = \nabla \ell_p(\hat{\psi}_p;\mathbf{y})
 {\nabla \ell_p(\hat{\psi}_p;\mathbf{y})}^T$. This estimator is tagged
 \verb|grad| as it uses the gradient of the log pairwise
 likelihood. Another estimator is given by noticing that $J(\psi)$
-corresponds to the variance of the pairwise score equations
-$\ell_p(\psi;\mathbf{Y}) = 0$. Consequently, a second estimator,
-tagged \verb|score|, is given by the sample variance of each
-contribution to the pairwise score function. The second estimator is
-only accessible if independent replications of $\mathbf{Y}$ are
-available\footnote{which will mostly be the case for spatial
-  extremes.}.
+corresponds to the variance of the pairwise score
+equations\index{score equation} $\ell_p(\psi;\mathbf{Y}) =
+0$. Consequently, a second estimator, tagged \verb|score|, is given by
+the sample variance of each contribution to the pairwise score
+function. The second estimator is only accessible if independent
+replications of $\mathbf{Y}$ are available\footnote{which will mostly
+  be the case for spatial extremes.}.
 
 These two types of standard errors are available by invoking the
 following two lines:
@@ -2099,8 +1872,8 @@ have
 \end{equation}
 where $H(\psi_g)$ is given by equation~\eqref{eq:Hessian}.
 
-The AIC is, up to constant, an estimator of
-equation~\eqref{eq:KLAverageOverPsiHat} and is defined as
+The AIC\index{information criterion!AIC} is, up to constant, an
+estimator of equation~\eqref{eq:KLAverageOverPsiHat} and is defined as
 \begin{equation}
   \label{eq:AIC}
   \mbox{AIC} = - 2 \ell(\hat{\psi}) + 2 p
@@ -2112,7 +1885,8 @@ Because we see in Section~\ref{sec:misspecification} that by using the
 maximum pairwise likelihood estimator we work under misspecification,
 the AIC is not appropriate. Another estimator of
 equation~\eqref{eq:KLAverageOverPsiHat}, which allows for
-misspecification, is the Takeuchi information criterion (TIC)
+misspecification, is the Takeuchi information
+criterion\index{information criterion!TIC} (TIC)
 \begin{equation}
   \label{eq:TIC}
   \mbox{TIC} = - 2 \ell(\hat{\psi}) - 2 \mbox{tr}\left\{\hat{J}
@@ -2156,8 +1930,9 @@ value $\kappa_0$ of $\kappa$ is relevant with our data. Let
 $(\hat{\kappa}^T, \hat{\phi}^T)$ be the maximum likelihood estimate
 for $\psi$ and $\hat{\phi}_{\kappa_0}$ the maximum likelihood estimate
 under the restriction $\kappa = \kappa_0$. A common statistic to check
-if $\kappa_0$ is relevant or not is the likelihood ratio statistic $
-W(\kappa_0)$ which satisfies, under mild regularity conditions,
+if $\kappa_0$ is relevant or not is the likelihood ratio
+statistic\index{likelihood ratio statistic} $ W(\kappa_0)$ which
+satisfies, under mild regularity conditions,
 \begin{equation}
   \label{eq:likRatio}
   W(\kappa_0) = 2 \left\{\ell(\hat{\kappa},\hat{\phi}) - \ell(\kappa_0,
@@ -2355,11 +2130,12 @@ dependence parameters are underestimated as we suppose that data were
 originally unit Fréchet.
 
 One can solve this problem by fitting in \emph{one step} both GEV and
-spatial dependence parameters. As the bivariate distributions for the
-max-stable models introduced in Chapter~\ref{cha:an-introduction-max}
-were imposing unit Fréchet margins, we need to rewrite them for
-unknown GEV margins. To this aim, let define the transformation $t$
-such that
+spatial dependence parameters
+\citep{Padoan2008a,Padoan2008,Gholam2009}. As the bivariate
+distributions for the max-stable models introduced in
+Chapter~\ref{cha:an-introduction-max} were imposing unit Fréchet
+margins, we need to rewrite them for unknown GEV margins. To this aim,
+let define the transformation $t$ such that
 \begin{equation}
   \label{eq:mapGEV2Frech}
   t: Y(x) \mapsto \left(1 + \xi(x) \frac{Y(x) -
@@ -2391,8 +2167,8 @@ $i$ and $j$ and
 \end{equation*}
 where $\mu_i$, $\sigma_i$, $\xi_i$ are the GEV parameters for the
 $i$-th site and $y_k^{(i)}$ is the $k$-th observation available at
-site $i$ and $|J(t(y_k^{(i)}))|$ is the Jacobian of the mapping $t$
-evaluated at the $y_k^{(i)}$ observation i.e.
+site $i$ and $|J(t(y_k^{(i)}))|$ is the Jacobian\index{Jacobian} of
+the mapping $t$ evaluated at the $y_k^{(i)}$ observation i.e.
 \begin{equation*}
   |J(t(y_k^{(i)}))| = \frac{1}{\sigma_i} \left(1 + \xi_i
     \frac{y_k^{(i)} - \mu_i}{\sigma_i} \right)^{1/\xi_i-1}
@@ -2455,12 +2231,13 @@ using matrix notation e.g.
   \mathbf{y} = \mathbf{X \beta} + \mathbf{\epsilon}
 \end{equation}
 where $\mathbf{y}$ is a $n \times 1$ vector, $\mathbf{X}$ is a $n
-\times p$ matrix called the \emph{design matrix} and
-$\mathbf{\epsilon}$ is a $p \times 1$ vector.
+\times p$ matrix called the \emph{design matrix}\index{design matrix}
+and $\mathbf{\epsilon}$ is a $p \times 1$ vector.
 
-Model~\eqref{eq:LM} is called a \emph{linear model} as it is linear in
-$\beta$ but not necessarily in the covariates $x$. For example, the
-two following models are linear models
+Model~\eqref{eq:LM} is called a \emph{linear model}
+\index{linear model} as it is linear in $\beta$ but not necessarily in
+the covariates $x$. For example, the two following models are linear
+models
 \begin{eqnarray*}
   y &=& \beta_0 + \beta_1 x_1 + \beta_2 x_1^2 + \epsilon\\
   y &=& \beta_0 + \beta_1 x_1 + \beta_2 \log x_2 + \epsilon
@@ -2515,7 +2292,8 @@ or equivalently in a matrix notation
   \end{bmatrix}
 \end{eqnarray*}
 
-Usually, $\mathbf{\beta}$ is estimated by minimizing least squares
+Usually, $\mathbf{\beta}$ is estimated by minimizing least
+squares\index{least squares}
 \begin{equation}
   \label{eq:least-square}
   SS(\beta) = \sum_{i=1}^n (y_i - x_i^T \mathbf{\beta})^2 =
@@ -2545,10 +2323,10 @@ and the fitted $\mathbf{y}$ values are given by
 \end{equation}
 
 The matrix $\mathbf{H} = \mathbf{X} \left(\mathbf{X}^T \mathbf{X}
-\right)^{-1} \mathbf{X}^T$ is called the \emph{hat matrix} as it puts
-``hats'' on $\mathbf{y}$. $\mathbf{H}$ is a projection matrix that
-orthogonally projects $\mathbf{y}$ onto the plane spanned by the
-columns of the design matrix $\mathbf{X}$.
+\right)^{-1} \mathbf{X}^T$ is called the \emph{hat matrix}
+\index{hat matrix} as it puts ``hats'' on $\mathbf{y}$. $\mathbf{H}$
+is a projection matrix that orthogonally projects $\mathbf{y}$ onto
+the plane spanned by the columns of the design matrix $\mathbf{X}$.
 
 The hat matrix plays an important role in parametric regression as it
 provides useful informations on the influence of some observations to
@@ -2567,7 +2345,7 @@ the observations, we have
   \mathbf{X})^{-1} \} = \mbox{tr} (\mathbf{I}_p) = p
 \end{eqnarray*}
 and the total influence of all observations is equal to the degrees of
-freedom of the model.
+freedom\index{degrees of freedom} of the model.
 
 \subsection{Semiparametric Regression Models}
 \label{sec:semipar-regr}
@@ -2655,11 +2433,11 @@ overfits. This figure was generated with the following lines
 <<knotsEffect>>
 @ 
 
-Consequently, there is a pressing need for a kind of
-``automatic knot selection''. One common strategy to overcome this
-issue is to resort to \emph{penalized splines} or
-\emph{p-splines}. The idea beyond this is to consider a large number
-of knots but to constrain, in a sense to be defined, their influence.
+Consequently, there is a pressing need for a kind of ``automatic knot
+selection''. One common strategy to overcome this issue is to resort
+to \emph{penalized splines} or \emph{p-splines}\index{p-splines}. The
+idea beyond this is to consider a large number of knots but to
+constrain, in a sense to be defined, their influence.
 
 <<label=smoothingParamEffect,echo=FALSE>>=
 M0 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0)
@@ -2700,8 +2478,9 @@ $\mathbf{\beta}$ to minimize
   ||\mathbf{y} - \mathbf{X \beta}||^2 + \lambda \mathbf{\beta}^T
   \mathbf{K \beta}  
 \end{equation}
-for some $\lambda\geq 0$ called the \emph{smoothing parameter} as it
-controls the amount of smoothing. Indeed, if $\lambda =0$, then
+for some $\lambda\geq 0$ called the \emph{smoothing
+  parameter}\index{smoothing parameter} as it controls the amount of
+smoothing. Indeed, if $\lambda =0$, then
 problem~\eqref{eq:constraintLeastSquare} is left unconstrained and
 leads to wiggly fits, while $\lambda$ being large implies smoother
 fits. Figure~\ref{fig:smoothingParamEffect} is a nice illustration of
@@ -2726,14 +2505,15 @@ and the corresponding fitted values for a penalized spline are given by
 \end{equation}
 
 In accordance with the hat matrix with linear models, one can define
-the \emph{smoother matrix} $\mathbf{S}_\lambda$ such that
+the \emph{smoother matrix}\index{smoother matrix} $\mathbf{S}_\lambda$
+such that
 \begin{equation}
   \label{eq:smootherMatrix}
   \hat{\mathbf{y}} = \mathbf{S}_\lambda \mathbf{y}
 \end{equation}
 where $\mathbf{S}_\lambda = \mathbf{X} (\mathbf{X}^T \mathbf{X} +
 \lambda \mathbf{K})^{-1} \mathbf{X}^T$. Consequently, a kind of
-effective degrees of freedom is given by
+effective degrees of freedom\index{degrees of freedom} is given by
 $\mbox{tr}(\mathbf{S}_\lambda)$.
 
 If the problem of knot selection seems to be resolved by using these
@@ -2743,7 +2523,7 @@ $\lambda$? Would it be possible to get an ``automatic selection'' for
 $\lambda$?
 
 One common tool for answering these two questions is known as
-\emph{cross-validation} (CV)
+\emph{cross-validation}\index{cross-validation} (CV)
 \begin{equation}
   \label{eq:crossValidation}
   CV(\lambda) = \sum_{i=1}^n \{y_i - \hat{f}_{-i}(x_i;\lambda)\}^2
@@ -2772,7 +2552,7 @@ compute $CV(\lambda)$.
 Sometimes, the weights $1 - S_{\lambda,ii}$ are replaced by the mean
 weight, $\mbox{tr}(\mathbf{Id} - \mathbf{S}_\lambda) / n$, where
 $\mathbf{Id}$ is the identity matrix, leading to the \emph{generalized
-  cross validation} (GCV) score
+  cross-validation}\index{cross-validation!generalized} (GCV) score
 \begin{equation}
   \label{eq:generalizedCrossValidationInPractice}
   GCV(\lambda) = n^2 \sum_{i=1}^n \left(\frac{y_i -
@@ -3012,7 +2792,7 @@ elements.
 
 Although this section is included in the p-splines with radial basis
 functions, the methodology introduced here can be successfully applied
-to any other basis functions.
+to any other basis functions \citep{Ruppert2003}.
 
 As we stated in Section~\ref{sec:semipar-regr}, for a fixed smoothing
 parameter $\lambda$, the fitted values are given by
@@ -3024,7 +2804,7 @@ for some symmetric matrix $\mathbf{K}$.
 
 Consequently, to perform automatic selection for $\lambda$ by
 minimising the CV or GCV criterion might be computationally demanding
-and numerically unstable. Fortunately, the Demmler-Reinsch
+and numerically unstable. Fortunately, the Demmler--Reinsch
 orthogonalisation often overcomes these issues. The following lines
 describe how it works in practice.
 
@@ -3064,5 +2844,6 @@ $\lambda$ will be cheaper.
 \backmatter
 \bibliography{./references}
 \bibliographystyle{apalike}
+\printindex
 \end{document}
 
