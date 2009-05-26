@@ -33,22 +33,20 @@
   \code{\link{fitmaxstab}}, \code{\link{AIC}}
 }
 \examples{
-require(RandomFields)
-
 ##Define the coordinate of each location
 n.site <- 50
 locations <- matrix(runif(2*n.site, 0, 100), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="stable",
-                   param=c(0,1,.2,30, .5), maxstable="extr",
-                   n = 40)
-ms0 <- t(ms0)
-M0 <- fitmaxstab(ms0, locations, "powexp", std.err.type = "score",
-                     fit.marge = FALSE)
-M1 <- fitmaxstab(ms0, locations, "cauchy", std.err.type = "score",
-                     fit.marge = FALSE)
+data <- rmaxstab(40, locations, cov.mod = "whitmat", sill = 0.8, range =
+30, smooth = 0.5)
+
+M0 <- fitmaxstab(data, locations, "powexp", std.err.type = "score",
+                 fit.marge = FALSE)
+M1 <- fitmaxstab(data, locations, "cauchy", std.err.type = "score",
+                 fit.marge = FALSE)
+
 TIC(M0, M1)
 }
 \author{Mathieu Ribatet}

@@ -32,8 +32,8 @@ void smithfull(double *data, double *distVec, int *nSite,
 		      cov12, cov22, mahalDist);
 
   if (*dns != 0.0)
-    return;
-  
+      return;
+
   //Stage 2: Transformation to unit Frechet
   if (*fitmarge){
     *dns = gev2frech(data, *nObs, *nSite, locs, scales,
@@ -52,9 +52,6 @@ void smithfull(double *data, double *distVec, int *nSite,
     *dns = lpliksmith(data, mahalDist, jac, *nObs, *nSite);
   }
   
-  if (!R_FINITE(*dns))
-    *dns = MINF;
-
   return;
 }
 
@@ -119,9 +116,6 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
-
-  if (!R_FINITE(*dns))
-    *dns = MINF;
   
   return;
 }

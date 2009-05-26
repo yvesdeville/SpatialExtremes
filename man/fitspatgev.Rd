@@ -80,21 +80,19 @@ start, control = list(maxit = 10000), method = "Nelder", std.err.type =
 \author{Mathieu Ribatet}
 \examples{
 ## 1- Simulate a max-stable random field
-require(RandomFields)
 n.site <- 35
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,3, .5), maxstable="extr",
-                   n = 50)
+data <- rmaxstab(50, locations, cov.mod = "whitmat", sill = 1, range =
+  3, smooth = 0.5)
+
 ## 2- Transformation to non unit Frechet margins
-ms1 <- t(ms0)
 param.loc <- -10 + 2 * locations[,2]
 param.scale <- 5 + 2 * locations[,1]
 param.shape <- rep(0.2, n.site)
 for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-  param.shape[i] + param.loc[i]
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
+param.shape[i])
 
 ## 3- Fit a ''spatial GEV'' mdoel to data with the following models for
 ##    the GEV parameters
@@ -102,7 +100,7 @@ form.loc <- loc ~ lat
 form.scale <- scale ~ lon
 form.shape <- shape ~ 1
 
-fitspatgev(ms1, locations, form.loc, form.scale, form.shape)
+fitspatgev(data, locations, form.loc, form.scale, form.shape)
 }
 \keyword{htest}
 

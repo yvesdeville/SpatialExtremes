@@ -1,3 +1,173 @@
+2009-05-26 13:48  mathieu_ribatet
+
+	* src/Makevars: Minor change to Makevars
+
+2009-05-26 13:39  mathieu_ribatet
+
+	* src/simsmith.c: Cleaning C code
+
+2009-05-26 13:39  mathieu_ribatet
+
+	* src/direct.c, src/gradients.c, src/randomlines.c,
+	  src/simschlather.c, src/turningbands.c: Cleaning C code
+
+2009-05-26 13:33  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw, inst/doc/layout.sty,
+	  inst/doc/references.bib: Update the vignette
+
+2009-05-18 14:44  mathieu_ribatet
+
+	* src/pairwiselik.c, src/schlather.c, src/smith.c, src/smith3d.c:
+	  The pairwise likelihood now uses univariate density in presence
+	  of
+	  "numerical" complete dependence
+
+2009-05-18 14:43  mathieu_ribatet
+
+	* src/header.h: Changes due to the implementation of new C code and
+	  the use of Lapack
+
+2009-05-18 14:42  mathieu_ribatet
+
+	* src/covariance.c: Minor changes - boundary cases
+
+2009-05-18 14:41  mathieu_ribatet
+
+	* man/TIC.Rd, man/anova.Rd, man/condmap.Rd, man/covariance.Rd,
+	  man/extcoeff.Rd, man/extcoeffemp.Rd, man/fitcovariance.Rd,
+	  man/fitcovmat.Rd, man/fitmaxstab.Rd, man/fitspatgev.Rd,
+	  man/fmadogram.Rd, man/lmadogram.Rd, man/logLik.maxstab.Rd,
+	  man/madogram.Rd, man/map.Rd, man/predict.maxstab.Rd,
+	  man/predict.spatgev.Rd, man/print.maxstab.Rd,
+	  man/print.spatgev.Rd, man/profile.maxstab.Rd,
+	  man/profile2d.maxstab.Rd, man/qqextcoeff.Rd, man/qqgev.Rd,
+	  man/simmaxstab.Rd: The examples now use my functions instead of
+	  the ones provided by the
+	  RandomFields package
+
+2009-05-18 14:40  mathieu_ribatet
+
+	* src/simmaxstab.c: Removed unnecessary file
+
+2009-05-18 14:39  mathieu_ribatet
+
+	* R/simmaxstab.R, src/simschlather.c, src/simsmith.c: New code
+	  related to the simulation of stationary max-stable random
+	  fields
+
+2009-05-18 14:38  mathieu_ribatet
+
+	* R/randomlines.R, R/simgaussproc.R, man/rgp.Rd, man/vdc.Rd,
+	  src/Makevars, src/direct.c, src/randomlines.c,
+	  src/turningbands.c: New code related to the simulation of
+	  stationary gaussian processes by
+	  using the direct and the turning bands methods
+
+2009-05-18 14:36  mathieu_ribatet
+
+	* R/fitcovmat.R: Use the isotropic definition for the extremal
+	  coefficient if iso =
+	  TRUE
+
+2009-05-18 14:35  mathieu_ribatet
+
+	* R/covariance.R: Allow for the sill to be larger than 1 as now
+	  gaussian processes are
+	  implemented
+
+2009-05-18 14:35  mathieu_ribatet
+
+	* R/geomgauss.R, R/nsgeomgauss.R, R/profile.R, R/schlather.R,
+	  R/schlatherind.R, R/smith.R, R/spatgev.R, R/starting.values.R:
+	  remove the definition of parscale in optim and avoid using
+	  Nelder-Mead
+	  optimizer for one-dimensional problems
+
+2009-05-05 21:39  mathieu_ribatet
+
+	* R/simmaxstab.R, man/simmaxstab.Rd, src/simmaxstab.c: Extend the
+	  simulation from the Smith model
+
+2009-05-05 21:37  mathieu_ribatet
+
+	* R/selection.R, R/smith.R, R/spatgev.R: Remove the qr
+	  decomposition for the computation of the inverse of the
+	  hessian matrix as it seems to be less robust
+
+2009-05-05 21:35  mathieu_ribatet
+
+	* R/fitcovmat.R: Add the iso as an argument of the output and
+	  compute the special
+	  version of the extremal coefficient function when iso = TRUE
+
+2009-04-30 15:04  mathieu_ribatet
+
+	* R/simmaxstab.R, man/simmaxstab.Rd, src/simmaxstab.c: A first
+	  version of a function that generates observations from a Smith
+	  random field
+
+2009-04-30 15:03  mathieu_ribatet
+
+	* src/pairwiselik.c: Minor changes
+
+2009-04-30 15:02  mathieu_ribatet
+
+	* man/fitcovmat.Rd: Add the control in optim as an argument
+
+2009-04-30 15:02  mathieu_ribatet
+
+	* R/spatgev.R: Minor changes
+
+2009-04-30 15:01  mathieu_ribatet
+
+	* R/profile.R: Some minor changes: control in optim, ...
+
+2009-04-30 15:01  mathieu_ribatet
+
+	* R/plots.R, R/smith.R: If iso = TRUE in the smith model the
+	  extremal coefficient function is
+	  then one-dimensional
+
+2009-04-30 15:00  mathieu_ribatet
+
+	* R/madogram.R, man/fmadogram.Rd, man/madogram.Rd: The madogram
+	  plots now accept a fitted model as an argument to compare
+	  pairwise estimates and model based ones
+
+2009-04-30 14:58  mathieu_ribatet
+
+	* R/covariance.R, R/fitcovmat.R, R/geomgauss.R, R/methods.R,
+	  R/nsgeomgauss.R, R/schlather.R, R/schlatherind.R,
+	  man/covariance.Rd, man/fitcovariance.Rd, man/fitmaxstab.Rd,
+	  src/covariance.c, src/fitcovmat.c, src/geomgauss.c,
+	  src/gradients.c, src/header.h, src/nsgeomgauss.c,
+	  src/schlather.c, src/schlatherind.c: Implementation of the Bessel
+	  covariance function
+
+2009-04-20 09:31  mathieu_ribatet
+
+	* ChangeLog: Update the changelog
+
+2009-04-17 15:48  mathieu_ribatet
+
+	* src/gradients.c: Fix a bug in the computation of the gradient for
+	  smith3d. Now it's
+	  correct!
+
+2009-04-17 15:29  mathieu_ribatet
+
+	* src/pairwiselik.c: Minor optimization
+
+2009-04-17 15:28  mathieu_ribatet
+
+	* src/covariance.c: Try to optimize the computation of all the
+	  covariance
+
+2009-04-10 13:37  mathieu_ribatet
+
+	* ChangeLog: Update the ChangeLog
+
 2009-04-10 13:35  mathieu_ribatet
 
 	* ChangeLog, DESCRIPTION: Update the version number and the

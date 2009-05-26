@@ -1,7 +1,7 @@
 #include "header.h"
 
 void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
-		     int *nObs, double *locs, double *scales, double *shapes,
+		     int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		     double *sigma2dsgnmat, double *sigma2coeff, int *nsigma2coeff,
 		     double *sill, double *range, double *smooth, int *fitmarge,
 		     double *dns){
@@ -32,7 +32,7 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		 *nsigma2coeff, sigma2);
    
   //Stage 1: Compute the covariance at each location
-  *dns = nsgeomCovariance(dist, *nSite, *covmod, sigma2, *sill, *range,
+  *dns = nsgeomCovariance(dist, *nSite, *dim, *covmod, sigma2, *sill, *range,
 			  *smooth, rho);
 
   if (*dns != 0.0)
@@ -64,7 +64,7 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 }
 
 void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-			double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 			double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 			int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -90,7 +90,7 @@ void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int
 		 *nsigma2coeff, sigma2);
   
   //Stage 1: Compute the covariance at each location
-  *dns = nsgeomCovariance(dist, *nSite, *covmod, sigma2, *sill, *range,
+  *dns = nsgeomCovariance(dist, *nSite, *dim, *covmod, sigma2, *sill, *range,
 			  *smooth, rho);
 
   if (*dns != 0.0)

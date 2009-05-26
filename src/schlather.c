@@ -1,7 +1,7 @@
 #include "header.h"
 
-void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
-		   int *nObs, double *locs, double *scales, double *shapes,
+void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
+		   int *dim, double *locs, double *scales, double *shapes,
 		   double *sill, double *range, double *smooth,
 		   int *fitmarge,double *dns){
   //This is the schlather's model. It's a wrapper to several
@@ -39,6 +39,9 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   case 3:
     *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
+  case 4:
+    *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
+    break;
   }
 
   if (*dns != 0.0)
@@ -62,15 +65,12 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
     *dns = lplikschlather(data, rho, jac, *nObs, *nSite);
   }  
 
-  if (!R_FINITE(*dns))
-    *dns = MINF;
-  
   return;
 
 }
 
 void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -99,6 +99,9 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
     break;
   case 3:
     *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    break;
+  case 4:
+    *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
     break;
   }
 
@@ -138,9 +141,6 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
-
-  if (!R_FINITE(*dns))
-    *dns = MINF;
 
   return;
   

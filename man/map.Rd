@@ -42,19 +42,14 @@ plot.contour = TRUE)
 }
 \examples{
 \dontrun{
-require(RandomFields)
-
 ##Define the coordinate of each location
 n.site <- 30
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,30, .5), maxstable="extr",
-                   n = 40)
-ms0 <- t(ms0)
-ms1 <- ms0
+data <- rmaxstab(40, locations, cov.mod = "whitmat", sill = 1, range = 30,
+smooth = 0.5)
 
 ##Now define the spatial model for the GEV parameters
 param.loc <- -10 - 4 * locations[,1] + locations[,2]^2
@@ -63,8 +58,8 @@ param.shape <- rep(.2, n.site)
 
 ##Transform the unit Frechet margins to GEV 
 for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-  param.shape[i] + param.loc[i]
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
+param.shape[i])
 
 ##Define a model for the GEV margins to be fitted
 ##shape ~ 1 stands for the GEV shape parameter is constant
@@ -74,7 +69,7 @@ scale.form <- scale ~ lon + I(lat^2)
 shape.form <- shape ~ lat + lon
 
 ##  1- Fit a max-stable process
-schlather <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
+schlather <- fitmaxstab(data, locations, "whitmat", loc.form, scale.form,
                         shape.form)
 
 ##  2- Produce a map of the location, scale and shape parameters

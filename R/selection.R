@@ -79,8 +79,8 @@ anova.maxstab <- function(object, object2, method = "RJ",
     theta0 <- theta0[colnames(ihessian)]
 
     jac <- M1$jacobian
-    ijac <- try(solve(qr(jac)), silent = TRUE)
-    hessian <- try(solve(qr(ihessian)), silent = TRUE)
+    ijac <- try(solve(jac), silent = TRUE)
+    hessian <- try(solve(ihessian), silent = TRUE)
 
     if (is.matrix(ijac) && is.matrix(hessian)){
 
@@ -246,8 +246,8 @@ anova.spatgev <- function(object, object2, method = "RJ",
     theta0 <- theta0[colnames(ihessian)]
 
     jac <- M1$jacobian    
-    ijac <- try(solve(qr(jac)), silent = TRUE)
-    hessian <- try(solve(qr(ihessian)), silent = TRUE)
+    ijac <- try(solve(jac), silent = TRUE)
+    hessian <- try(solve(ihessian), silent = TRUE)
 
     if (is.matrix(ijac) && is.matrix(hessian)){
 

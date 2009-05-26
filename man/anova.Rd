@@ -54,13 +54,8 @@ locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-                   maxstable = "Bool", n = 50)
-ms0 <- t(ms0)
+data <- rmaxstab(50, locations, cov.mod = "gauss", cov11 = 100, cov12 =
+25, cov22 = 220)
 
 ##Now define the spatial model for the GEV parameters
 param.loc <- -10 + 2 * locations[,2]
@@ -69,7 +64,7 @@ param.shape <- rep(0.2, n.site)
 
 ##Transform the unit Frechet margins to GEV 
 for (i in 1:n.site)
-  ms0[,i] <- frech2gev(ms0[,i], param.loc[i], param.scale[i],
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
 param.shape[i])
 
 ##Define three models for the GEV margins to be fitted
@@ -77,8 +72,8 @@ loc.form <- loc ~ lat
 scale.form <- scale ~ lon + I(lat^2)
 shape.form <- shape ~ lon
 
-M0 <- fitspatgev(ms0, locations, loc.form, scale.form, shape.form)
-M1 <- fitspatgev(ms0, locations, loc.form, scale.form, shape.form,
+M0 <- fitspatgev(data, locations, loc.form, scale.form, shape.form)
+M1 <- fitspatgev(data, locations, loc.form, scale.form, shape.form,
 shapeCoeff2 = 0)
 
 ##Model selection

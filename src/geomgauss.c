@@ -1,7 +1,7 @@
 #include "header.h"
 
 void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
-		   int *nObs, double *locs, double *scales, double *shapes,
+		   int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		   double *sigma2, double *sill, double *range, double *smooth,
 		   int *fitmarge,double *dns){
   //This is the geometric gaussian model. It computes the pairwise
@@ -26,7 +26,7 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   }
    
   //Stage 0: Compute the covariance at each location
-  *dns = geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
+  *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sill, *range,
 			*smooth, rho);
 
   if (*dns != 0.0)
@@ -58,7 +58,7 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 }
 
 void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -78,7 +78,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
   //Stage 1: Compute the covariance at each location
-  *dns = geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
+  *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sill, *range,
 			*smooth, rho);
 
   if (*dns != 0.0)

@@ -3,14 +3,17 @@
 \title{Computes madograms}
 \description{Computes the madogram for max-stable processes.}
 \usage{
-madogram(data, coord, n.bins, gev.param = c(0, 1, 0), which =
-c("mado", "ext"), xlab, ylab, angles = NULL, marge = "mle", ...)
+madogram(data, coord, fitted, n.bins, gev.param = c(0, 1, 0), which =
+c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
+"mle", add = FALSE, ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
+  \item{fitted}{An object of class maxstab - usually the output of the
+    \code{\link{fitmaxstab}} function. May be missing.}
   \item{n.bins}{The number of bins to be used. If missing, pairwise
     madogram estimates will be computed.}
   \item{gev.param}{Numeric vector of length 3 specifying the location,
@@ -20,11 +23,15 @@ c("mado", "ext"), xlab, ylab, angles = NULL, marge = "mle", ...)
     plotted.}
   \item{xlab,ylab}{The x-axis and y-axis labels. May be missing. Note
     that \code{ylab} must have the same length has \code{which}.}
+  \item{col}{The colors used for the points and optionnaly for the
+    fitted curve.}
   \item{angles}{A numeric vector. A partition of the interval
     \eqn{(-\pi, \pi)}{(-\pi, \pi)} to help detecting anisotropy.}
   \item{marge}{Character string. If 'emp', the observation are first
     transformed to the unit Frechet scale by using the empirical CDF. If
     'mle' (default), maximum likelihood estimates are used.}
+  \item{add}{Logical. If \code{TRUE}, the plot is added to the current
+    figure; otherwhise (default) a new plot is computed.}
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.} 
 }
@@ -65,19 +72,16 @@ c("mado", "ext"), xlab, ylab, angles = NULL, marge = "mle", ...)
   \code{\link{fmadogram}}, \code{\link{lmadogram}}
 }
 \examples{
-require(RandomFields)
 n.site <- 50
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,1, 2), maxstable="extr",
-                   n = 40)
-ms0 <- t(ms0)
+data <- rmaxstab(40, locations, cov.mod = "whitmat", sill = 1, range = 1,
+smooth = 2)
 
 ##Compute the madogram
-madogram(ms0, locations)
+madogram(data, locations)
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

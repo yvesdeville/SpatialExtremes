@@ -32,27 +32,25 @@
   are fixed. \code{llik} the corresponding pairwise log-likelihood.
 }
 \examples{
-require(RandomFields)
-
+\dontrun{
 ##Define the coordinates of each location
 n.site <- 30
 locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,30, .5), maxstable="extr",
-                   n = 30)
-ms1 <- t(ms0)
+data <- rmaxstab(30, locations, cov.mod = "whitmat", sill = 1, range = 30,
+smooth = 0.5)
 
 ##Now define the spatial model for the GEV parameters
 param.loc <- -10 + 2 * locations[,2]
 param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
 param.shape <- rep(0.2, n.site)
-##Transform the unit Frechet margins to GEV 
+
+##Transform the unit Frechet margins to GEV
 for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-  param.shape[i] + param.loc[i]
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
+param.shape[i]) 
 
 ##Define a model for the GEV margins to be fitted
 ##shape ~ 1 stands for the GEV shape parameter is constant
@@ -63,13 +61,10 @@ shape.form <- shape ~ 1
 
 ##Fit a max-stable process
 ##  1- using the Schlather representation
-\dontrun{
-fitted <- fitmaxstab(ms1, locations, "schlather", loc.form, scale.form,
+fitted <- fitmaxstab(data, locations, "whitmat", loc.form, scale.form,
                      shape.form)
-}
 
 ##Plot the profile pairwise log-likelihood for the smooth parameter
-\dontrun{
 ranges <- rbind(c(9,11), c(.3, .8))
 profile2d(fitted, c("range", "smooth"), ranges = ranges)
 }

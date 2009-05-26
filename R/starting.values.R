@@ -3,6 +3,12 @@
                          iso = TRUE, ...){
 
   n.site <- ncol(data)
+
+  if (iso && (method == "Nelder"))
+    method2 <- "BFGS"
+  
+  else
+    method2 <- method
   
   if (ncol(coord) == 2)
     param <- c("cov11", "cov12", "cov22")
@@ -19,13 +25,13 @@
     cat("Computing appropriate starting values\n")
   
   if (length(fixed.param.cov) > 0){
-    args <- c(list(data = data, coord = coord, marge = "emp", iso = iso),
+    args <- c(list(data = data, coord = coord, marge = "emp", iso = iso, method = method2),
               fixed.param.cov)
     covs <- do.call("fitcovmat", args)$fitted
   }
 
   else
-    covs <- fitcovmat(data, coord, marge = "emp", iso = iso)$fitted
+    covs <- fitcovmat(data, coord, marge = "emp", iso = iso, method = method2)$fitted
 
   if (iso){
     covs <- covs[1]

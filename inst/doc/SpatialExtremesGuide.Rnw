@@ -27,21 +27,16 @@
   \begin{center}
 <<echo=FALSE,fig=TRUE>>=
 library(SpatialExtremes)
-##image(volcano, col = terrain.colors(100), xaxt = "n", yaxt="n")
-##contour(volcano, add = TRUE)
 set.seed(12)
 n.site <- 50
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,1, 2), maxstable="extr",
-                   n = 40)
-ms0 <- t(ms0)
+data <- rmaxstab(40, locations, "whitmat", sill = 1, range = 1, smooth = 2)
 
 ##Compute the lambda-madogram
-lmadogram(ms0, locations, n.bins = 25, border = "grey", box = FALSE)
+lmadogram(data, locations, n.bins = 25, border = "grey", box = FALSE)
 @ 
   \end{center}
 \end{titlepage}
@@ -112,8 +107,11 @@ this report introduces all the theory and references needed. Some
 practical examples are inserted directly within the text to show how
 it works in practice. Chapter~\ref{cha:an-introduction-max} is an
 introduction to max-stable processes and introduces several models
-that might be useful in concrete applications. Statistics and tools to
-analyze the spatial dependence of extremes are presented in
+that might be useful in concrete
+applications. Chapter~\ref{cha:uncond-simul-rand} describes simulation
+techniques for unconditional simulation of both Gaussian and
+max-stable random fields. Statistics and tools to analyze the spatial
+dependence of extremes are presented in
 Chapter~\ref{cha:spatial-depend-max}. Chapter~\ref{chat:fit-maxstab-frech}
 tackles the problem of fitting max-stable process to data that are
 assumed to be unit Fréchet
@@ -262,7 +260,7 @@ centred at $y_i$ diffuses in space.
 Definition \eqref{eq:smithChar} is rather general and Smith considered
 a particular setting where $\nu(dy)$ is the Lebesgue measure and
 $f(y,x) = f_0(y-x)$, where $f_0(y-x)$ is a multivariate normal density
-with mean $y$ and covariance matrix $\Sigma$\footnote{Another form of
+with zero mean and covariance matrix $\Sigma$\footnote{Another form of
   Smith's model that uses a Student distribution instead of the normal
   one. However, it is not currently implemented.}. With these
 additional assumptions, it can be shown that the bivariate CDF is
@@ -296,8 +294,8 @@ Smith's model with different covariance matrices.
 \begin{proof}
   \begin{eqnarray*}
     -\log \Pr \left[Z(x_1) \leq z_1, Z(x_2) \leq z_2 \right] &=&
-    \iint_{\min\{z_1/f_0(s - x_1), z_2 / f_0(s- x_2) \}} \xi^{-2} d\xi
-    \mbox{ds}\\
+    \int_{\mathbb{R}^d}\int_{\min\{z_1/f_0(s - x_1), z_2 / f_0(s- x_2)
+      \}}^{+\infty} \xi^{-2} \mbox{d$\xi$} \mbox{ds}\\
     &=& \int \max\left\{\frac{f_0(s - x_1)}{z_1}, \frac{f_0(s-
         x_2)}{z_2}\right\} \mbox{ds}\\
     &=& \int \frac{f_0(s - x_1)}{z_1} \mathbb{I}\left(\frac{f_0(s -
@@ -347,25 +345,18 @@ Smith's model with different covariance matrices.
 \end{proof}
 
 <<label=Smith2Sim,echo=FALSE>>=
-x <- y <- seq(0, 10, length = 100)
-sigma <- matrix(c(9/8, 0, 0, 9/8),ncol = 2)
-sigma2 <- matrix(c(9/8, 1, 1, 9/8),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-sigma.inv2 <- solve(sigma2)
-sqrtCinv2 <- t(chol(sigma.inv2))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-model2 <- list(list(model = "gauss", var = 1, aniso = sqrtCinv2 / 2))
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=TRUE, model = model, maxstable = "Bool")
-ms0 <- t(ms0)
-set.seed(12)
-ms1 <- MaxStableRF(x, y, grid=TRUE, model = model2, maxstable = "Bool")
-ms1 <- t(ms1)
+x <- seq(0, 10, length = 150)
+seed <- 19
+set.seed(seed)
+data0 <- rmaxstab(1, cbind(x,x), "gauss", cov11 = 9/8, cov12 = 0, cov22 = 9/8,
+                  grid = TRUE)
+set.seed(seed)
+data1 <- rmaxstab(1, cbind(x,x), "gauss", cov11 = 9/8, cov12 = 1, cov22 = 9/8,
+                  grid = TRUE)
 
 par(mfrow=c(1,2))
-image(x, y, ms0, col = terrain.colors(30))
-image(x, y, ms1, col = terrain.colors(30))
+image(x, x, data0[,,1], col = terrain.colors(40))
+image(x, x, data1[,,1], col = terrain.colors(40))
 @ 
 
 \begin{figure}
@@ -489,8 +480,8 @@ model~\eqref{eq:smithChar}.
 Equation~\eqref{eq:SchlatherChar} is very general and we need
 additional assumptions to get practical models. Schlather proposed to
 take $Y_i(\cdot)$ to be a stationary Gaussian process with correlation
-function $\rho(x)$, scaled so that $\mathbb{E}[\max\{0, Y_i(x)\}] =
-1$. With these new assumtions, it can be shown that the bivariate CDF
+function $\rho(h)$, scaled so that $\mathbb{E}[\max\{0, Y_i(x)\}] =
+1$. With these new assumptions, it can be shown that the bivariate CDF
 of process~\eqref{eq:SchlatherChar} is
 \begin{equation}
   \label{eq:schlather}
@@ -504,41 +495,53 @@ distance\index{distance!Euclidean} between location 1 and location
 families, such as
 
 <<label=covariances,echo=FALSE>>=
-par(mfrow=c(1,3))
+par(mfrow=c(1,4), mar = c(4, 4, 0.2, 0.2))
 covariance(sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
-           xlim = c(0,6), ylim = c(0, 1))
+           xlim = c(0,9), ylim = c(0, 1))
 covariance(sill = 1, range = 1, smooth = 2, cov.mod = "whitmat",
-           add = TRUE, col = 2, xlim = c(0,6))
+           add = TRUE, col = 2, xlim = c(0,9))
 covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
-           add = TRUE, col = 3, xlim = c(0,6))
+           add = TRUE, col = 3, xlim = c(0,9))
 covariance(sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
-           col = 4, add = TRUE, xlim = c(0,6))
+           col = 4, add = TRUE, xlim = c(0,9))
 legend("topright", c(expression(nu == 4), expression(nu == 2),
                      expression(nu == 1), expression(nu == 0.5)),
        col = 1:4, lty = 1, inset = 0.05)
 
 covariance(sill = 1, range = 1, smooth = 2, cov.mod = "powexp",
-           xlim = c(0, 3), ylim = c(0, 1))
+           xlim = c(0, 4), ylim = c(0, 1))
 covariance(sill = 1, range = 1, smooth = 1.5, cov.mod = "powexp",
-           add = TRUE, col = 2, xlim = c(0, 3))
+           add = TRUE, col = 2, xlim = c(0, 4))
 covariance(sill = 1, range = 1, smooth = 1, cov.mod = "powexp",
-           add = TRUE, col = 3, xlim = c(0, 3))
+           add = TRUE, col = 3, xlim = c(0, 4))
 covariance(sill = 1, range = 1, smooth = 0.75, cov.mod = "powexp",
-           add = TRUE, col = 4, xlim = c(0, 3))
+           add = TRUE, col = 4, xlim = c(0, 4))
 legend("topright", c(expression(nu == 2), expression(nu == 1.5),
                      expression(nu == 1), expression(nu == 0.75)),
        col = 1:4, lty = 1, inset = 0.05)
 
 covariance(sill = 1, range = 1, smooth = 4, cov.mod = "cauchy",
-           xlim = c(0, 3), ylim = c(0, 1))
+           xlim = c(0, 5), ylim = c(0, 1))
 covariance(sill = 1, range = 1, smooth = 2, cov.mod = "cauchy",
-           add = TRUE, col = 2, xlim = c(0, 3))
+           add = TRUE, col = 2, xlim = c(0, 5))
 covariance(sill = 1, range = 1, smooth = 1, cov.mod = "cauchy",
-           add = TRUE, col = 3, xlim = c(0, 3))
+           add = TRUE, col = 3, xlim = c(0, 5))
 covariance(sill = 1, range = 1, smooth = 0.75, cov.mod = "cauchy",
-           add = TRUE, col = 4, xlim = c(0, 3))
+           add = TRUE, col = 4, xlim = c(0, 5))
 legend("topright", c(expression(nu == 4), expression(nu == 2),
                      expression(nu == 1), expression(nu == 0.75)),
+       col = 1:4, lty = 1, inset = 0.05)
+
+covariance(sill = 1, range = 1, smooth = 2, cov.mod = "bessel",
+           xlim = c(0, 20), ylim = c(-0.3, 1))
+covariance(sill = 1, range = 1, smooth = 1, cov.mod = "bessel",
+           add = TRUE, col = 2, xlim = c(0, 20))
+covariance(sill = 1, range = 1, smooth = .5, cov.mod = "bessel",
+           add = TRUE, col = 3, xlim = c(0, 20))
+covariance(sill = 1, range = 1, smooth = 0.25, cov.mod = "bessel",
+           add = TRUE, col = 4, xlim = c(0, 20))
+legend("topright", c(expression(nu == 2), expression(nu == 1),
+                     expression(nu == .5), expression(nu == 0.25)),
        col = 1:4, lty = 1, inset = 0.05)
 @ 
 
@@ -547,10 +550,10 @@ legend("topright", c(expression(nu == 4), expression(nu == 2),
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<covariances>>
 @ 
-\caption{Plots of the Whittle--Matérn (left panel), the powered
-  exponential (middle panel) and the Cauchy (right panel) correlation
-  functions. The sill and the range parameters are $c_1 = c_2 = 1$
-  while the smooth parameters are given in the legend.}
+\caption{Plots of the Whittle--Matérn, the powered exponential, the
+  Cauchy and the Bessel correlation functions - from left to
+  right. The sill and the range parameters are $c_1 = c_2 = 1$ while
+  the smooth parameters are given in the legends.}
   \label{fig:covariances}
 \end{figure}
 
@@ -563,10 +566,13 @@ legend("topright", c(expression(nu == 4), expression(nu == 2),
   \textbf{Cauchy}\index{covariance function!cauchy} & $\rho(h) = c_1
   \left[1 + \left(\frac{h}{c_2} \right)^2 \right]^{-\nu}$, & $0 \leq
   c_1 \leq 1$, $c_2 >0$, $\nu > 0$\\
-  \textbf{Powered Exponential}\index{covariance function!powered
-    exponential} & $\rho(h) = c_1 \exp\left[- \left(\frac{h}{c_2}
+  \textbf{Powered Exponential}\index{covariance function!powered exponential} & $\rho(h) = c_1 \exp\left[- \left(\frac{h}{c_2}
     \right)^{\nu} \right]$, & $0 \leq c_1 \leq 1$, $c_2 > 0$, $0 < \nu
-  \leq 2$
+  \leq 2$\\
+  \textbf{Bessel}\index{covariance function!bessel} & $\rho(h) = c_1
+  \left(\frac{2 c_2}{h} \right)^{\nu} \Gamma(\nu + 1)
+  J_{\nu}\left(\frac{h}{c_2} \right)$, & $0 \leq c_1 \leq 1$, $c_2>0$,
+  $\nu \geq \frac{d - 2}{2}$ 
 \end{tabular}
 \bigskip
 
@@ -574,20 +580,21 @@ where $c_1$, $c_2$ and $\nu$ are the sill,
 \index{covariance function!sill} the range
 \index{covariance function!range} and the smooth
 \index{covariance function!smooth} parameters of the correlation
-function, $\Gamma$ is the gamma function and $K_{\nu}$ is the modified
-Bessel function of the third kind with order
-$\nu$. Figure~\ref{fig:covariances} plots the correlation functions
+function, $\Gamma$ is the gamma function and $J_{\nu}$ and $K_{\nu}$
+are the Bessel and the modified Bessel function of the third kind with
+order $\nu$ and $d$ is the dimension of the random
+fields. Figure~\ref{fig:covariances} plots the correlation functions
 for the parametric families introduced above. The left panel was
 generated with the following lines
 <<eval=FALSE>>=
 covariance(sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
-           xlim = c(0,6), ylim = c(0, 1))
+           xlim = c(0,9), ylim = c(0, 1))
 covariance(sill = 1, range = 1, smooth = 2, cov.mod = "whitmat",
-           add = TRUE, col = 2, xlim = c(0,6))
+           add = TRUE, col = 2, xlim = c(0,9))
 covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
-           add = TRUE, col = 3, xlim = c(0,6))
+           add = TRUE, col = 3, xlim = c(0,9))
 covariance(sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
-           col = 4, add = TRUE, xlim = c(0,6))
+           col = 4, add = TRUE, xlim = c(0,9))
 legend("topright", c(expression(nu == 4), expression(nu == 2),
                      expression(nu == 1), expression(nu == 0.5)),
        col = 1:4, lty = 1, inset = 0.05)
@@ -695,10 +702,482 @@ The correlation coefficient $\rho(h)$ can take any value in
 $[-1,-1]$. Complete dependence is reached when $\rho(h) = 1$ while
 independence occurs when $\rho(h) = -1$. However, most parametric
 correlation families don't allow negative values so that independence
-is never reached. The next two sections propose two alternatives based
-on characterisation~\eqref{eq:SchlatherChar} that bypass this hurdle.
+is never reached.
+
+\chapter{Unconditional Simulation of Random Fields}
+\label{cha:uncond-simul-rand}
+
+In this chapter, we present some results useful for the simulation of
+stationary max-stable random fields. This chapter is organized as
+follows. As the max-stable process proposed by \citet{Schlather2002}
+involves the simulation of gaussian processes, techniques for
+simulating such processes are first introduced. Next algorithms for
+simulating max-stable processes are presented.
+
+\section{Simulation of Gaussian Random Fields}
+\label{sec:simul-gauss-proc}
+
+The simulation of gaussian random fields has been of great interest
+since the pioneer work of \citet{Matheron1973}. Various methods, more
+or less accurate and CPU demanding, were introduced. In this section
+we will focus especially on three different techniques: the direct
+approach, the circulant embedding method \citep{Chan1997} and the
+turning bands \citep{Matheron1973}. These simulation techniques are
+introduced in turn.
+
+\subsection{Direct Approach}
+\label{sec:direct-approach}
+
+The direct approach is certainly the simplest approach for simulating
+gaussian processes. Although this method is exact in principle and may
+be used in $\mathbb{R}^d$, $d\geq1$, its use for a large number of
+locations is prohibited as we will see later. The direct simulation
+relies on the following property \citep{Davis1987}.
+
+\begin{prop}
+  If $X$ is a $n$ vector of independent standard normal random
+  variables, then
+  \begin{equation}
+    \label{eq:directDecomp}
+    Y = D^{1/2} X, \qquad D = D^{1/2} (D^{1/2})^T
+  \end{equation}
+  is a multivariate gaussian random vector with zero mean and
+  covariance matrix $D$.
+\end{prop}
+\begin{proof}
+  $Y$ has a zero mean as
+  \begin{equation*}
+    \mathbb{E}[Y] = \mathbb{E}[D^{1/2} X]= D^{1/2} \mathbb{E}[X] = 0.
+  \end{equation*}
+  The covariance of $Y$ is therefore
+  \begin{equation*}
+    \mathbb{E}[Y Y^T] = \mathbb{E}[D^{1/2} X X^T (D^{1/2})^T] =
+    \mathbb{E}[D^{1/2} I_n (D^{1/2})^T] = D^{1/2} (D^{1/2})^T = D
+  \end{equation*}
+  where $I_n$ is the $n \times n$ identity matrix.
+\end{proof}
+
+The matrix $D^{1/2}$ can be obtained using either the Cholesky, the
+eigen or the singular value decompositions. These decompositions have
+in general a computational cost of order $O(n^3)$ while the product
+$D^{1/2}X$ has a cost of order $O(n^2)$ \citep{Dietrich1995}. This
+prevents the use of the direct simulation for large $n$, typically for
+$n$ larger than $1000$.
+
+To generate a gaussian random field with zero mean and covariance
+function $\gamma$ observed at locations $x_1$, \ldots, $x_n$, one can
+use the following scheme
+\begin{enumerate}
+\item Build the covariance matrix $D = [\gamma(x_i - x_j)]_{i,j}$, $1
+  \leq i, j \leq n$;
+\item Compute $D^{1/2}$ by using the Cholesky or the eigen
+  decompositions of $D$;
+\item Generate a $n$ vector of independent standard normal random
+  variables;
+\item And use equation~(\ref{eq:directDecomp}) to compute $Y$.
+\end{enumerate}
 
 
+\subsection{Circulant Embedding Method}
+\label{sec:circ-embedd-meth}
+
+\subsection{Turning Bands Method}
+\label{sec:turning-bands-method}
+
+The turning bands method introduced by \citet{Matheron1973} simplifies
+the problem of simulating a $d$-dimensional random field to the
+simulation of one-dimensional random fields. Consequently, this
+technique allows one to perform a simulation of a large dimensional
+random field at the cost of one-dimensional simulations.
+
+Let $X(\cdot)$ be a zero mean isotropic random process in $\mathbb{R}$
+with covariance function $\gamma_X$. The idea consists in considering
+a random field $Y(\cdot)$ in $\mathbb{R}^d$ such that $Y$ equals $X$
+on a random line in $\mathbb{R}^d$ and is constant on all hyperplanes
+orthogonal to this line - see Figure~\ref{fig:tbm} left panel. As the
+random line has to be centred at the origin, it is uniquely defined by
+a random vector $U$ uniformly distributed over the half unit sphere
+$S_d$ of $\mathbb{R}^d$. More formally, we have
+\begin{equation}
+  \label{eq:turningBandsdDimTo1dim}
+  Y(x) = X\left(\langle x, U \rangle \right), \qquad \forall x \in
+  \mathbb{R}^d
+\end{equation}
+where $\langle , \rangle$ is the standard inner product in
+$\mathbb{R}^d$. The covariance of the process $Z(\cdot)$ is therefore
+\begin{eqnarray*}
+  \gamma_Y(h) &=& \mathbb{E}\left[Y(x), Y(x+h) \right]\\
+  &=& \mathbb{E}\left\{\mathbb{E}\left[X(\langle x, U \rangle ) ,
+      X(\langle x+h, U \rangle) \right] \right\}\\
+  &=& \mathbb{E}\left[\gamma_X\left(\langle h, U\rangle\right) \right]\\
+  &=& \int_{S_d} \gamma_X\left(\langle h, u \rangle \right)
+  \omega_d(\mbox{du})
+\end{eqnarray*}
+where $\omega_d(\mbox{du})$ is the uniform density over the half unit
+sphere in $\mathbb{R}^d$ and $h$ is a vector in $\mathbb{R}^d$.
+
+\citet{Matheron1973} shows that the previous equation is a one-to-one
+mapping between the set of continuous isotropic covariance functions
+in $\mathbb{R}^d$ and that of continuous covariances in
+$\mathbb{R}$. Therefore, it allows one to simulate random fields
+having covariance $\gamma_Y$ by the simulation of one-dimensional
+random fields with covariance $\gamma_X$ through the turning bands
+operator $T(\gamma_X)$
+\begin{equation}
+  \label{eq:tbmOperator}
+  T\left\{\gamma_X(h)\right\} = \int_{S_d} \gamma_Y\left(\langle h, u
+    \rangle \right) \omega_d(\mbox{du})
+\end{equation}
+
+The turning band operator is often complicated when $d=2$ and is
+defined by
+\begin{equation}
+  \label{eq:tbmOperatordim2}
+  \gamma_Y(h) = \frac{2}{\pi} \int_0^h \frac{\gamma_X(u)}{\sqrt{h^2 -
+      u^2}} \mbox{du} \qquad \text{or equivalently} \qquad \gamma_X(h)
+  = \frac{\mbox{d}}{\mbox{dh}} \int_0^h \frac{u \gamma_Y(u)}{\sqrt{h^2
+      - u^2}} \mbox{du}
+\end{equation}
+while the case $d=3$ leads to more tractable expressions
+\begin{equation}
+  \label{eq:tbmOperatordim3}
+  \gamma_Y(h) = \frac{1}{h} \int_0^h \gamma_X(u) \mbox{du} \qquad
+  \text{or equivalently} \qquad \gamma_X(h) =
+  \frac{\mbox{d}}{\mbox{dh}} \left\{h \gamma_Y(h) \right\}
+\end{equation}
+
+As stated by \citet{Chiles1999},
+equation~\eqref{eq:turningBandsdDimTo1dim} is not satisfactory as the
+random field $Y(\cdot)$ exhibits zonal anisotropy oriented along the
+random direction given by $U$ so that its empirical covariance does
+not match the theoretical one. To bypass this hurdle, $N$
+i.i.d. random fields are superimposed i.e.\
+\begin{equation}
+  \label{eq:1}
+  Y(x) = \frac{1}{\sqrt{N}} \sum_{i=1}^N Y_i\left( \langle x, U_i
+    \rangle \right)
+\end{equation}
+where $U_i$ are i.i.d random variable uniformly distribution over
+$S_d$ and $X_i(\cdot)$ are i.i.d. one-dimensional random fields having
+covariance $\gamma_X$.
+
+For practical simulations, the number of lines generated is of order
+$50$ and $500$ for the two and three dimensional cases
+respectively. However, it has to be noticed that the simulation of the
+process on the line is often faster for the three dimensional case, or
+the only possible one, if the turning band operator in the two
+dimensional case leads to a complex covariance function in
+$\mathbb{R}$. For such cases, it might be preferable to simulate a
+three dimensional random field and take its values on an arbitrary
+random field.
+
+Although the directions $U_i$ were supposed so far to be uniformly
+distributed over $S_d$, the same result holds if the random directions
+are generated from an equidistributed sequence of points in $S_d$. For
+the case $d=2$, several authors recommend the use of deterministic
+equal angles between the lines \citep{Chiles1997,Schlather1999}. For
+the case $d=3$, \citet{Freulon1991} show that using a Van der Corput
+sequence instead of uniform directions leads to better ergodic
+properties for the simulated random fields.
+
+The Van der Corput sequence computes the binary and ternary
+decomposition of any integer $n \in \mathbb{N}^*$ i.e.\
+\begin{eqnarray}
+  \label{eq:vdcBin}
+  n &=& a_0 + 2 a_1 + \ldots + 2^p a_p, \qquad a_i = 0, 1\\
+  n &=& b_0 + 3 b_1 + \ldots + 3^p b_q, \qquad b_i = 0, 1, 2
+\end{eqnarray}
+and leads to two numbers between $0$ and $1$
+\begin{eqnarray*}
+  u_n &=& \frac{a_0}{2} + \frac{a_1}{2^2} + \ldots + \frac{a_p}{2^{p+1}}\\
+  v_n &=& \frac{b_0}{3} + \frac{b_1}{3^2} + \ldots + \frac{b_q}{3^{q+1}}
+\end{eqnarray*}
+from which we get a point lying in $S_3$
+\begin{equation}
+  \label{eq:vdcSphere}
+  \left\{\sqrt{1 - v_n^2} \cos(2 \pi u_n), \sqrt{1 - v_n^2} \sin(2 \pi
+    u_n), v_n \right\}
+\end{equation}
+
+For practical purposes, this sequence is defined up to a random
+rotation to avoid simulations based on the same set of directions.
+
+Until now, we have not describe how to simulate a process on a
+line. The circulant embedding method could be used but this is not
+fully satisfactory. Although the locations in $\mathbb{R}^d$ defines a
+grid, their projections on the lines will usually not be regularly
+spaced. Fortunately, it is possible to perform a continuous simulation
+along the lines. An accurate method for this is the continuous
+spectral method \citep{Mantoglou1987}.
+
+If $\gamma_X$ is continuous, Bochner's theorem states that it is the
+Fourier transform of a positive measure $\chi$, the spectral measure,
+\begin{equation}
+  \label{eq:bochner}
+  \gamma_X(h) = \int_{\mathbb{R}^d} \exp \left(i \langle u, h \rangle
+  \right) \mbox{d$\chi$}(u)
+\end{equation}
+Since $\gamma_X(0) = \sigma^2$, $\sigma^{-2} \chi$ is a probability
+distribution function. Hence, if $\Omega$ is a random vector with
+distribution $\sigma^{-2} \chi$ and $\Phi \sim U(0, 2 \pi)$, $\Omega$
+and $\Phi$ being mutually independent, then the random function
+\begin{equation}
+  \label{eq:contSpectral}
+  X(x) = \sqrt{2\sigma^2} \cos \left(\langle \Omega, x \rangle + \Phi
+  \right)
+\end{equation}
+has $\gamma_X$ as its covariance function.
+\begin{proof}
+  \begin{eqnarray*}
+    \mbox{Cov}\left\{X(o), X(h) \right\} &=& \mathbb{E} \left[ X(o)
+      X(h) \right]\\
+    &=& 2 \sigma^2 \mathbb{E} \left\{ \mathbb{E} \left[ \cos
+        \left(\langle \Omega, h \rangle + \Phi \right) \cos \Phi
+      \right] \right\}\\
+    &=& \sigma^2 \mathbb{E} \left[ \cos \langle \Omega, h \rangle
+    \right]\\
+    &=& \int_{\mathbb{R}^d} \exp\left(i \langle u, h \rangle \right)
+    \mbox{d$\chi$}(u)\\
+    &=& \gamma_X(h)
+  \end{eqnarray*}
+\end{proof}
+
+A comprehensive overview of methods for simulating random processes on
+a line from various covariance families is given by \citet{Emery2006}.
+
+<<label=tbm,echo=FALSE>>=
+x <- seq(0, 10, length = 200)
+coord <- cbind(x, x)
+seed <- 3
+set.seed(seed)
+data1 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
+             grid = TRUE, nlines = 1)
+set.seed(seed)
+data2 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
+             grid = TRUE, nlines = 25)
+set.seed(seed)
+data3 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
+             grid = TRUE, nlines = 625)
+
+par(mfrow=c(1,3))
+image(x, x, data1[,,1], col = terrain.colors(30))
+image(x, x, data2[,,1], col = terrain.colors(30))
+image(x, x, data3[,,1], col = terrain.colors(30))
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<tbm>>
+@ 
+\caption{One realisation of a gaussian random field having a
+  Whittle-Matern covariance function with sill, range and smooth
+  parameters all equal to one using the turning bands methods. The
+  continuous spectral method was used for simulating processes on the
+  lines. Left panel: $1$ line, middle panel: $25$ lines, right panel:
+  $625$ lines.}
+  \label{fig:tbm}
+\end{figure}
+
+The function \verb|rgp| allows simulations of stationary isotropic
+gaussian fields. Figure~\ref{fig:tbm} plots three realisations of a
+gaussian random field having a Whittle-Matern covariance function by
+using the turning bands method. The number of lines used for these
+simulations, from left to right, is $1$, $25$ and $625$
+respectively. The code used for generating this figure is
+<<eval=FALSE>>=
+<<tbm>>
+@ 
+
+\section{Simulation of Max-Stable Random Fields}
+\label{sec:simul-max-stable}
+
+
+The definition of a max-stable process involves the maximum over an
+infinite number of replication of a given random process. For
+simulation purposes, the number of replications is necessarily
+finite. However, \citet{Schlather2002} shows that it is possible to get
+exact simulations on a finite sampling region.
+
+\begin{thm}
+  \label{thm:simMaxStab}
+  Let $Y$ be a measurable random function such that
+  $\mathbb{E}[\int_{\mathbb{R}^d} \max\{0, Y(x)\} \mbox{dx}] = 1$,
+  $\Pi$ be a Poisson process on $\mathbb{R}^d \times (0, +\infty)$
+  with intensity measure $d\Lambda(y,\xi) = \xi^{-2} \mbox{dy}
+  \mbox{d$\xi$}$ and $Z(\cdot)$ as defined by
+  equation~(\ref{eq:SchlatherChar}). Assume that $Y$ is uniformly
+  bounded by $C \in (0, +\infty)$ and has support in the ball $b(o,
+  r)$ for some $r \in (0, +\infty)$. Let $B$ be a compact set, $Y_i$
+  be i.i.d. replications of $Y$, $U_i$ be i.i.d. uniformly distributed
+  on $B_r = \cup_{x \in B} b(x, r)$, $\xi_i$ be i.i.d. standard
+  exponential r.v. and $\Pi$, $Y_i$, $\xi_i$, $U_i$ be mutually
+  independent. Then, on $B$,
+  \begin{equation}
+    \label{eq:simMaxStab}
+    Z_*(x) = |B_r| \sup_i \frac{Y_i(x - U_i)}{\sum_{k=1}^i \xi_k},
+    \qquad x \in B, \qquad i = 1, 2, \ldots
+  \end{equation}
+  equals the max-stable random fields $Z$ in distribution, and
+  \begin{equation}
+    \label{eq:simMaxStab2}
+    Z_*(x) = |B_r| \sup \left\{\frac{Y_i(x - U_i)}{\sum_{k=1}^i
+        \xi_k}: i = 1, \ldots, m, m \text{ is such that }
+      \frac{C}{\sum_{k=1}^m \xi_k} \leq \max_{1 \leq i \leq m}
+      \frac{Y_i(x - U_i)}{\sum_{k=1}^i \xi_k} \right\}
+  \end{equation}
+  almost surely.
+\end{thm}
+\begin{proof}
+  It is well known that a Poisson process on $\mathbb{R}^+$ with
+  intensity $1$ can be thought as a sum of i.i.d standard exponential
+  random variables i.e.\ $\Pi = \{\sum_{i=1}^n \xi_i : n = 1, 2,
+  \ldots \}$. The application of the mapping $\xi \mapsto |B_r|
+  \xi^{-1}$ to the points of $\Pi$ yields to a new Poisson process on
+  $\mathbb{R}^+$ with intensity measure $|B_r| \xi^{-2}
+  \mbox{d$\xi$}$. As the $U_i$ are i.i.d. uniformly distributed on
+  $B_r$, we have that the random set
+  \begin{equation}
+    \label{eq:simPoissProc}
+    \left\{ \left(U_n, \frac{|B_r|}{\sum_{i=1}^n \xi_i} \right) : n =
+      1, 2, \ldots \right\}
+  \end{equation}
+  is a simple Poisson process on $B_r \times (0, +\infty)$ with
+  intensity measure $d\Lambda(y,\xi) = \xi^{-2}
+  \mbox{dy}\mbox{d$\xi$}$ and the process $Z_*$ equals $Z$ in
+  distribution.
+  
+  To show the second assertion, we first note that $m$ is necessarily
+  finite as the sequence $\sum_{k=1}^m \xi_k$ is non decreasing and
+  $Y$ is uniformly bounded by $C$ so that
+  \begin{equation*}
+    \lim_{m \to +\infty} \frac{C}{\sum_{k=1}^m \xi_k} = 0
+  \end{equation*}
+  Hence, there exists $m$ finite such that
+  \begin{equation*}
+    \Pr \left[\max_{1 \leq i \leq m} \frac{Y_i(x - U_i)}{\sum_{k=1}^i
+        \xi_k} \geq \frac{C}{\sum_{k=1}^m \xi_k} \right] = 1
+  \end{equation*}
+  and
+  \begin{equation*}
+    \Pr \left[ \left| \max_{1 \leq i \leq m} \frac{Y_i(x -
+        U_i)}{\sum_{k=1}^i \xi_k} - \sup_{i \geq 1} \frac{Y_i(x -
+        U_i)}{\sum_{k=1}^i} \right| \neq 0 \right] = 0
+  \end{equation*}
+\end{proof}
+
+If the conditions of Theorem~\ref{thm:simMaxStab} are not met i.e.\
+for random functions $Y$ whose support is not included in a ball
+$b(o,r)$ or which are not uniformly bounded by a constant $C$,
+approximations for $r$ and $C$ should be used. Although the
+simulations will not be exact, it seems that approximations for $r$
+and $C$ lead to accurate simulations.
+
+\subsection{The Smith Model}
+\label{subsec:sim-smith-model}
+
+Recall that the Smith model is defined by
+\begin{equation}
+  \label{eq:SmithChar2}
+  Z(x) = \max_i \xi_i Y_i(x), \qquad Y_i(x) = f(x - U_i)
+\end{equation}
+where $f$ is the zero mean multivariate normal density with covariance
+matrix $\Sigma$ and $\{(U_i, \xi_i)\}_{i \geq 1}$ are the points of a
+Poisson process with intensity measure $d\Lambda(y,\xi) = \xi^{-2}
+\mbox{dy} \mbox{d$\xi$}$.
+
+As we just mentionned, the use of Theorem~\ref{thm:simMaxStab} to
+generate realisations from the Smith model is not theoretically
+justified as the support of the multivariate normal distribution is
+not included in a finite ball $b(o,r)$, $r < +\infty$. However, if $r$
+is large enough, the multivariate normal density should be close to 0
+and the points in $x \in \mathbb{R}^d \setminus b(o,r)$ are unlikely
+to contribute to $Z(x)$.
+
+\citet{Schlather2002} in his seminal paper suggests to use $r$ such
+that $\varphi(r) = 0.001$ i.e. $r \approx 3.46$, where $\varphi$
+denotes the standard normal density. By taking into account that the
+variance in the covariance matrix $\Sigma$ might be large, a
+reasonable choice is to let
+\begin{equation}
+  \label{eq:defFiniteBallSmith}
+  r = 3.46 \sqrt{\max \left\{\sigma_{ii}: i = 1, \ldots, d\right\}}
+\end{equation}
+where $\sigma_{ii}$ are the diagonal elements of the covariance matrix
+$\Sigma$.
+
+<<echo=FALSE,label=rmaxstabSmith>>=
+x <- seq(0, 10, length = 512)
+coord <- cbind(x, x)
+set.seed(8)
+M0 <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 0, cov22 = 9/8,
+               grid = TRUE)
+set.seed(8)
+M1 <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 3/4, cov22 = 9/8,
+               grid = TRUE)
+
+par(mfrow = c(1,2))
+image(x, x, M0[,,1]^0.25, col = terrain.colors(30))
+image(x, x, M1[,,1]^0.25, col = terrain.colors(30))
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<rmaxstabSmith>>
+@ 
+\caption{Two simulations of the Smith model with different covariance
+  matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$,
+  $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$,
+  $\sigma_{12} = 3/4$. The observations are scaled for viewing
+  purposes.}
+  \label{fig:rmaxstabSmith}
+\end{figure}
+
+
+The function \verb|rmaxstab| allows the simulation from the Smith
+model. Figure~\ref{fig:rmaxstabSmith} plots two realisations on a $512
+\times 512$ grid with two different covariance matrices $\Sigma$. The
+generation of these two random fields takes around $2.5$ seconds
+each. The figures was generated by invoking the following lines
+<<eval=FALSE>>=
+<<rmaxstabSmith>>
+@ 
+
+\subsection{The Schlather Model}
+\label{subsec:sim-schlather-model}
+
+Recall that the Schlather model is defined by
+\begin{equation}
+  \label{eq:SmithChar2}
+  Z(x) = \max_i \xi_i \max \left\{0, Y_i(x)\right\},
+\end{equation}
+where $Y_i(\cdot)$ are i.i.d. stationary standard gaussian processes
+with correlation function $\rho(h)$, scaled so that $\mathbb{E}[\max
+\{0, Y_i(x) \}] = 1$ and $\{\xi_i \}_{i\geq 1}$ are the points of a
+Poisson process on $\mathbb{R}_*^+$ with intensity measure
+$\mbox{d$\Lambda$}(\xi) = \xi^{-2} \mbox{d$\xi$}$.
+
+Again, the conditions required by theorem~\ref{thm:simMaxStab} are not
+satisfied as the gaussian processes are not uniformly
+bounded. However, \citet{Schlather2002} claims that by choosing a
+constant $C$ such that $\Pr[ \max \{0, Y_i(x) \} > C]$ is small, the
+simulation procedure is still accurate and recommends the use of
+$C=3$.
+
+The package allows for simulation of max-stable processes by using the
+\verb|rmaxstab| function. A typical use for scattered location is
+<<eval=FALSE>>=
+coord <- matrix(runif(100, 0, 10), ncol = 2)
+data1 <- rmaxstab(100, coord, "whitmat", sill = 0.8, range = 1, smooth = 1)
+@ 
+while for locations located on a grid, users should invoke
+<<eval=FALSE>>=
+x <- seq(0, 10, length = 100)
+coord <- cbind(x, x)
+data2 <- rmaxstab(1, coord, "powexp", sill = 1, range = 1, smooth = 2,
+                  grid = TRUE) 
+@ 
 
 \chapter{Spatial Dependence of Max-Stable Random Fields}
 \label{cha:spatial-depend-max}
@@ -814,7 +1293,11 @@ legend("bottomright", c("Smith", "Schlather"), col = 1:2, lty = 1, inset = 0.05)
 Figure~\ref{fig:extCoeffModels} plots the extremal coefficient
 function for the different max-stable models introduced. The Smith
 model covers the whole range of dependence while Schlather's model has
-an upper bound of $1 + \sqrt{1/2}$.
+an upper bound of $1 + \sqrt{1/2}$ if the covariance function only
+takes positive values. More generally, the properties of isotropic
+positive definite functions \citep{Matern1986} imply that
+$\theta(\cdot) \leq 1.838$ in $\mathbb{R}^2$ and $\theta(\cdot) \leq
+1.781$ in $\mathbb{R}^3$ for the Schlather model.
 
 
 \citet{Schlather2003} prove several interesting properties for
@@ -1033,7 +1516,7 @@ plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
   \label{fig:madogram}
 \end{figure}
 
-equation~\eqref{eq:madogram} suggests a simple estimator
+Equation~\eqref{eq:madogram} suggests a simple estimator
 \begin{equation}
   \label{eq:madogramEstim}
   \hat{\nu}(x_1-x_2) = \frac{1}{2n} \sum_{i=1}^n |z_i(x_1) - z_i(x_2)|
@@ -1323,9 +1806,9 @@ where $c(\lambda) = 3/\{2(1+\lambda)(2-\lambda)\}$.
   F^{\lambda}\{Z(x_1)\}$ and $y = F^{1-\lambda}\{Z(x_2)\}$, we have
   \begin{eqnarray*}
     \nu_{\lambda}(x_1 - x_2) &=& \mathbb{E}\left[\max\{F^{\lambda}
-      \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \} \right] - \mathbb{E}\left[
-      F^{\lambda} \{Z(x_1)\} \right] - \mathbb{E}\left[F^{1-\lambda}
-      \{Z(x_2)\} \right]\\
+      \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \} \right] -
+    \frac{1}{2}\mathbb{E}\left[ F^{\lambda} \{Z(x_1)\} \right] -
+    \frac{1}{2}\mathbb{E}\left[F^{1-\lambda} \{Z(x_2)\} \right]\\
     &=& \mathbb{E}\left[\max\{F^{\lambda} \{Z(x_1)\},
       F^{1-\lambda}\{Z(x_2)\} \} \right] - \frac{1}{2(1+\lambda)} -
     \frac{1}{2(2 - \lambda)}
@@ -1679,7 +2162,7 @@ locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-param = c(0,1, .2,3, 1.2), maxstable="extr", n = 80)
+param = c(0, 1, .2, 3, 1.2), maxstable="extr", n = 80)
 ms0 <- t(ms0)
 fitmaxstab(ms0, locations, cov.mod = "whitmat", std.err.type = "none")
 @ 
@@ -1767,17 +2250,25 @@ get finite-difference based estimates for $H(\hat{\psi}_p)$ so that no
 extra work is needed to get $\hat{H}(\hat{\psi}_p)$.
 
 The estimation of $J(\hat{\psi}_p)$ is a little bit more difficult and
-can be done in two different ways \citep{Varin2005}. First,
-$J(\hat{\psi}_p)$ can be estimated using the ``naive'' estimator
+can be done in two different ways \citep{Varin2005}. First note that
+$J(\hat{\psi}_p)$ could be estimated using the ``naive'' estimator
 $\hat{J}(\hat{\psi}_p) = \nabla \ell_p(\hat{\psi}_p;\mathbf{y})
-{\nabla \ell_p(\hat{\psi}_p;\mathbf{y})}^T$. This estimator is tagged
-\verb|grad| as it uses the gradient of the log pairwise
-likelihood. Another estimator is given by noticing that $J(\psi)$
-corresponds to the variance of the pairwise score
-equations\index{score equation} $\ell_p(\psi;\mathbf{Y}) =
+{\nabla \ell_p(\hat{\psi}_p;\mathbf{y})}^T$. This is unsatisfactory as
+most often the gradient of the log composite likelihood vanishes. Top
+bypass this hurdle, $J(\hat{\psi}_p)$ can be estimated by
+\begin{equation}
+  \label{eq:Jest}
+  \hat{J}(\hat{\psi}_p) = \sum_{i=1}^n \nabla
+  \ell_p(\hat{\psi}_p;\mathbf{y}_i) {\nabla
+    \ell_p(\hat{\psi}_p;\mathbf{y}_i)}^T
+\end{equation}
+This estimator is tagged \verb|grad| as it uses the gradient of the
+log pairwise likelihood. Another estimator is given by noticing that
+$J(\psi)$ corresponds to the variance of the pairwise score
+equation\index{score equation} $\ell_p(\psi;\mathbf{Y}) =
 0$. Consequently, a second estimator, tagged \verb|score|, is given by
 the sample variance of each contribution to the pairwise score
-function. The second estimator is only accessible if independent
+function. These two estimators are only accessible if independent
 replications of $\mathbf{Y}$ are available\footnote{which will mostly
   be the case for spatial extremes.}.
 
@@ -1858,7 +2349,7 @@ vanishes. By putting this into equation~\eqref{eq:KullbackLeibler} we
 get
 \begin{eqnarray*}
   D\left(f_{\hat{\psi}},g\right) &\stackrel{\cdot}{=}&
-  D\left(f_{\psi_g} \right) - \frac{1}{2 n}
+  D\left(f_{\psi_g}, g \right) - \frac{1}{2 n}
   \mbox{tr}\left\{(\hat{\psi} - \psi_g) (\hat{\psi} -
     \psi_g)^T J(\psi_g)\right\}
 \end{eqnarray*}
@@ -1989,7 +2480,7 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
                    maxstable = "Bool", n = 50)
 ms0 <- t(ms0)
 
-M0 <- fitmaxstab(ms0, locations, "gauss", , cov11 = 100)
+M0 <- fitmaxstab(ms0, locations, "gauss", cov11 = 100)
 M1 <- fitmaxstab(ms0, locations, "gauss")
 anova(M0, M1)
 @ 
@@ -2011,8 +2502,8 @@ $\hat{H}^{-1} \hat{J} \hat{H}^{-1}$. This forms the basis for
 adjusting the log-composite likelihood is the following way,
 \begin{equation}
   \label{eq:lclik}
-  \ell_{adj}(\psi) = \ell(\psi^*), \qquad \psi^* = \hat{\psi}
-  + C (\psi - \hat{\psi})
+  \ell_A(\psi) = \ell(\psi^*), \qquad \psi^* = \hat{\psi} + C (\psi -
+  \hat{\psi})
 \end{equation}
 for some $p\times p$ matrix $C$.
 
@@ -2116,7 +2607,7 @@ random variable $Y$ defined as
   \label{eq:frech2GEV}
   Y = \mu + \sigma \frac{Z^{\xi} - 1}{\xi}
 \end{equation}
-is GEV distributed with location, scale and shape parameter equal to
+is GEV distributed with location, scale and shape parameters equal to
 $\mu \in \mathbb{R}$, $\sigma \in \mathbb{R}_*^+$ and $\xi \in
 \mathbb{R}$ respectively.
 <<>>=
@@ -2163,7 +2654,7 @@ where $n_{i,j}$ is the sample size of common observations between site
 $i$ and $j$ and
 \begin{equation*}
   z_k^{(i)} = \left(1 + \xi_i \frac{y_k^{(i)} - \mu_i}{\sigma_i}
-  \right)^{1/\xi_i-1}
+  \right)^{1/\xi_i}
 \end{equation*}
 where $\mu_i$, $\sigma_i$, $\xi_i$ are the GEV parameters for the
 $i$-th site and $y_k^{(i)}$ is the $k$-th observation available at
@@ -2362,7 +2853,7 @@ semiparametric regression models defined as
 \end{equation}
 where $f$ is a smooth function with unknown shape.
 
-The idea of semiparametric regression models is to decompose $g$ into
+The idea of semiparametric regression models is to decompose $f$ into
 an appropriate basis for which equation~\eqref{eq:semiparModel}
 simplifies to equation~\eqref{eq:LM} e.g.
 \begin{equation}
@@ -2470,9 +2961,11 @@ to some constraint on the $\mathbf{\beta}$ parameter i.e.
   \text{minimize } ||\mathbf{y} - \mathbf{X\beta}||^2 \quad
   \text{subject to } \mathbf{\beta}^T \mathbf{K \beta} \leq C
 \end{equation*}
-for a judicious choice of $C$ and a given matrix $\mathbf{K}$. Using a
-Lagrange multiplier argument, this is equivalent to choosing
-$\mathbf{\beta}$ to minimize
+for a judicious choice of $C$ and a given matrix
+$\mathbf{K}$. Annex~\ref{sec:model-definition} gives further details
+for one possible choice of $\mathbf{K}$. Using a Lagrange multiplier
+argument, this constraint optimization problem is equivalent to
+choosing $\mathbf{\beta}$ to minimize
 \begin{equation}
   \label{eq:constraintLeastSquare}
   ||\mathbf{y} - \mathbf{X \beta}||^2 + \lambda \mathbf{\beta}^T
@@ -2715,7 +3208,7 @@ TIC(M1, M2)
 @ 
 
 From these two outputs, we can see that the $p$-value for the
-likelihood ratio test is around $0.95$ which advocates the use of
+likelihood ratio test is around $0.80$ which advocates the use of
 model \verb|M1|. The TIC corroborates this conclusion.
 
 \chapter{Conclusion}

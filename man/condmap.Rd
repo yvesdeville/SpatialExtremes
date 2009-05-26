@@ -53,23 +53,14 @@ TRUE)
 }
 \examples{
 \dontrun{
-require(RandomFields)
-
 ##Define the coordinate of each location
 n.site <- 30
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
-sigma <- matrix(c(4, 1, 1, 3), 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE,
-                   model = model, maxstable = "Bool", n = 40)
-ms0 <- t(ms0)
-ms1 <- ms0
+data <- rmaxstab(50, locations, cov.mod = "gauss", cov11 = 4, cov12 =
+1, cov22 = 3)
 
 ##Now define the spatial model for the GEV parameters
 param.loc <- -10 - 4 * locations[,1] + locations[,2]^2
@@ -78,8 +69,8 @@ param.shape <- rep(.2, n.site)
 
 ##Transform the unit Frechet margins to GEV 
 for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-  param.shape[i] + param.loc[i]
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
+param.shape[i])
 
 ##Define a model for the GEV margins to be fitted
 ##shape ~ 1 stands for the GEV shape parameter is constant
@@ -89,7 +80,7 @@ scale.form <- scale ~ lon + I(lat^2)
 shape.form <- shape ~ lat + lon
 
 ##  1- Fit a max-stable process
-fitted <- fitmaxstab(ms1, locations, "gauss", loc.form, scale.form,
+fitted <- fitmaxstab(data, locations, "gauss", loc.form, scale.form,
                      shape.form, std.err.type = "none")
 
 condmap(fitted, c(1, 1), seq(0, 10, length = 25), seq(0,10, length =

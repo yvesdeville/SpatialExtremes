@@ -11,36 +11,42 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
   if (cov.mod == "gauss")
     stop("''covariance'' is not implemented for the Smith's model")
 
-  if (!(cov.mod %in% c("whitmat", "cauchy", "powexp")))
-    stop("Invalid covariance model. ''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+  if (!(cov.mod %in% c("whitmat", "cauchy", "powexp", "bessel")))
+    stop("Invalid covariance model. ''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
   
   if (cov.mod == "whitmat"){
-    if ((smooth <= 0) || (range <= 0) || (smooth > 150) || (sill <= 0) ||
-        (sill > 1))
+    if ((smooth <= 0) || (range <= 0) || (smooth > 150) || (sill <= 0))
       stop("invalid parameter for the whittle-matern covariance function")
     
     cov.fun <- function(dist) {
-      idx <- which(dist == 0)
-      
-      ans <- sill * 2^(1-smooth) / gamma(smooth) * (dist / range)^smooth *
-        besselK(dist / range, smooth)
-      ans[idx] <- sill
+      idx <- dist == 0
+      ans <- rep(sill, length(dist))
+      ans[!idx] <- sill * 2^(1-smooth) / gamma(smooth) * (dist[!idx] / range)^smooth *
+        besselK(dist[!idx] / range, smooth)
       return(ans)
     }
   }
 
   if (cov.mod == "cauchy"){
-    if ((smooth <= 0) || (range <= 0) || (sill <= 0) || (sill > 1))
+    if ((smooth <= 0) || (range <= 0) || (sill <= 0))
       stop("invalid parameter for the cauchy covariance function")
     
     cov.fun <- function(dist) sill * (1 + (dist / range)^2)^-smooth
   }
 
   if (cov.mod == "powexp"){
-    if ((smooth < 0) || (smooth > 2) || (range <= 0) || (sill <= 0) || (sill > 1))
+    if ((smooth < 0) || (smooth > 2) || (range <= 0) || (sill <= 0))
       stop("invalid parameter for the powered exponential covariance function")
 
     cov.fun <- function(dist) sill * exp(-(dist / range)^smooth)
+  }
+
+  if (cov.mod == "bessel"){
+    if ((range <= 0) || (sill <= 0))
+      stop("invalid parameter for the Bessel covariance function")
+
+    cov.fun <- function(dist) sill * (2 * range / dist)^smooth * gamma(smooth + 1) *
+      besselJ(dist / range, smooth)
   }
 
   if (plot){
@@ -53,7 +59,7 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
 
     if (is.null(list(...)$xlim)){
       tmp.fun <- function(dist) (cov.fun(dist) - 0.05)^2
-      xlimsup <- optim(1, tmp.fun, method = "L-BFGS-B", lower = 1e-12)$par
+      xlimsup <- optimize(tmp.fun, c(1e-6, 10 * sqrt(sill) * range))$minimum
     }
 
     else

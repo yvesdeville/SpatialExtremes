@@ -34,18 +34,15 @@ extcoeff(fitted, cov.mod, param, n = 200, xlab, ylab, \dots)
 }
 \examples{
 ## 1- Random field generation
-require(RandomFields)
 n.site <- 30
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
-ms0 <- MaxStableRF(locations[,1], locations[,2], model = "wh",
-                   grid = FALSE, maxstable = "extr",
-                   param = c(0, 1, 0, 3, 1), n = 60)
-ms0 <- t(ms0)
+data <- rmaxstab(60, locations, cov.mod = "whitmat", sill = 1, range =
+3, smooth = 1)
 
 ## 2- Fit a max-stable processes
-schlather <- fitmaxstab(ms0, locations, "whitmat",
+schlather <- fitmaxstab(data, locations, "whitmat",
                         fit.marge = FALSE)
 
 ## 3- Plot the extremal coefficient

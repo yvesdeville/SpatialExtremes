@@ -52,9 +52,6 @@ void smithfull3d(double *data, double *distVec, int *nSite,
     *dns = lpliksmith(data, mahalDist, jac, *nObs, *nSite);
   }
 
-  if (!R_FINITE(*dns))
-    *dns = MINF;
-  
   return;
 }
 
@@ -120,9 +117,6 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
-
-  if (!R_FINITE(*dns))
-    *dns = MINF;
 
   return;
 }

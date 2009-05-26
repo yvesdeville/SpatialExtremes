@@ -34,21 +34,14 @@ qqgev(fitted, xlab, ylab, ...)
 \author{Mathieu Ribatet}
 \seealso{\code{\link{qqextcoeff}}}
 \examples{
-require(RandomFields)
-
 ##Define the coordinate of each location
 n.site <- 30
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-                   maxstable="Bool", n = 40)
-ms0 <- t(ms0)
+data <- rmaxstab(50, locations, cov.mod = "gauss", cov11 = 100, cov12 =
+25, cov22 = 220)
 
 ##Now define the spatial model for the GEV parameters
 param.loc <- -10 + 2 * locations[,2]
@@ -57,7 +50,7 @@ param.shape <- rep(0.2, n.site)
 
 ##Transform the unit Frechet margins to GEV 
 for (i in 1:n.site)
-  ms0[,i] <- frech2gev(ms0[,i], param.loc[i], param.scale[i], param.shape[i])
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i], param.shape[i])
 
 ##Define a model for the GEV margins to be fitted
 ##shape ~ 1 stands for the GEV shape parameter is constant
@@ -66,7 +59,7 @@ loc.form <- loc ~ lat
 scale.form <- scale ~ lon + I(lat^2)
 shape.form <- shape ~ 1
 
-fitted <- fitspatgev(ms0, locations, loc.form = loc.form, scale.form =
+fitted <- fitspatgev(data, locations, loc.form = loc.form, scale.form =
 scale.form, shape.form = shape.form)
 
 qqgev(fitted)

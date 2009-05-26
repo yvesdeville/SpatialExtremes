@@ -78,12 +78,21 @@ extcoeff <- function(fitted, cov.mod, param,
   ys <- seq(y.range[1], y.range[2], length = n)
 
   if (model == "Smith"){
-    for (i in 1:n)
-      for (j in 1:n)
-        extcoeff.hat[i,j] <- extCoeff(c(xs[i], ys[j]))
+    if (!missing(fitted) && fitted$iso){
+      for (i in 1:n)
+        for (j in 1:n){
+          h <- sqrt(xs[i]^2 + ys[j]^2)
+          extcoeff.hat[i,j] <- extCoeff(h)
+        }
+    }
+
+    else
+      for (i in 1:n)
+        for (j in 1:n)
+          extcoeff.hat[i,j] <- extCoeff(c(xs[i], ys[j]))
   }
 
-  if (model == "Schlather"){
+  if ((model == "Schlather")){
     for (i in 1:n)
       for (j in 1:n){
         h <- sqrt(xs[i]^2 + ys[j]^2)

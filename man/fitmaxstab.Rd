@@ -16,12 +16,9 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
     model in the max-stable representation. Must be one of "gauss" for
-    the Smith's model; or "whitmat", "cauchy" or "powexp" for
-    the Whittle-Matern, the Cauchy and the Powered Exponential
-    covariance family with the Schlather's model. These 3 last
-    covariance models could have an additional prefix "i" or "g" for the
-    mixture of independent Frechet field and Schlather's model or the
-    geometric gaussian model.} 
+    the Smith's model; or "whitmat", "cauchy", "powexp" or "bessel" for
+    the Whittle-Matern, the Cauchy, the Powered Exponential and the
+    Bessel covariance family with the Schlather's model.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
     section details.}
@@ -120,8 +117,9 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
 
   \describe{
     \item{\code{grad}}{\eqn{J} is estimated from the gradient e.g. \eqn{J
-	= \nabla \ell_P \nabla \ell_P^T}{J = grad(llik_P)
-    grad(llik_P)^T}.}
+	= \sum_{i=1}^n \left\{ \nabla \ell_P(\hat{\theta}; y_i) \nabla
+    \ell_P(\hat{\theta},y_i)^T \right\}}{J = sum_{i=1}^n
+    [grad(llik_P(hat(theta); y_i)) grad(llik_P(hat(theta);y_i))^T]}.}
     \item{\code{score}}{\eqn{J} is estimated directly from the variance of
       the observed score function.}
   }
@@ -155,19 +153,15 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
   extremes. Unpublished.
 }
 \examples{
-require(RandomFields)
-
+\dontrun{
 ##Define the coordinate of each location
 n.site <- 30
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,30, .5), maxstable="extr",
-                   n = 40)
-ms0 <- t(ms0)
-ms1 <- ms0
+data <- rmaxstab(40, locations, cov.mod = "whitmat", sill = 1, range = 30,
+smooth = 0.5)
 
 ##Now define the spatial model for the GEV parameters
 param.loc <- -10 + 2 * locations[,2]
@@ -176,7 +170,7 @@ param.shape <- rep(0.2, n.site)
 
 ##Transform the unit Frechet margins to GEV 
 for (i in 1:n.site)
-  ms1[,i] <- frech2gev(ms1[,i], param.loc[i], param.scale[i],
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
 param.shape[i])
 
 ##Define a model for the GEV margins to be fitted
@@ -187,32 +181,25 @@ scale.form <- scale ~ lon + I(lat^2)
 shape.form <- shape ~ 1
 
 ##Fit a max-stable process using the Schlather's model
-fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
+fitmaxstab(data, locations, "whitmat", loc.form, scale.form,
            shape.form)
 
 ## Model without any spatial structure for the GEV parameters
 ## Be careful this could be *REALLY* time consuming
-\dontrun{fitmaxstab(ms1, locations, "whitmat")}
+fitmaxstab(data, locations, "whitmat")
 
 ##  Fixing the smooth parameter of the Whittle-Matern family
-##  to 0.5 - e.g. considering exponential family. We suppose the date
+##  to 0.5 - e.g. considering exponential family. We suppose the data
 ##  are unit Frechet here.
-\dontrun{fitmaxstab(ms0, locations, "whitmat", smooth = 0.5, fit.marge = FALSE)}
+fitmaxstab(data, locations, "whitmat", smooth = 0.5, fit.marge = FALSE)
 
 ##  Fitting a penalized smoothing splines for the margins with the
 ##     Smith's model
-\dontrun{
-sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-                   maxstable="Bool", n = 40)
-ms1 <- t(ms0)
-}
+data <- rmaxstab(40, locations, cov.mod = "gauss", cov11 = 100, cov12 =
+                 25, cov22 = 220)
+
 ##     And transform it to ordinary GEV margins with a non-linear
 ##     function
-\dontrun{
 fun <- function(x)
   2 * sin(pi * x / 4) + 10
 fun2 <- function(x)
@@ -221,32 +208,27 @@ fun2 <- function(x)
 param.loc <- fun(locations[,2])
 param.scale <- fun(locations[,2])
 param.shape <- fun2(locations[,1])
-}
 
 ##Transformation from unit Frechet to common GEV margins
-\dontrun{
 for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + param.loc[i]
-}
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
+param.shape[i])
 
 ##Defining the knots, penalty, degree for the splines
-\dontrun{
 n.knots <- 5
 knots <- quantile(locations[,2], prob = 1:n.knots/(n.knots+1))
 knots2 <- quantile(locations[,1], prob = 1:n.knots/(n.knots+1))
-}
 
 ##Be careful the choice of the penalty (i.e. the smoothing parameter)
 ##may strongly affect the result Here we use p-splines for each GEV
 ##parameter - so it's really CPU demanding but one can use 1 p-spline
 ##and 2 linear models.
 ##A simple linear model will be clearly faster...
-\dontrun{
 loc.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 scale.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 shape.form <- y ~ rb(lon, knots = knots2, degree = 3, penalty = .5)
 
-fitted <- fitmaxstab(ms1, locations, "gauss", loc.form, scale.form, shape.form,
+fitted <- fitmaxstab(data, locations, "gauss", loc.form, scale.form, shape.form,
                      control = list(ndeps = rep(1e-6, 24), trace = 10),
                      std.err.type = "none", method = "BFGS")
 fitted

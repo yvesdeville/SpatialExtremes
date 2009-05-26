@@ -81,24 +81,18 @@ ylab, angles = NULL, identify = FALSE)
   \code{\link{madogram}}
 }
 \examples{
-require(RandomFields)
 n.site <- 30
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-sigma <- matrix(c(10, 40, 40, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-                   maxstable="Bool", n = 40)
-ms0 <- t(ms0)
+data <- rmaxstab(50, locations, cov.mod = "gauss", cov11 = 10, cov12 =
+40, cov22 = 220)
 
 ##Plot the extremal coefficient function
 op <- par(mfrow=c(1,2))
-fitextcoeff(ms0, locations, estim = "Smith")
-fitextcoeff(ms0, locations, angles = seq(-pi, pi, length = 4), estim = "Smith")
+fitextcoeff(data, locations, estim = "Smith")
+fitextcoeff(data, locations, angles = seq(-pi, pi, length = 4), estim = "Smith")
 par(op)
 }
 \author{Mathieu Ribatet}

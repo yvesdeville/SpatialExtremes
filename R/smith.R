@@ -16,6 +16,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   n.obs <- nrow(data)
   dist.dim <- ncol(coord)
   n.pair <- n.site * (n.site - 1) / 2
+
+  if (iso && (method == "Nelder"))
+    method2 <- "BFGS"
+
+  else
+    method2 <- method
   
   if (std.err.type == "none")
     hessian <- FALSE
@@ -151,12 +157,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
     }
 
     if (length(fixed.param) > 0){
-      args <- c(list(data = data, coord = coord, marge = "emp", iso = iso), fixed.param)
+      args <- c(list(data = data, coord = coord, marge = "emp", iso = iso, method = method2), fixed.param)
       cov.start <- do.call("fitcovmat", args)$param
     }
       
     else
-      cov.start <- fitcovmat(data, coord, marge = "emp", iso = iso)$param
+      cov.start <- fitcovmat(data, coord, marge = "emp", iso = iso, method = method2)$param
 
     if (iso){
       cov.start <- cov.start[1]
@@ -183,14 +189,6 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-  
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -358,9 +356,14 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                     3, 3)
   
   iSigma <- solve(Sigma)
-  
-  ext.coeff <- function(posVec)
-    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
+
+  if (iso)
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h^2 / param["cov11"]) / 2)
+
+  else
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
@@ -369,7 +372,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                  logLik = -opt$value, opt.value = opt$value, model = "Smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian,
-                 marg.cov = NULL, nllh = nllh)
+                 marg.cov = NULL, nllh = nllh, iso = iso)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -442,23 +445,9 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   n.pparshape <- shape.model$n.ppar
   
 
-  if (n.loccoeff == 1)
-    loc.names <- "locCoeff"
-
-  else
-    loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
-
-  if (n.scalecoeff == 1)
-    scale.names <- "scaleCoeff"
-
-  else
-    scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
-
-  if (n.shapecoeff == 1)
-    shape.names <- "shapeCoeff"
-
-  else
-    shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
+  loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
+  scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
+  shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
 
   if (dist.dim == 2){
     if (iso)
@@ -549,14 +538,6 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-  
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -655,7 +636,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     
   if (std.err.type != "none"){
     
-    var.cov <- try(solve(qr(opt$hessian)), silent = TRUE)
+    var.cov <- try(solve(opt$hessian), silent = TRUE)
     if(!is.matrix(var.cov)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
@@ -726,8 +707,12 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   
   iSigma <- solve(Sigma)
 
-  ext.coeff <- function(posVec)
-    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
+  if (iso)
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h^2 / param["cov11"]) / 2)
+  else
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
@@ -738,7 +723,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
-                 marg.cov = marg.cov, nllh = nllh)
+                 marg.cov = marg.cov, nllh = nllh, iso = iso)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)

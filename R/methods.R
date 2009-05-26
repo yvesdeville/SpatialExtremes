@@ -59,7 +59,8 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
     if (x$cov.mod == "cauchy")
       cov.mod <- "Cauchy"
-    
+    if (x$cov.mod == "bessel")
+      cov.mod <- "Bessel"    
     
     cat("Covariance Family:", cov.mod, "\n")
     

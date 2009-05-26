@@ -16,14 +16,15 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     return (1 - smooth + EPS) * (1 - smooth + EPS) * MINF;
 
   else if (smooth > 150)
-    //Required because it could lead to infinite rho values
-    return (smooth - 150) * (smooth - 150) * MINF;
+    /* Required because it could lead to infinite rho values - gamma
+    function */
+    return (smooth - 149) * (smooth - 149) * MINF;
 
-  if (range <= 0.0)
-    return (1 - range) * (1 - range) * MINF;
+  if (range < 1e-2)
+    return (1.01 - range) * (1.01 - range) * MINF;
 
-  if (sill <= 0.0)
-    return (1 - sill) * (1 - sill) * MINF;
+  if (sill <= 1e-2)
+    return (1.01 - sill) * (1.01 - sill) * MINF;
   
   else if (sill > 1)
     return sill *sill * MINF;
@@ -49,7 +50,7 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   //Some preliminary steps: Valid points?
   if (smooth < 0)
     return (1 - smooth) * (1 - smooth) * MINF;
-
+  
   if (range <= 0.0)
     return (1 - range) * (1 - range)* MINF;
 
@@ -78,7 +79,7 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   double irange = 1 / range;
     
   //Some preliminary steps: Valid points?
-  if ((smooth < 0) || (smooth >= 2.0))
+  if ((smooth < 0) || (smooth > 2.0))
     return (1 - smooth) * (1 - smooth) * MINF;
 
   if (range <= 0.0)
@@ -96,6 +97,42 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   return 0.0;
 }
 
+double bessel(double *dist, int nPairs, int dim, double sill,
+	      double range, double smooth, double *rho){
+  //This function computes the bessel covariance function
+  //between each pair of locations.
+  //When ans != 0.0, the powered exponential parameters are ill-defined.
+
+  int i;
+  double irange = 1 / range, cst = R_pow(2, smooth) * gammafn(smooth + 1),
+    cst2;
+
+  //Some preliminary steps: Valid points?
+  if (smooth < (0.5 * (dim - 2)))
+    return (1 + 0.5 * (dim - 2) - smooth) * (1 + 0.5 * (dim - 2) - smooth) * MINF;
+
+  else if (smooth > 150)
+    //Require as bessel_j will be mostly infinite otherwise
+    return (smooth - 149) * (smooth - 149) * MINF;
+
+  if (range <= 0)
+    return (1 - range) * (1 - range) * MINF;
+
+  if (sill <= 0)
+    return (1 - sill) * (1 - sill) * MINF;
+
+  else if (sill > 1)
+    return sill * sill * MINF;
+
+  for (i=nPairs;i--;){
+    cst2 = dist[i] * irange;
+
+    rho[i] = sill * cst * R_pow(cst2, -smooth) * bessel_j(cst2, smooth);
+  }
+
+  return 0.0;
+}
+  
 double mahalDistFct(double *distVec, int nPairs, double *cov11,
 		    double *cov12, double *cov22, double *mahal){
   //This function computes the mahalanobis distance between each pair
@@ -174,7 +211,7 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   return 0.0;
 }
 
-double geomCovariance(double *dist, int nPairs, int covmod,
+double geomCovariance(double *dist, int nPairs, int dim, int covmod,
 		      double sigma2, double sill, double range,
 		      double smooth, double *rho){
 
@@ -194,6 +231,9 @@ double geomCovariance(double *dist, int nPairs, int covmod,
   case 3:
     ans = powerExp(dist, nPairs, sill, range, smooth, rho);
     break;
+  case 4:
+    ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
+    break;
   }
 
   if (ans != 0.0)
@@ -205,7 +245,7 @@ double geomCovariance(double *dist, int nPairs, int covmod,
   return ans;
 }
 
-double nsgeomCovariance(double *dist, int nSite, int covmod,
+double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double *sigma2, double sill, double range,
 			double smooth, double *rho){
   
@@ -222,6 +262,9 @@ double nsgeomCovariance(double *dist, int nSite, int covmod,
   case 3:
     ans = powerExp(dist, nPairs, sill, range, smooth, rho);
     break;
+  case 4:
+    ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
+    break; 
   }
 
   if (ans != 0.0)

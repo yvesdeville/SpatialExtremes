@@ -45,24 +45,9 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   n.pparscale <- scale.model$n.ppar
   n.pparshape <- shape.model$n.ppar
   
-
-  if (n.loccoeff == 1)
-    loc.names <- "locCoeff"
-
-  else
-    loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
-
-  if (n.scalecoeff == 1)
-    scale.names <- "scaleCoeff"
-
-  else
-    scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
-
-  if (n.shapecoeff == 1)
-    shape.names <- "shapeCoeff"
-
-  else
-    shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
+  loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
+  scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
+  shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
 
   param <- c(loc.names, scale.names, shape.names)
 
@@ -108,12 +93,11 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
     if (any(scales.hat <= 0))
       scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
   
-    names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
+    names(locCoeff) <- loc.names
+    names(scaleCoeff) <- scale.names
+    names(shapeCoeff) <- shape.names
     
-    start <- as.list(unlist(list(locCoeff = locCoeff,
-                                 scaleCoeff = scaleCoeff,
-                                 shapeCoeff = shapeCoeff)))
-
+    start <- as.list(c(locCoeff, scaleCoeff, shapeCoeff))
     start <- start[!(param %in% names(list(...)))]
 
   }
@@ -130,14 +114,6 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-    
   formals(nllik) <- c(f[m], f[-m])
   nllh <- function(p, ...) nllik(p, ...)
 
@@ -201,34 +177,24 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   param <- param[param.names]
 
   if (std.err.flag){
-    tol <- .Machine$double.eps^0.5
-    var.cov <- qr(opt$hessian, tol = tol)
+    var.cov <- try(solve(opt$hessian), silent = TRUE)
     
-    if(var.cov$rank != ncol(var.cov$qr)){
+    if(!is.matrix(var.cov)){
       std.err.flag <- FALSE
       warning("observed information matrix is singular; std. err. won't be computed")
     }
     
     else{
-      var.cov <- try(solve(var.cov, tol = tol), silent = TRUE)
+      ihessian <- var.cov
+      jacobian <- .spatgevgrad(param, data, loc.dsgn.mat,scale.dsgn.mat,
+                               shape.dsgn.mat, std.err.type,
+                               fixed.param = names(fixed.param), param.names = param.names)
       
-      if(!is.matrix(var.cov)){
+      if (any(is.na(jacobian))){
+        if (warn)
+          warning("observed information matrix is singular; std. err. won't be computed")
+        
         std.err.flag <- FALSE
-        warning("observed information matrix is singular; std.err. won't be computed")
-      }
-      
-      else{
-        ihessian <- var.cov
-        jacobian <- .spatgevgrad(param, data, loc.dsgn.mat,scale.dsgn.mat,
-                                 shape.dsgn.mat, std.err.type,
-                                 fixed.param = names(fixed.param), param.names = param.names)
-
-        if (any(is.na(jacobian))){
-          if (warn)
-            warning("observed information matrix is singular; std. err. won't be computed")
-          
-          std.err.flag <- FALSE
-        }
       }
     }
   }

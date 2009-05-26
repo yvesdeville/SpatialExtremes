@@ -21,21 +21,15 @@
   \code{\link{logLik}}
 }
 \examples{
-require(RandomFields)
-
 ##Define the coordinates of each location
 n.site <- 30
 locations <- matrix(5 + runif(2*n.site, 0, 10), ncol = 2)
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,3, .5), maxstable="extr",
-                   n = 30)
-ms1 <- t(ms0)
-\dontrun{
-fit <- fitmaxstab(ms1, locations, "schlather")
+data <- rmaxstab(30, locations, cov.mod = "whitmat", sill = 1, range = 3,
+smooth = 0.5)
+fit <- fitmaxstab(data, locations, "whitmat")
 logLik(fit)
-}
 }
 \author{Mathieu Ribatet}
 \keyword{models}

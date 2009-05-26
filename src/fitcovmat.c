@@ -56,7 +56,7 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 }
 
 void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
-		   int *nPairs, double *dist, double *extcoeff,
+		   int *nPairs, int *dim, double *dist, double *extcoeff,
 		   double *weights, double *ans){
   
   int i;
@@ -74,6 +74,9 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
   case 3:
     *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
     break;
+  case 4:
+    *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
+    break;
   }
   
   if (*ans != 0.0)
@@ -88,7 +91,7 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
 }
 
 void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
-		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *smooth, int *nPairs, int *dim, double *dist, double *extcoeff,
 		    double *weights, double *ans){
   /* This computes the least squares for the independent Schlather model */
   
@@ -117,6 +120,9 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
   case 3:
     *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
     break;
+  case 4:
+    *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
+    break;
   }
   
   if (*ans != 0.0)
@@ -132,7 +138,7 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
 }
 
 void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
-		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *smooth, int *nPairs, int *dim, double *dist, double *extcoeff,
 		    double *weights, double *ans){
   /* This computes the least squares for the geometric Gaussian model */
   
@@ -156,6 +162,8 @@ void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
   case 3:
     *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
     break;
+  case 4:
+    *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
   }
   
   if (*ans != 0.0)

@@ -1,7 +1,7 @@
 #include "header.h"
 
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
-		      int *nObs, double *locs, double *scales, double *shapes,
+		      int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		      double *alpha, double *sill, double *range, double *smooth,
 		      int *fitmarge,double *dns){
   //This is the independent Schlater's model. It's a wrapper to several
@@ -44,6 +44,9 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   case 3:
     *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
+  case 4:
+    *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
+    break;
   }
   
   if (*dns != 0.0)
@@ -75,7 +78,7 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
 }
 
 void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-			 double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			 int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 			 double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -110,6 +113,9 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
     break;
   case 3:
     *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    break;
+  case 4:
+    *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
     break;
   }
 

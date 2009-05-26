@@ -23,6 +23,8 @@ void distance(double *coord, int *nDim, int *nSite,
   else{
     for (i=0;i<(*nSite-1);i++){
       for (j=i+1;j<*nSite;j++){
+	dist[currentPair] = 0;
+
 	for (k=0;k<*nDim;k++)
 	  dist[currentPair] += (coord[i + k * *nSite] -	coord[j + k * *nSite]) *
 	    (coord[i + k * *nSite] - coord[j + k * *nSite]);

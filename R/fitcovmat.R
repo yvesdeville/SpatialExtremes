@@ -1,5 +1,9 @@
-fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, ..., start){
+fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, control = list(),
+                      ..., start){
 
+  if (is.null(control$maxit))
+    control$maxit <- 10000
+      
   n.site <- ncol(data)
   n.pairs <- n.site * (n.site - 1) / 2
   dist.dim <- ncol(coord)
@@ -64,11 +68,12 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, ..., start){
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   if (missing(start)){
-    if (iso){
-      a <- 4 * qnorm(pmin(extcoeff, 2) / 2)^2
-      sigma.start <- mean(rowSums(dist^2) / a)
+
+    a <- 4 * qnorm(pmin(extcoeff, 2) / 2)^2
+    sigma.start <- mean(rowSums(dist^2) / a)
+    
+    if (iso)      
       start <- list(cov = sigma.start)
-    }
 
     else{
       if (dist.dim == 2){
@@ -77,20 +82,15 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, ..., start){
                         cov12 = list(...)$cov12,
                         cov22 = 1 + 2 * abs(list(...)$cov12))
         
-        else{
-          a <- 4 * qnorm(pmin(extcoeff, 2) / 2)^2
-          sigma.start <- mean(rowSums(dist^2) / a)
+        else
           start <- list(cov11 = sigma.start, cov12 = 0, cov22 = sigma.start)
-        }
       }
     
-      if (dist.dim == 3){
-        a <- 4 * qnorm(pmin(extcoeff, 2) / 2)^2
-        sigma.start <- mean(rowSums(dist^2) / a)
+      if (dist.dim == 3)
         start <- list(cov11 = sigma.start, cov12 = 0, cov13 = 0, cov22 = sigma.start,
                       cov23 = 0, cov33 = sigma.start)
-      }
     }
+
     start <- start[!(param %in% names(list(...)))]
   }
 
@@ -172,7 +172,8 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, ..., start){
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
 
-  opt <- optim(unlist(start), obj.fun, hessian = FALSE, ...)
+  opt <- optim(unlist(start), obj.fun, hessian = FALSE, control = control,
+               ...)
 
   if (opt$convergence == 0)
     opt$convergence <- "successful"
@@ -214,23 +215,32 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, ..., start){
   
   iSigma <- solve(Sigma)
 
-  ext.coeff <- function(posVec)
-    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
+  if (iso)
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h^2 / param["cov11"]) / 2)
+
+  else
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
 
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data,
                  est = "Least Square", opt.value = opt$value, model = "Smith",
                  coord = coord, fit.marge = FALSE, cov.mod = "Gaussian",
-                 ext.coeff = ext.coeff)
+                 ext.coeff = ext.coeff, iso = iso)
 
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
   
 }
 
-fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
+fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
+                          ..., start){
 
+  if (is.null(control$maxit))
+    control$maxit <- 10000
+  
   n.site <- ncol(data)
   n.pairs <- n.site * (n.site - 1) / 2
   dist.dim <- ncol(coord)
@@ -249,8 +259,8 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
   else
     model <- "Schlather"
 
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
   
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -258,6 +268,8 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
     cov.mod.num <- 2
   if (cov.mod == "powexp")
     cov.mod.num <- 3
+  if (cov.mod == "bessel")
+    cov.mod.num <- 4
   
   extcoeff <- fitextcoeff(data, coord, estim = "Smith",
                           plot = FALSE, loess = FALSE,
@@ -281,28 +293,38 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
   if (model == "Schlather")
     funS <- function(sill, range, smooth)
       .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
-         as.double(smooth), as.integer(n.pairs), as.double(dist),
+         as.double(smooth), as.integer(n.pairs), as.integer(dist.dim), as.double(dist),
          as.double(extcoeff), as.double(weights), ans = double(1),
          PACKAGE = "SpatialExtremes")$ans
 
   else if (model == "iSchlather")
     funI <- function(alpha, sill, range, smooth)
       .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(sill),
-         as.double(range), as.double(smooth), as.integer(n.pairs), as.double(dist),
-         as.double(extcoeff), as.double(weights), ans = double(1),
+         as.double(range), as.double(smooth), as.integer(n.pairs), as.integer(dist.dim),
+         as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
          PACKAGE = "SpatialExtremes")$ans
 
   else
     funG <- function(sigma2, sill, range, smooth)
       .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sill),
-         as.double(range), as.double(smooth), as.integer(n.pairs), as.double(dist),
-         as.double(extcoeff), as.double(weights), ans = double(1),
+         as.double(range), as.double(smooth), as.integer(n.pairs), as.integer(dist.dim),
+         as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
          PACKAGE = "SpatialExtremes")$ans
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   if (missing(start)){
-    start <- list(sill = .9, range = 0.75 * max(dist), smooth = .5)
+
+    if (cov.mod %in% c("whitmat", "bessel"))
+      range.start <- 0.75 * max(dist) / 3
+
+    if (cov.mod == "cauchy")
+      range.start <- 0.75 * max(dist) / 20
+
+    if (cov.mod == "powexp")
+      range.start <- 0.75 * max(dist) / 9
+    
+    start <- list(sill = .9, range = range.start, smooth = .5)
 
     if (model == "iSchlather")
       start <- c(list(alpha = 0.5), start)
@@ -367,7 +389,7 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
 
-  opt <- optim(unlist(start), obj.fun, hessian = FALSE, ...)
+  opt <- optim(unlist(start), obj.fun, hessian = FALSE, control = control, ...)
 
   if (opt$convergence == 1) 
     opt$convergence <- "iteration limit reached"

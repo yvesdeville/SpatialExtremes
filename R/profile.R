@@ -7,6 +7,11 @@ profile.maxstab <- function(fitted, param, range, n = 10,
 
   if (!(square %in% c("chol", "svd")))
     stop("'square' must be one of 'chol' or 'svd'")
+
+  if (is.null(fitted$std.err.type)){
+    warning("Profile confidence intervals cannot be computed whithout standard errors.")
+    method <- "none"
+  }
   
   param.names <- names(fitted$fitted.values)
   n.param <- length(param.names)
@@ -81,7 +86,7 @@ profile.maxstab <- function(fitted, param, range, n = 10,
 
   llik <- rep(NA, n)
   par <- matrix(NA, ncol = n.param - 1, nrow = n)
-
+  
   for (i in 1:n){
     fixed.val <- fixed.values[i]
 
@@ -94,11 +99,18 @@ profile.maxstab <- function(fitted, param, range, n = 10,
       body(optfun) <- parse(text = paste("nplk(", paste("p[",1:(n.param-1),"]", collapse = ","),
                               ",", param, "=", fixed.val, ")"))
 
-    opt <- optim(start, optfun)
+    if (optfun(unlist(start)) >= 1e15)
+      reltol <- 1e-10
+
+    else
+      reltol <- 1e-6
+    
+    opt <- optim(start, optfun, control = list(reltol = reltol, maxit = 10000))
     llik[i] <- -opt$value
     par[i,] <- opt$par
   }
 
+  llik[llik <= -1e15] <- NA
   ans <- cbind(fixed.values, llik, par)
   colnames(ans) <- c(param, "llik", param.names[-idx.prof])
   ans <- ans[,c("llik", names(fitted$fitted))]

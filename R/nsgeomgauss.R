@@ -146,14 +146,6 @@ nsgeomgaussfull <- function(data, coord, cov.mod, sigma2.form,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-    
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -237,7 +229,15 @@ nsgeomgaussfull <- function(data, coord, cov.mod, sigma2.form,
 
   if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
-      warning("The Bessel function is not differentiable w.r.t. the ''smooth'' parameter
+      warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
+Standard errors are not available unless you fix it.")
+    
+    std.err.type <- "none"
+  }
+
+  if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
+    if (warn)
+      warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
     
     std.err.type <- "none"
@@ -399,30 +399,10 @@ nsgeomgaussform <- function(data, coord, cov.mod = cov.mod, sigma2.form, ...,
   n.pparscale <- scale.model$n.ppar
   n.pparshape <- shape.model$n.ppar
   
-
-  if (n.loccoeff == 1)
-    loc.names <- "locCoeff"
-
-  else
-    loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
-
-  if (n.scalecoeff == 1)
-    scale.names <- "scaleCoeff"
-
-  else
-    scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
-
-  if (n.shapecoeff == 1)
-    shape.names <- "shapeCoeff"
-
-  else
-    shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
-
-  if (n.sigma2coeff == 1)
-    sigma2.names <- "sigma2"
-
-  else
-    sigma2.names <- paste("sigma2Coeff", 1:n.sigma2coeff, sep="")
+  loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
+  scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
+  shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
+  sigma2.names <- paste("sigma2Coeff", 1:n.sigma2coeff, sep="")
   
   param <- c(sigma2.names, "sill", "range", "smooth", loc.names, scale.names, shape.names)
 
@@ -470,14 +450,6 @@ nsgeomgaussform <- function(data, coord, cov.mod = cov.mod, sigma2.form, ...,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-    
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -563,7 +535,15 @@ nsgeomgaussform <- function(data, coord, cov.mod = cov.mod, sigma2.form, ...,
 
   if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
-      warning("The Bessel function is not differentiable w.r.t. the ''smooth'' parameter
+      warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
+Standard errors are not available unless you fix it.")
+    
+    std.err.type <- "none"
+  }
+
+  if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
+    if (warn)
+      warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
     
     std.err.type <- "none"

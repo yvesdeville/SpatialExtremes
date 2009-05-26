@@ -61,29 +61,23 @@ conf = 0.90, method = "RJ", square = "chol", \dots)
   correlated data. \emph{Biometrika} \bold{77}, 485--97.
 }
 \examples{
-require(RandomFields)
-
+\dontrun{
 ##Define the coordinates of each location
 n.site <- 30
 locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-                   maxstable="Bool", n = 50)
-ms0 <- t(ms0)
+data <- rmaxstab(50, locations, cov.mod = "gauss", cov11 = 100, cov12 =
+25, cov22 = 220)
+
 ##Fit a max-stable process
 ##  1- using the Smith's model
-\dontrun{
-fitted <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE)
-}
+fitted <- fitmaxstab(data, locations, "gauss", fit.marge = FALSE)
 
 ##Plot the profile pairwise log-likelihood for the ''cov11'' parameter
-\dontrun{profile(fitted, "cov11", range = c(20, 180))}
+profile(fitted, "cov11", range = c(20, 180))
+}
 }
 \author{Mathieu Ribatet}
 \keyword{models}
