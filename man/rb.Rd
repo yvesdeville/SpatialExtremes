@@ -18,12 +18,12 @@ rb(\dots, knots, degree, penalty)
 \value{
   A list giving all the required information to fit a penalized
   smoothing spline:
-  \item{dsgn.mat}{The design matrix}
-  \item{pen.mat}{The penalization matrix}
-  \item{degree}{The degree of the smoothing spline}
-  \item{penalty}{The penalty of the smoothing spline}
-  \item{knots}{The knots of the smoothing spline}
-  \item{data}{The explicative variables (e.g. covariates)}
+  \item{dsgn.mat}{The design matrix.}
+  \item{pen.mat}{The penalization matrix.}
+  \item{degree}{The degree of the smoothing spline.}
+  \item{penalty}{The penalty of the smoothing spline.}
+  \item{knots}{The knots of the smoothing spline.}
+  \item{data}{The explicative variables (e.g. covariates).}
   \item{call}{How was the \code{\link{rb}} function was called?}
 }
 \section{Warning}{

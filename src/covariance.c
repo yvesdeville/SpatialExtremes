@@ -8,42 +8,26 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
   //When ans != 0.0, the whittle-matern parameters are ill-defined.
   
   int i;
-  double ans = 0.0;
-
-  //Some preliminary steps: Valid points?
-  if (smooth < EPS){
-    //printf("dependence parameters are ill-defined!\n");
-    ans = R_pow_di(1 - smooth + EPS, 2);
-    smooth = EPS;
-  }
-
-  if (range < EPS){
-    //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - range + EPS, 2);
-    range = EPS;
-  }
-
-  if (sill < 0.0){
-    //printf("dependence parameters are ill-defined!\n");
-    ans += 1.5 * R_pow_di(1.02 - sill, 2);
-    sill = -sill;
-  }
   
-  if (sill > 1){
-    //printf("dependence parameters are ill-defined!\n");
+  //Some preliminary steps: Valid points?
+  if (smooth < EPS)
+    return R_pow_di(1 - smooth + EPS, 2) * MINF;
+
+  else if (smooth > 150)
+    //Required because it could lead to infinite rho values
+    return R_pow_di(smooth - 150, 2) * MINF;
+
+  if (range <= 0.0)
+    return R_pow_di(1 - range, 2) * MINF;
+
+  if (sill <= 0.0)
+    return R_pow_di(1 - sill, 2) * MINF;
+  
+  else if (sill > 1)
     //the 1.02 factor is here to avoid problem with non
     //feasible region
-    ans += R_pow_di(1.02 * sill, 2);
-    sill = 1.0;
-  }
+    return R_pow_di(sill, 2) * MINF;
   
-  if (smooth > 150){
-    //Required because it could lead to infinite rho values
-    //printf("smooth is too large!\n");
-    ans += R_pow_di(smooth - 150, 2);
-    smooth = 150;
-  }
-
   for (i=0;i<nPairs;i++){
 
     rho[i] = sill * R_pow(2, 1 - smooth) / gammafn(smooth) *
@@ -52,7 +36,7 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     
   }
 
-  return ans;
+  return 0.0;
 }
 
 double cauchy(double *dist, int nPairs, double sill, double range,
@@ -63,37 +47,24 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   //When ans != 0.0, the cauchy parameters are ill-defined.
 
   int i;
-  double ans = 0.0;
-
-  //Some preliminary steps: Valid points?
-  if (smooth < 0){
-    //printf("dependence parameters are ill-defined!\n");
-    ans = R_pow_di(1 - smooth, 2);
-    smooth = 1e-3;
-  }
-
-  if (range < EPS){
-    //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - range + EPS, 2);
-    range = EPS;
-  }
-
-  if (sill < 0.0){
-    //printf("dependence parameters are ill-defined!\n");
-    ans += 1.5 * R_pow_di(1.02 - sill, 2);
-    sill = -sill;
-  }
   
-  if (sill > 1){
-    //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1.02 * sill, 2);
-    sill = 1.0;
-  }
+  //Some preliminary steps: Valid points?
+  if (smooth < 0)
+    return R_pow_di(1 - smooth, 2) * MINF;
+
+  if (range <= 0.0)
+    return R_pow_di(1 - range, 2) * MINF;
+
+  if (sill <= 0.0)
+    return R_pow_di(1 - sill, 2) * MINF;
+  
+  else if (sill > 1)
+    return R_pow_di(sill, 2) * MINF;
 
   for (i=0;i<nPairs;i++)
     rho[i] = sill * R_pow(1 + R_pow_di(dist[i] / range, 2), -smooth);
     
-  return ans;
+  return 0.0;
 }
 
 double powerExp(double *dist, int nPairs, double sill, double range,
@@ -104,42 +75,27 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   //When ans != 0.0, the powered exponential parameters are ill-defined.
 
   int i;
-  double ans = 0.0;
-  
+    
   //Some preliminary steps: Valid points?
-  if (smooth < 0){
-    //printf("dependence parameters are ill-defined!\n");
-    ans = R_pow_di(1 - smooth, 2);
-    smooth = 1e-3;
-  }
+  if (smooth < 0)
+    return R_pow_di(1 - smooth, 2) * MINF;
 
-  if (range < EPS){
-    //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - range + EPS, 2);
-    range = EPS;
-  }
+  else if (smooth >= 2.0)
+    return R_pow_di(smooth - 1, 2) * MINF;
 
-  if (sill < 0.0){
-    //printf("dependence parameters are ill-defined!\n");
-    ans += 1.5 * R_pow_di(1.02 - sill, 2);
-    sill = -sill;
-  }
+  if (range <= 0.0)
+    return R_pow_di(1 - range, 2) * MINF;
+
+  if (sill <= 0.0)
+    return R_pow_di(1 - sill, 2) * MINF;
   
-  if (sill > 1){
-    //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1.02 * sill, 2);
-    sill = 1.0;
-  }
+  else if (sill > 1)
+    return R_pow_di(sill, 2) * MINF;
   
-  if (smooth >= 2.0){
-    ans += R_pow_di(smooth - .999, 2);
-    smooth = 1.999;
-  }
-
   for (i=0;i<nPairs;i++)
     rho[i] = sill * exp(-R_pow(dist[i] / range, smooth));
     
-  return ans;
+  return 0.0;
 }
 
 double mahalDistFct(double *distVec, int nPairs, double *cov11,
@@ -150,47 +106,30 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   //distance is ill-defined.
   
   int i;
-  double det, ans = 0.0;
+  double det;
 
   det = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if (*cov11 <= 0){
-    //printf("Cov11 is <=0!\n");
-    ans += R_pow_di(1 - *cov11, 2);
-    *cov11 = .01;
-  }
+  if (*cov11 <= 0)
+    return R_pow_di(1 - *cov11, 2) * MINF;
 
-  if (*cov22 <= 0){
-    //printf("Cov11 is <=0!\n");
-    ans += R_pow_di(1 - *cov22, 2);
-    *cov22 = .01;
-  }
+  if (*cov22 <= 0)
+    return R_pow_di(1 - *cov22, 2) * MINF;
   
-  if (det <= 1e-10){
-    //printf("Det of Sigma <= 0!\n");
-    ans += R_pow_di(1 - det + 1e-10, 2);
-    *cov12 = sign(*cov12) * (fmin2(*cov11, *cov12) - .1);
-  }
-
+  if (det <= 1e-10)
+    return R_pow_di(1 - det + 1e-10, 2) * MINF;
   
   for (i=0;i<nPairs;i++){
 
-    mahal[i] = (*cov11 *  R_pow_di(distVec[nPairs + i], 2) -
+    mahal[i] = (*cov11 * distVec[nPairs + i] * distVec[nPairs + i] -
 		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
-		*cov22 * R_pow_di(distVec[i], 2)) / det;
+		*cov22 * distVec[i] * distVec[i]) / det;
     
-    //We test if the Mahalanobis distance is singular.
-    if (!R_FINITE(sqrt(mahal[i]))){
-      //printf("sqrt(mahal) = %f\n", mahal[i]);
-      ans += R_pow_di(1 + fabs(mahal[i]), 2);
-      mahal[i] = EPS;
-    }
-
     mahal[i] = sqrt(mahal[i]);
   }
   
-  return ans;
+  return 0.0;
 }
 
 double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
@@ -202,7 +141,7 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   //distance is ill-defined.
   
   int i;
-  double det, detMin, ans = 0.0;
+  double det, detMin;
 
   det = *cov11 * *cov22 * *cov33 - R_pow_di(*cov12, 2) * *cov33 -
     *cov11 * R_pow_di(*cov23, 2) + 2 * *cov12 * *cov13 * *cov23 -
@@ -210,20 +149,14 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   detMin = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if (det <= 1e-10){
-    //printf("Covariance matrice is singular!\n");
-    ans += R_pow_di(1 - det + 1e-10, 2);
-  }
+  if (det <= 1e-10)
+    return R_pow_di(1 - det + 1e-10, 2) * MINF;
 
-  if (*cov11 <= 0){
-    //printf("Covariance matrice is singular!\n");
-    ans += R_pow_di(1 - *cov11, 2);
-  }
+  if (*cov11 <= 0)
+    return R_pow_di(1 - *cov11, 2) * MINF;
 
-  if (detMin <= 0){
-    //printf("Covariance matrice is singular!\n");
-    ans += R_pow_di(1 - detMin, 2);
-  }
+  if (detMin <= 0)
+    return R_pow_di(1 - detMin, 2);
   
   for (i=0;i<nPairs;i++){
 
@@ -239,16 +172,10 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 		distVec[i] * distVec[nPairs + i] + *cov22 * *cov33 * 
 		R_pow_di(distVec[i], 2) - R_pow_di(*cov23 * distVec[i], 2)) / det;
 
-    //We test if the Mahalanobis distance is singular.
-    if (!R_FINITE(sqrt(mahal[i]))){
-      ans += R_pow_di(1 + fabs(mahal[i]), 2);
-      mahal[i] = EPS;
-    }
-
     mahal[i] = sqrt(mahal[i]);
   }
   
-  return ans;
+  return 0.0;
 }
 
 double geomCovariance(double *dist, int nPairs, int covmod,
@@ -272,6 +199,9 @@ double geomCovariance(double *dist, int nPairs, int covmod,
     ans = powerExp(dist, nPairs, sill, range, smooth, rho);
     break;
   }
+
+  if (ans != 0.0)
+    return ans;
 
   for (i=0;i<nPairs;i++)
     rho[i] = sqrt(2 * sigma2 * (1 - rho[i]));
@@ -298,10 +228,13 @@ double nsgeomCovariance(double *dist, int nSite, int covmod,
     break;
   }
 
+  if (ans != 0.0)
+    return ans;
+
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
-      rho[i] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * rho[currentPair] +
-		    sigma2[j]);
+      rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * 
+			      rho[currentPair] + sigma2[j]);
       currentPair++;
     }
   }

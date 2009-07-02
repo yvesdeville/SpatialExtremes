@@ -17,12 +17,6 @@ void extCoeffSmith(double *frech, int *nObs, int *nSite,
       }
       extCoeff[currentPair] = *nObs / extCoeff[currentPair];
 
-      if (extCoeff[currentPair] > 2)
-	extCoeff[currentPair] = 2;
-
-      if (extCoeff[currentPair] < 1)
-	extCoeff[currentPair] = 1;
-
       currentPair++;
     }
   }

@@ -1,19 +1,22 @@
 \name{TIC}
 \alias{TIC}
 \alias{TIC.maxstab}
+\alias{TIC.spatgev}
 \title{Takeuchi's information criterion}
 \description{
   Computes a "generalization" of the Takeuchi's information criterion
   when the model is miss-specified.
 }
 \usage{
-TIC(object, \dots)
+\method{TIC}{maxstab}(object, \dots)
+\method{TIC}{spatgev}(object, \dots)
 }
 \arguments{
-  \item{object}{An object of class \code{maxstab}. Often, it will be the
-    output of function \code{\link{fitmaxstab}}}
-  \item{\dots}{Additional objects of class \code{maxstab} for which TIC
-    should be computed.}
+  \item{object}{An object of class \code{maxstab} or
+    \code{spatgev}. Often, it will be the output of the
+    \code{\link{fitmaxstab}} or \code{\link{fitspatgev}} function.}
+  \item{\dots}{Additional objects of class \code{maxstab} or
+    \code{spatgev} for which TIC should be computed.}
 }
 \value{
   Numeric.

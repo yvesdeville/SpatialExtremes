@@ -50,10 +50,15 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
 
     if (missing(ylab))
       ylab <- expression(rho(h))
-    
-    tmp.fun <- function(dist) (cov.fun(dist) - 0.05)^2
 
-    xlimsup <- optim(1, tmp.fun, method = "L-BFGS-B", lower = 1e-12)$par
+    if (is.null(list(...)$xlim)){
+      tmp.fun <- function(dist) (cov.fun(dist) - 0.05)^2
+      xlimsup <- optim(1, tmp.fun, method = "L-BFGS-B", lower = 1e-12)$par
+    }
+
+    else
+      xlimsup <- list(...)$xlim[2]
+    
     plot(cov.fun, from = 0, to = xlimsup, xlab = xlab, ylab = ylab, ...)
   }
 

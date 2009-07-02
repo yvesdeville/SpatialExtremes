@@ -182,6 +182,14 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
   
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
@@ -518,8 +526,8 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   if (missing(start)) {
 
-    start <- .start.smith(data, coord, loc.model, scale.model,
-                          shape.model, method = method, iso = iso,
+    start <- .start.smith(data, coord, covariables, loc.form, scale.form,
+                          shape.form, method = method, iso = iso,
                           ...)
     
     start <- start[!(param %in% names(list(...)))]
@@ -540,6 +548,14 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
   
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
@@ -654,7 +670,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                              scale.dsgn.mat, shape.dsgn.mat,
                              fit.marge = fit.marge, std.err.type =
                              std.err.type, fixed.param = names(fixed.param),
-                             param.names = param.names)
+                             param.names = param.names, iso = iso)
 
       if(any(is.na(jacobian))){
         if (warn)

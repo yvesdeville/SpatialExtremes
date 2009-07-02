@@ -133,7 +133,7 @@ gcv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
     fitted.values <- A %*% (b / (1 + penalty^degree * svd.mat$d))
     smooth.mat <- A %*% diag(1 / (1 + penalty^degree * svd.mat$d)) %*% t(A)
     
-    gcv <- n * sum((y - fitted.values)^2) / (n - sum(diag(smooth.mat)))^2
+    gcv <- n^2 * sum((y - fitted.values)^2) / (n - sum(diag(smooth.mat)))^2
     return(gcv)
   }
 

@@ -15,38 +15,39 @@
   other approaches to model spatial extremes; namely latent variable and
   copula based approaches.
 
-  A package vignette has been writen to help new users. It can be viewed
-  by invoking \command{vignette("SpatialExtremesGuide")} from the R
-  console.
+  A package vignette has been writen to help new users. It can be
+  viewed, from the R console, by invoking
+  \command{vignette("SpatialExtremesGuide")}.
 }
 \details{
   The package provides the following main tools:
   \enumerate{
-    \item \code{\link{fitmaxstab}}: fits max-stable processes to data
+    \item \code{\link{fitspatgev}}: fits a spatial GEV model to data,
+    \item \code{\link{fitmaxstab}}: fits max-stable processes to data,
     \item \code{\link[=predict.maxstab]{predict}}: allows predictions
-    for fitted max-stable processes
+    for fitted max-stable processes,
     \item \code{\link{map}}, \code{\link{condmap}}: plot a map for GEV
     parameter as well as return levels - or conditional return levels
     \item \code{\link[=anova.maxstab]{anova}}, \code{\link{TIC}}: help
-    users in model selection
+    users in model selection,
     \item \code{\link{madogram}}: are (kind of) variograms devoted to
-    extremes
+    extremes,
     \item \code{\link{fitextcoeff}}: estimates semi-parametrically the
-    extremal coefficient
+    extremal coefficient,
     \item \code{\link{extcoeff}}: plots the evolution of the extremal
-    coefficient from a fitted max-stable process
+    coefficient from a fitted max-stable process,
     \item \code{\link{rbpspline}}: fits a penalized spline with radial
-    basis function
+    basis function,
     \item \code{\link{gev2frech}}, \code{\link{frech2gev}}: transform
     GEV (resp. Frechet) observation to unit Frechet (resp. GEV) ones
     \item \code{\link{gevmle}}, \code{\link{gpdmle}}: fit the GEV/GPD
-    distributions to data
+    distributions to data,
     \item \code{\link{distance}}: computes the distance between each
-    pair of locations
+    pair of locations,
     \item \code{\link[=profile.maxstab]{profile}},
-    \code{\link[profile2d.maxstab]{profile2d}}: computes the profile
-    composite likelihood
-    \item \code{\link{covariance}}: computes the covariance function
+    \code{\link[=profile2d.maxstab]{profile2d}}: computes the profile
+    composite likelihood,
+    \item \code{\link{covariance}}: computes the covariance function.
   }
 }
 \section{Acknowledgement}{

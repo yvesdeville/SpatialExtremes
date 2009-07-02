@@ -6,18 +6,18 @@ double lplikschlather(double *data, double *rho, double *jac,
   //schlather model.
 
   int i, j, k, currentPair = -1;
-  double c1, dns, lFvec, dvecM1, dvecM2, dvecMixed, pbm,
+  double c1, dns = 0.0, lFvec, dvecM1, dvecM2, dvecMixed,
     data1Square, data2Square;
   //c1 is a useful quantity - see documentation
 
-  dns = 0.0;
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
       currentPair++;
       
       for (k=0;k<nObs;k++){
-	data1Square = R_pow_di(data[k + i * nObs], 2);
-	data2Square = R_pow_di(data[k + j * nObs], 2);
+	
+	data1Square = data[k + i * nObs] * data[k + i * nObs];
+	data2Square = data[k + j * nObs] * data[k + j * nObs];
 
 	c1 = sqrt(data1Square + data2Square - 2 * data[k + i * nObs] *
 		  data[k + j * nObs] * rho[currentPair]);
@@ -25,8 +25,8 @@ double lplikschlather(double *data, double *rho, double *jac,
 	//It's the log of the joint CDF
 	lFvec = - (1/data[k + i * nObs] + 1/data[k + j * nObs]) *
 	  (1 + sqrt(1 - 2 * (rho[currentPair] + 1) * data[k + i * nObs] *
-		    data[k + j * nObs] / 
-		    R_pow_di(data[k + i * nObs] + data[k + j * nObs], 2))) / 2;
+		    data[k + j * nObs] / (data[k + i * nObs] + data[k + j * nObs]) /
+		    (data[k + i * nObs] + data[k + j * nObs]))) / 2;
 	
 	//It's the partial derivative for marge 1
 	dvecM1 = -(rho[currentPair] * data[k + i * nObs] - c1 - 
@@ -41,23 +41,18 @@ double lplikschlather(double *data, double *rho, double *jac,
 	//computed first.
 
 	//It's the mixed partial derivative
-	dvecMixed = (1 - R_pow_di(rho[currentPair], 2)) / 2 / R_pow_di(c1, 3) + 
-	  dvecM1 * dvecM2;
+	dvecMixed = (1 - rho[currentPair] * rho[currentPair]) / 2 /
+	  (c1 * c1 * c1) + dvecM1 * dvecM2;
 
-	pbm = (1 + fabs(dvecMixed)) * MINF;
-	dvecMixed = log(dvecMixed);
-
-	if (!R_FINITE(dvecMixed))
-	  //printf("dvecMixed is erradic\n");
-	  dns += pbm;	
-
-	else
-	  //Now the final step, multiplying by Fvec and the gradient
-	  dns += dvecMixed + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
+	//Now the final step, multiplying by Fvec and the gradient
+	dns += log(dvecMixed) + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
 
       }
     }
   }
+
+  if (!R_FINITE(dns))
+    dns = MINF;
   
   return dns;
 
@@ -69,11 +64,10 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
   //smith model.
   
   int i, j, k, currentPair = -1;
-  double c1, c2, dns, lFvec, dvecM1, dvecM2, dvecMixed,
+  double c1, c2, dns = 0.0, lFvec, dvecM1, dvecM2, dvecMixed,
     dnormc1, dnormc2, pnormc1, pnormc2, data1Square,
     data2Square;
 
-  dns = 0.0;
   for (i=0;i<(nSite - 1);i++){
     for (j=i+1;j<nSite;j++){
       currentPair++;
@@ -82,8 +76,8 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	c1 = log(data[k + j * nObs] / data[k + i * nObs]) /
 	  mahalDist[currentPair] + mahalDist[currentPair] / 2;
 	c2 = mahalDist[currentPair] - c1;
-	data1Square = R_pow_di(data[k + i * nObs], 2);
-	data2Square = R_pow_di(data[k + j * nObs], 2);
+	data1Square = data[k + i * nObs] * data[k + i * nObs];
+	data2Square = data[k + j * nObs] * data[k + j * nObs];
 	
 	dnormc1 = dnorm(c1, 0., 1., 0);
 	dnormc2 = dnorm(c2, 0., 1., 0);
@@ -109,28 +103,18 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	
 	//It's the mixed partial derivative
 	dvecMixed = dvecM1 * dvecM2 + 
-	  (c2 * dnormc1 / data1Square / data[k + j * nObs] +
-	   c1 * dnormc2 / data2Square / data[k + i * nObs]) / 
-	  R_pow_di(mahalDist[currentPair], 2);
+	  (data[k + j * nObs] * c2 * dnormc1 + data[k + i * nObs] * c1 * dnormc2) /
+	  data1Square / data2Square / (mahalDist[currentPair] * mahalDist[currentPair]);
 
-	dvecMixed = log(dvecMixed);
-
-	if (!R_FINITE(dvecMixed)){
-	  //printf("dvecMixed = %f\n", dvecMixed);
-	  //The likelihood is ill-defined if the mahalanobis distance
-	  //is either too small or to large thus
-	  
-	  dns += R_pow_di(1 + 1/mahalDist[currentPair] +
-			  mahalDist[currentPair], 2) * MINF;	  
-	}
-
-	else{
-	  //Now the final step, multiplying by Fvec and the gradient
-	  dns += dvecMixed + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
-	}
+	//Now the final step, multiplying by Fvec and the gradient
+	dns += log(dvecMixed) + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
+	
       }
     }
   }
+
+  if (!R_FINITE(dns))
+    dns = MINF;
   
   return dns;
 }
@@ -141,18 +125,17 @@ double lplikschlatherind(double *data, double alpha, double *rho,
   //schlather model allowing for independence.
 
   int i, j, k, currentPair = -1;
-  double c1, dns, lFvec, dvecM1, dvecM2, dvecMixed, pbm,
+  double c1, dns = 0.0, lFvec, dvecM1, dvecM2, dvecMixed,
     data1Square, data2Square;
   //c1 is a useful quantity - see documentation
 
-  dns = 0.0;
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
       currentPair++;
       
       for (k=0;k<nObs;k++){
-	data1Square = R_pow_di(data[k + i * nObs], 2);
-	data2Square = R_pow_di(data[k + j * nObs], 2);
+	data1Square = data[k + i * nObs] * data[k + i * nObs];
+	data2Square = data[k + j * nObs] * data[k + j * nObs];
 
 	c1 = sqrt(data1Square + data2Square - 2 * data[k + i * nObs] *
 		  data[k + j * nObs] * rho[currentPair]);
@@ -160,8 +143,8 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 	//It's the log of the joint CDF
 	lFvec = (alpha - 1) * (1/data[k + i * nObs] + 1/data[k + j * nObs]) *
 	  (1 + sqrt(1 - 2 * (rho[currentPair] + 1) * data[k + i * nObs] *
-		    data[k + j * nObs] / 
-		    R_pow_di(data[k + i * nObs] + data[k + j * nObs], 2))) / 2 -
+		    data[k + j * nObs] / (data[k + i * nObs] + data[k + j * nObs]) /
+		    (data[k + i * nObs] + data[k + j * nObs]))) / 2 -
 	  alpha * (1/data[k + i * nObs] + 1/data[k + j * nObs]);
 	
 	//It's the partial derivative for marge 1
@@ -179,24 +162,18 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 	//computed first.
 
 	//It's the mixed partial derivative
-	dvecMixed = (1 - alpha) * (1 - R_pow_di(rho[currentPair], 2)) / 2 /
-	  R_pow_di(c1, 3) + dvecM1 * dvecM2;
+	dvecMixed = (1 - alpha) * (1 - rho[currentPair] * rho[currentPair]) / 2 /
+	  (c1 * c1 * c1) + dvecM1 * dvecM2;
 
-	pbm = (1 + fabs(dvecMixed)) * MINF;
-	dvecMixed = log(dvecMixed);
-
-	if (!R_FINITE(dvecMixed)){
-	  //printf("dvecMixed is erradic\n");
-	  dns += pbm;
-	}
-
-	else{
-	  //Now the final step, multiplying by Fvec and the gradient
-	  dns += dvecMixed + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
-	}
+	//Now the final step, multiplying by Fvec and the gradient
+	dns += log(dvecMixed) + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
+	
       }
     }
   }
+
+  if (!R_FINITE(dns))
+    dns = MINF;
 
   return dns;
 

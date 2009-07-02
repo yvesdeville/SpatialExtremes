@@ -16,9 +16,6 @@
 \value{
   \bold{need to be documented}
 }
-\details{
-  
-}
 \seealso{
   \code{\link{formula}}
 }

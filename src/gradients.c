@@ -193,10 +193,11 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	    R_pow_di(frech[k + i * *nObs] * frech[k + j * *nObs], 2);
 	 
 	  for (l=0;l<*nloccoeff;l++){
-	    dE = (shapes[i] - 1) / R_pow(frech[k + i * *nObs], shapes[i]) /
-	      scales[i] * locdsgnmat[i + *nSite * l] + (shapes[j] - 1) /
-	      R_pow(frech[k + j * *nObs], shapes[j]) / scales[j] *
-	      locdsgnmat[j + *nSite * l];
+	    dE = -(1 - shapes[i]) * locdsgnmat[i + *nSite * l] /
+	      scales[i] / R_pow_di(frech[k + i * *nObs], shapes[i]) -
+	      (1 - shapes[j]) * locdsgnmat[j + *nSite * l] /
+	      scales[j] / R_pow_di(frech[k + j * *nObs], shapes[j]);
+
 	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) /
 	      scales[i] * locdsgnmat[i + *nSite * l];
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
@@ -208,19 +209,19 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	       (dCz1 * dz1loc + dCz2 * dz2loc)) /
 	      (B * C + D) + dE;
 	  }
-
+	  
 	  for (l=0;l<*nscalecoeff;l++){
-	    dE = (-2 + (data[k + i * *nObs] - locs[i]) *
-		  (shapes[i] - 1) / scales[i] / 
-		  R_pow(frech[k + i * *nObs], shapes[i]) +
-		  (data[k + j * *nObs] - locs[j]) * (shapes[j] - 1) /
-		  scales[j] / R_pow(frech[k + j * *nObs], shapes[j])) /
-	      scalecoeff[l];
+	    dE = scaledsgnmat[i + *nSite * l] * (locs[i] - scales[i] - data[k + i * *nObs]) /
+	      R_pow_di(scales[i], 2) / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      scaledsgnmat[j + *nSite * l] * (locs[j] - scales[j] - data[k + j * *nObs]) /
+	      R_pow_di(scales[j], 2) / R_pow(frech[k + j * *nObs], shapes[j]);
 
 	    dz1scale = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-	      (data[k + i * *nObs] - locs[i]) / scales[i] / scalecoeff[l];
+	      (data[k + i * *nObs] - locs[i]) / R_pow_di(scales[i], 2) *
+	      scaledsgnmat[i + *nSite * l];
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
+	      (data[k + j * *nObs] - locs[j]) / R_pow_di(scales[j], 2) *
+	      scaledsgnmat[j + *nSite * l];
 
 	    grad[(3 + *nloccoeff + l) * *nObs + k] = grad[(3 + *nloccoeff + l) * *nObs + k] +
 	      (dAz1 * dz1scale + dAz2 * dz2scale) +
@@ -230,22 +231,19 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	  }
 
 	  for (l=0;l<*nshapecoeff;l++){
-	    dE = (1 - shapes[i]) * (data[k + i * *nObs] - locs[i]) /
-	      scales[i] / shapes[i] / R_pow(frech[k + i * *nObs], shapes[i]) *
-	      shapedsgnmat[i + *nSite * l] - log(frech[k + i * *nObs]) / 
-	      shapecoeff[l] + (1 - shapes[j]) * (data[k + j * *nObs] - locs[j]) /
-	      scales[j] / shapes[j] / R_pow(frech[k + j * *nObs], shapes[j]) *
-	      shapedsgnmat[j + *nSite * l] - log(frech[k + j * *nObs]) / 
-	      shapecoeff[l];
+	    dE = -shapedsgnmat[i + *nSite * l] * log(frech[k + i * *nObs]) /
+	      shapes[i] + (1/shapes[i] - 1) * (data[k + i * *nObs] - locs[i]) *
+	      shapedsgnmat[i + *nSite * l] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) -
+	      shapedsgnmat[j + *nSite * l] * log(frech[k + j * *nObs]) /
+	      shapes[j] + (1/shapes[j] - 1) * (data[k + j * *nObs] - locs[j]) *
+	      shapedsgnmat[j + *nSite * l] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);	      
 
-	    dz1shape = (R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-			(data[k + i * *nObs] - locs[i]) / scales[i] -
-			frech[k + i * *nObs] * log(frech[k + i * *nObs])) /
-	      shapecoeff[l];
-	    dz2shape = (R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-			(data[k + j * *nObs] - locs[j]) / scales[j] -
-			frech[k + j * *nObs] * log(frech[k + j * *nObs])) /
-	      shapecoeff[l];
+	    dz1shape = frech[k + i * *nObs] * shapedsgnmat[i + *nSite * l] * 
+	      (-log(frech[k + i * *nObs]) / shapes[i] + (data[k + i * *nObs] - locs[i]) /
+	       shapes[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]));
+	    dz2shape = frech[k + j * *nObs] * shapedsgnmat[j + *nSite * l] * 
+	      (-log(frech[k + j * *nObs]) / shapes[j] + (data[k + j * *nObs] - locs[j]) /
+	       shapes[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]));
 
 	    grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
 	      grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
@@ -503,16 +501,17 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	    R_pow_di(frech[k + i * *nObs] * frech[k + j * *nObs], 2);
 	 
 	  for (l=0;l<*nloccoeff;l++){
-	    dE = (shapes[i] - 1) / R_pow(frech[k + i * *nObs], shapes[i]) /
-	      scales[i] * locdsgnmat[i + *nSite * l] + (shapes[j] - 1) /
-	      R_pow(frech[k + j * *nObs], shapes[j]) / scales[j] *
-	      locdsgnmat[j + *nSite * l];
+	    dE = -(1 - shapes[i]) * locdsgnmat[i + *nSite * l] /
+	      scales[i] / R_pow_di(frech[k + i * *nObs], shapes[i]) -
+	      (1 - shapes[j]) * locdsgnmat[j + *nSite * l] /
+	      scales[j] / R_pow_di(frech[k + j * *nObs], shapes[j]);
+	    
 	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) /
 	      scales[i] * locdsgnmat[i + *nSite * l];
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
 	      scales[j] * locdsgnmat[j + *nSite * l];
 
-	    grad[(3 + l) * *nObs + k] = grad[(3 + l) * *nObs + k] +
+	    grad[(6 + l) * *nObs + k] = grad[(6 + l) * *nObs + k] +
 	      (dAz1 * dz1loc + dAz2 * dz2loc) +
 	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
 	       (dCz1 * dz1loc + dCz2 * dz2loc)) /
@@ -520,19 +519,19 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	  }
 
 	  for (l=0;l<*nscalecoeff;l++){
-	    dE = (-2 + (data[k + i * *nObs] - locs[i]) *
-		  (shapes[i] - 1) / scales[i] / 
-		  R_pow(frech[k + i * *nObs], shapes[i]) +
-		  (data[k + j * *nObs] - locs[j]) * (shapes[j] - 1) /
-		  scales[j] / R_pow(frech[k + j * *nObs], shapes[j])) /
-	      scalecoeff[l];
-
+	    dE = scaledsgnmat[i + *nSite * l] * (locs[i] - scales[i] - data[k + i * *nObs]) /
+	      R_pow_di(scales[i], 2) / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      scaledsgnmat[j + *nSite * l] * (locs[j] - scales[j] - data[k + j * *nObs]) /
+	      R_pow_di(scales[j], 2) / R_pow(frech[k + j * *nObs], shapes[j]);
+	    
 	    dz1scale = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-	      (data[k + i * *nObs] - locs[i]) / scales[i] / scalecoeff[l];
+	      (data[k + i * *nObs] - locs[i]) / R_pow_di(scales[i], 2) *
+	      scaledsgnmat[i + *nSite * l];
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
+	      (data[k + j * *nObs] - locs[j]) / R_pow_di(scales[j], 2) *
+	      scaledsgnmat[j + *nSite * l];
 
-	    grad[(5 + *nloccoeff + l) * *nObs + k] = grad[(5 + *nloccoeff + l) * *nObs + k] +
+	    grad[(6 + *nloccoeff + l) * *nObs + k] = grad[(6 + *nloccoeff + l) * *nObs + k] +
 	      (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
 	       (dCz1 * dz1scale + dCz2 * dz2scale)) /
@@ -540,25 +539,22 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	  }
 
 	  for (l=0;l<*nshapecoeff;l++){
-	    dE = (1 - shapes[i]) * (data[k + i * *nObs] - locs[i]) /
-	      scales[i] / shapes[i] / R_pow(frech[k + i * *nObs], shapes[i]) *
-	      shapedsgnmat[i + *nSite * l] - log(frech[k + i * *nObs]) / 
-	      shapecoeff[l] + (1 - shapes[j]) * (data[k + j * *nObs] - locs[j]) /
-	      scales[j] / shapes[j] / R_pow(frech[k + j * *nObs], shapes[j]) *
-	      shapedsgnmat[j + *nSite * l] - log(frech[k + j * *nObs]) / 
-	      shapecoeff[l];
+	    dE = -shapedsgnmat[i + *nSite * l] * log(frech[k + i * *nObs]) /
+	      shapes[i] + (1/shapes[i] - 1) * (data[k + i * *nObs] - locs[i]) *
+	      shapedsgnmat[i + *nSite * l] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) -
+	      shapedsgnmat[j + *nSite * l] * log(frech[k + j * *nObs]) /
+	      shapes[j] + (1/shapes[j] - 1) * (data[k + j * *nObs] - locs[j]) *
+	      shapedsgnmat[j + *nSite * l] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
 
-	    dz1shape = (R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-			(data[k + i * *nObs] - locs[i]) / scales[i] -
-			frech[k + i * *nObs] * log(frech[k + i * *nObs])) /
-	      shapecoeff[l];
-	    dz2shape = (R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-			(data[k + j * *nObs] - locs[j]) / scales[j] -
-			frech[k + j * *nObs] * log(frech[k + j * *nObs])) /
-	      shapecoeff[l];
+	    dz1shape = frech[k + i * *nObs] * shapedsgnmat[i + *nSite * l] * 
+	      (-log(frech[k + i * *nObs]) / shapes[i] + (data[k + i * *nObs] - locs[i]) /
+	       shapes[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]));
+	    dz2shape = frech[k + j * *nObs] * shapedsgnmat[j + *nSite * l] * 
+	      (-log(frech[k + j * *nObs]) / shapes[j] + (data[k + j * *nObs] - locs[j]) /
+	       shapes[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]));
 
-	    grad[(5 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
-	      grad[(5 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
+	    grad[(6 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
+	      grad[(6 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
 	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
 	       (dCz1 * dz1shape + dCz2 * dz2shape)) /
@@ -764,10 +760,11 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    R_pow_di(c1 * frech[k + j * *nObs], 3);
 	  	 
 	  for (l=0;l<*nloccoeff;l++){
-	    dE = (shapes[i] - 1) / R_pow(frech[k + i * *nObs], shapes[i]) /
-	      scales[i] * locdsgnmat[i + *nSite * l] + (shapes[j] - 1) /
-	      R_pow(frech[k + j * *nObs], shapes[j]) / scales[j] *
-	      locdsgnmat[j + *nSite * l];
+	    dE = -(1 - shapes[i]) * locdsgnmat[i + *nSite * l] /
+	      scales[i] / R_pow_di(frech[k + i * *nObs], shapes[i]) -
+	      (1 - shapes[j]) * locdsgnmat[j + *nSite * l] /
+	      scales[j] / R_pow_di(frech[k + j * *nObs], shapes[j]);
+	    
 	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) /
 	      scales[i] * locdsgnmat[i + *nSite * l];
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
@@ -780,17 +777,17 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	  }
 
 	  for (l=0;l<*nscalecoeff;l++){
-	    dE = (2 + (data[k + i * *nObs] - locs[i]) *
-		  (shapes[i] - 1) / scales[i] / 
-		  R_pow(frech[k + i * *nObs], shapes[i]) +
-		  (data[k + j * *nObs] - locs[j]) * (shapes[j] - 1) /
-		  scales[j] / R_pow(frech[k + j * *nObs], shapes[j])) /
-	      scalecoeff[l];
-
+	    dE = scaledsgnmat[i + *nSite * l] * (locs[i] - scales[i] - data[k + i * *nObs]) /
+	      R_pow_di(scales[i], 2) / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      scaledsgnmat[j + *nSite * l] * (locs[j] - scales[j] - data[k + j * *nObs]) /
+	      R_pow_di(scales[j], 2) / R_pow(frech[k + j * *nObs], shapes[j]);
+	    
 	    dz1scale = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-	      (data[k + i * *nObs] - locs[i]) / scales[i] / scalecoeff[l];
+	      (data[k + i * *nObs] - locs[i]) / R_pow_di(scales[i], 2) *
+	      scaledsgnmat[i + *nSite * l];
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
+	      (data[k + j * *nObs] - locs[j]) / R_pow_di(scales[j], 2) *
+	      scaledsgnmat[j + *nSite * l];
 
 	    grad[(3 + *nloccoeff + l) * *nObs + k] = grad[(3 + *nloccoeff + l) * *nObs + k] +
 	      (dAz1 * dz1scale + dAz2 * dz2scale) + ((dBz1 * dz1scale + dBz2 * dz2scale) * C +
@@ -799,22 +796,19 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	  }
 
 	  for (l=0;l<*nshapecoeff;l++){
-	    dE = (1 - shapes[i]) * (data[k + i * *nObs] - locs[i]) /
-	      scales[i] / shapes[i] / R_pow(frech[k + i * *nObs], shapes[i]) *
-	      shapedsgnmat[i + *nSite * l] - log(frech[k + i * *nObs]) / 
-	      shapecoeff[l] + (1 - shapes[j]) * (data[k + j * *nObs] - locs[j]) /
-	      scales[j] / shapes[j] / R_pow(frech[k + j * *nObs], shapes[j]) *
-	      shapedsgnmat[j + *nSite * l] - log(frech[k + j * *nObs]) / 
-	      shapecoeff[l];
+	    dE = -shapedsgnmat[i + *nSite * l] * log(frech[k + i * *nObs]) /
+	      shapes[i] + (1/shapes[i] - 1) * (data[k + i * *nObs] - locs[i]) *
+	      shapedsgnmat[i + *nSite * l] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) -
+	      shapedsgnmat[j + *nSite * l] * log(frech[k + j * *nObs]) /
+	      shapes[j] + (1/shapes[j] - 1) * (data[k + j * *nObs] - locs[j]) *
+	      shapedsgnmat[j + *nSite * l] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
 
-	    dz1shape = (R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-			(data[k + i * *nObs] - locs[i]) / scales[i] -
-			frech[k + i * *nObs] * log(frech[k + i * *nObs])) /
-	      shapecoeff[l];
-	    dz2shape = (R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-			(data[k + j * *nObs] - locs[j]) / scales[j] -
-			frech[k + j * *nObs] * log(frech[k + j * *nObs])) /
-	      shapecoeff[l];
+	    dz1shape = frech[k + i * *nObs] * shapedsgnmat[i + *nSite * l] * 
+	      (-log(frech[k + i * *nObs]) / shapes[i] + (data[k + i * *nObs] - locs[i]) /
+	       shapes[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]));
+	    dz2shape = frech[k + j * *nObs] * shapedsgnmat[j + *nSite * l] * 
+	      (-log(frech[k + j * *nObs]) / shapes[j] + (data[k + j * *nObs] - locs[j]) /
+	       shapes[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]));
 
 	    grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
 	      grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
@@ -1033,10 +1027,11 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 	    R_pow_di(c1 * frech[k + j * *nObs], 3) - 2 * *alpha / R_pow_di(frech[k + j * *nObs], 3);
 	  	 
 	  for (l=0;l<*nloccoeff;l++){
-	    dE = (shapes[i] - 1) / R_pow(frech[k + i * *nObs], shapes[i]) /
-	      scales[i] * locdsgnmat[i + *nSite * l] + (shapes[j] - 1) /
-	      R_pow(frech[k + j * *nObs], shapes[j]) / scales[j] *
-	      locdsgnmat[j + *nSite * l];
+	    dE = -(1 - shapes[i]) * locdsgnmat[i + *nSite * l] /
+	      scales[i] / R_pow_di(frech[k + i * *nObs], shapes[i]) -
+	      (1 - shapes[j]) * locdsgnmat[j + *nSite * l] /
+	      scales[j] / R_pow_di(frech[k + j * *nObs], shapes[j]);
+	    
 	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) /
 	      scales[i] * locdsgnmat[i + *nSite * l];
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
@@ -1048,17 +1043,17 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 	  }
 
 	  for (l=0;l<*nscalecoeff;l++){
-	    dE = (2 + (data[k + i * *nObs] - locs[i]) *
-		  (shapes[i] - 1) / scales[i] / 
-		  R_pow(frech[k + i * *nObs], shapes[i]) +
-		  (data[k + j * *nObs] - locs[j]) * (shapes[j] - 1) /
-		  scales[j] / R_pow(frech[k + j * *nObs], shapes[j])) /
-	      scalecoeff[l];
-
+	    dE = scaledsgnmat[i + *nSite * l] * (locs[i] - scales[i] - data[k + i * *nObs]) /
+	      R_pow_di(scales[i], 2) / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      scaledsgnmat[j + *nSite * l] * (locs[j] - scales[j] - data[k + j * *nObs]) /
+	      R_pow_di(scales[j], 2) / R_pow(frech[k + j * *nObs], shapes[j]);
+	    
 	    dz1scale = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-	      (data[k + i * *nObs] - locs[i]) / scales[i] / scalecoeff[l];
+	      (data[k + i * *nObs] - locs[i]) / R_pow_di(scales[i], 2) *
+	      scaledsgnmat[i + *nSite * l];
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
+	      (data[k + j * *nObs] - locs[j]) / R_pow_di(scales[j], 2) *
+	      scaledsgnmat[j + *nSite * l];
 
 	    grad[(4 + *nloccoeff + l) * *nObs + k] +=
 	      (dAz1 * dz1scale + dAz2 * dz2scale) + ((dBz1 * dz1scale + dBz2 * dz2scale) * C +
@@ -1067,22 +1062,19 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 	  }
 
 	  for (l=0;l<*nshapecoeff;l++){
-	    dE = (1 - shapes[i]) * (data[k + i * *nObs] - locs[i]) /
-	      scales[i] / shapes[i] / R_pow(frech[k + i * *nObs], shapes[i]) *
-	      shapedsgnmat[i + *nSite * l] - log(frech[k + i * *nObs]) / 
-	      shapecoeff[l] + (1 - shapes[j]) * (data[k + j * *nObs] - locs[j]) /
-	      scales[j] / shapes[j] / R_pow(frech[k + j * *nObs], shapes[j]) *
-	      shapedsgnmat[j + *nSite * l] - log(frech[k + j * *nObs]) / 
-	      shapecoeff[l];
+	    dE = -shapedsgnmat[i + *nSite * l] * log(frech[k + i * *nObs]) /
+	      shapes[i] + (1/shapes[i] - 1) * (data[k + i * *nObs] - locs[i]) *
+	      shapedsgnmat[i + *nSite * l] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) -
+	      shapedsgnmat[j + *nSite * l] * log(frech[k + j * *nObs]) /
+	      shapes[j] + (1/shapes[j] - 1) * (data[k + j * *nObs] - locs[j]) *
+	      shapedsgnmat[j + *nSite * l] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
 
-	    dz1shape = (R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-			(data[k + i * *nObs] - locs[i]) / scales[i] -
-			frech[k + i * *nObs] * log(frech[k + i * *nObs])) /
-	      shapecoeff[l];
-	    dz2shape = (R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-			(data[k + j * *nObs] - locs[j]) / scales[j] -
-			frech[k + j * *nObs] * log(frech[k + j * *nObs])) /
-	      shapecoeff[l];
+	    dz1shape = frech[k + i * *nObs] * shapedsgnmat[i + *nSite * l] * 
+	      (-log(frech[k + i * *nObs]) / shapes[i] + (data[k + i * *nObs] - locs[i]) /
+	       shapes[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]));
+	    dz2shape = frech[k + j * *nObs] * shapedsgnmat[j + *nSite * l] * 
+	      (-log(frech[k + j * *nObs]) / shapes[j] + (data[k + j * *nObs] - locs[j]) /
+	       shapes[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]));
 
 	    grad[(4 + *nloccoeff + *nscalecoeff + l) * *nObs + k] += 
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
@@ -1097,3 +1089,53 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 
   return;
 }
+
+void spatgevgrad(double *data, int *nSite, int *nObs, double *locdsgnmat,
+		 int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
+		 double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
+		 double *scalecoeff, double *shapecoeff, double *grad){
+
+  //This is the "Spatial GEV" model. It computes the gradient of the
+  //log-likelihood
+  
+  int i, j, k;
+  double *locs, *scales, *shapes, flag;
+    
+  locs = (double *)R_alloc(*nSite, sizeof(double));
+  scales = (double *)R_alloc(*nSite, sizeof(double));
+  shapes = (double *)R_alloc(*nSite, sizeof(double));
+  
+  //Stage 0. Compute the GEV parameters using the design matrix
+  flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+		       loccoeff, scalecoeff, shapecoeff, *nSite,
+		       *nloccoeff, *nscalecoeff, *nshapecoeff,
+		       locs, scales, shapes);
+    
+  //Stage 1. Compute the gradient
+  for (i=0;i<*nObs;i++){
+    for (j=0;j<*nSite;j++){
+
+      for (k=0;k<*nloccoeff;k++)
+	grad[k * *nObs + i] -= locdsgnmat[k * *nSite + j] * (1 + shapes[j]) /
+	  (-scales[j] - shapes[j] * (data[j * *nObs + i] - locs[j]));
+
+      for (k=0;k<*nscalecoeff;k++)
+	grad[(*nloccoeff + k) * *nObs + i] += scaledsgnmat[k * *nSite + j] *
+	  (data[j * *nObs + i] - scales[j] - locs[j]) / scales[j] /
+	  (scales[j] + shapes[j] * (data[j * *nObs + i] - locs[j]));
+
+      for (k=0;k<*nshapecoeff;k++)
+	grad[(*nloccoeff + *nscalecoeff + k) * *nObs + i] += 
+	  shapedsgnmat[k * *nSite + j] / R_pow_di(shapes[j], 2) *
+	  log(1 + shapes[j] * (data[j * *nObs + i] - locs[j]) / scales[j]) -
+	  shapedsgnmat[k * *nSite + j] * (1 + 1 / shapes[j]) *
+	  (data[j * *nObs + i] - locs[j]) / scales[j] /
+	  (1 + shapes[j] * (data[j * *nObs + i] - locs[j]) / scales[j]);
+    }
+  }
+
+  return;
+}
+
+	   
+

@@ -30,7 +30,27 @@ dist, xlab, ylab, ...)
   \code{dist} is given, the covariance function is computed for each
   distance given by \code{dist}. If \code{plot = TRUE}, the covariance
   function is plotted.}
-\seealso{
+\details{
+  Currently, three covariance functions are defined: the Whittle-Matern,
+  powered exponential (also known as "stable") and the Cauchy
+  models. These covariance functions are defined as follows:
+
+  \describe{
+    \item{Whittle-Matern}{\eqn{\rho(h) = sill
+    \frac{2^{1-smooth}}{\Gamma(smooth)} \left(\frac{h}{range}
+    \right)^{smooth} K_{smooth}\left(frac{h}{range} \right)}{rho(h) =
+    sill * 2^(1-smooth) / \Gamma(smooth) * (h/range)^smooth * K_smooth
+    (h / range)}}
+    \item{Powered Exponential}{\eqn{\rho(h) = sill * \exp \left[-
+    \left(\frac{h}{range} \right)^{smooth} \right]}{rho(h) = sill *
+    exp[-(h/range)^smooth]}}
+    \item{Cauchy}{\eqn{\rho(h) = sill \left[1 + \left(\frac{h}{range}
+    \right)^2 \right]^{-smooth}}{rho(h) = sill * [1 +
+    (h/range)^2]^(-smooth)}}
+  }
+  where \eqn{\Gamma}{\Gamma} is the gamma function and
+    \eqn{K_{smooth}}{K_smooth} is the modified Bessel function of order
+    \eqn{smooth}{smooth}.
 }
 \examples{
 ## 1- Calling covariance using fixed covariance parameters

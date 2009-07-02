@@ -1,6 +1,7 @@
 \name{anova}
 \alias{anova}
 \alias{anova.maxstab}
+\alias{anova.spatgev}
 \title{Anova Tables}
 \description{
   Computes analysis of deviance for objects of class ''maxstab''
@@ -8,9 +9,11 @@
 \usage{
 \method{anova}{maxstab}(object, object2, method = "RJ", square = "chol",
 ...)
+\method{anova}{spatgev}(object, object2, method = "RJ", square = "chol",
+...)
 }
 \arguments{
-  \item{object, object2}{Two objects of class 'maxstab'.}
+  \item{object, object2}{Two objects of class 'maxstab' or 'spatgev'.}
   \item{method}{Character string. Must be one of "CB" or "RJ" for the
     Chandler and Bate or the Rotnitzky and Jewell approaches
     respectively. See function
@@ -39,14 +42,12 @@ represent analysis-of-deviance tables.
   
   Rotnitzky, A. and Jewell, N. (1990) Hypothesis testing of regression
   parameters in semiparametric generalized linear models for cluster
-  correlated data. \emph{Biometrika} \bold{77}, 485--97.
+  correlated data. \emph{Biometrika} \bold{77}, 485--497.
 }
 \author{Mathieu Ribatet}
-\seealso{\code{\link{fitmaxstab}},
+\seealso{\code{\link{fitmaxstab}}, \code{\link{fitspatgev}},
   \code{\link[=profile.maxstab]{profile}}, \code{\link{TIC}}}
 \examples{
-require(RandomFields)
-
 ##Define the coordinates of each location
 n.site <- 30
 locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
@@ -61,17 +62,27 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
                    maxstable = "Bool", n = 50)
 ms0 <- t(ms0)
 
-##Fit three nested models
-M0 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE)
-M1 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE, cov11 =
-100)
-M2 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE, cov11 =
-100, cov22 = 500, method = "BFGS")
-anova(M0, M1) ## <- M1 seems better
-anova(M0, M2) ## <- M0 is better
-anova(M1, M2) ## <- M1 is clearly better
+##Now define the spatial model for the GEV parameters
+param.loc <- -10 + 2 * locations[,2]
+param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
+param.shape <- rep(0.2, n.site)
 
-##To use the Chandler and Bate methodology:
-anova(M0, M1, method = "CB")
+##Transform the unit Frechet margins to GEV 
+for (i in 1:n.site)
+  ms0[,i] <- frech2gev(ms0[,i], param.loc[i], param.scale[i],
+param.shape[i])
+
+##Define three models for the GEV margins to be fitted
+loc.form <- loc ~ lat
+scale.form <- scale ~ lon + I(lat^2)
+shape.form <- shape ~ lon
+
+M0 <- fitspatgev(ms0, locations, loc.form, scale.form, shape.form)
+M1 <- fitspatgev(ms0, locations, loc.form, scale.form, shape.form,
+shapeCoeff2 = 0)
+
+##Model selection
+anova(M0, M1)
+anova(M0, M1, method = "CB", square = "svd")
 }
 \keyword{htest}

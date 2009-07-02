@@ -24,8 +24,8 @@ void distance(double *coord, int *nDim, int *nSite,
     for (i=0;i<(*nSite-1);i++){
       for (j=i+1;j<*nSite;j++){
 	for (k=0;k<*nDim;k++)
-	  dist[currentPair] += R_pow_di(coord[i + k * *nSite] -
-					coord[j + k * *nSite], 2);
+	  dist[currentPair] += (coord[i + k * *nSite] -	coord[j + k * *nSite]) *
+	    (coord[i + k * *nSite] - coord[j + k * *nSite]);
 	
 	dist[currentPair] = sqrt(dist[currentPair]);
 	currentPair++;
@@ -43,26 +43,24 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
   //When ans > 0.0, the GEV parameters are invalid.
   
   int i, j;
-  double ans = 0.0;
-  
+    
   for (i=0;i<nSite;i++){
-    for (j=0;j<nObs;j++){
-      frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
-      
-      if(fabs(shapes[i]) <= 1e-6){
-	shapes[i] = 0.0;
+    if (shapes[i] == 0.0){
+            
+      for (j=0;j<nObs;j++){
+	frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
 	jac[i * nObs + j] = frech[i * nObs + j] - log(scales[i]);
 	frech[i * nObs + j] = exp(frech[i * nObs + j]);
       }
+    }
       
-      else {
-	frech[i * nObs + j] = 1 + shapes[i] * frech[i * nObs + j];
+    else {
+      for (j=0;j<nObs;j++){
+	frech[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) /
+	  scales[i];
 	
-	if (frech[i * nObs + j] <= 0) {
-	  //printf("1 + shape * (data - loc) <= 0!\n");
-	  ans += R_pow_di(1.01 - frech[i * nObs + j], 2);
-	  frech[i * nObs + j] = 1.0;
-	}
+	if (frech[i * nObs + j] <= 0)
+	  return MINF;
 	
 	jac[i * nObs + j] = (1/ shapes[i] - 1) * 
 	  log(frech[i * nObs + j]) - log(scales[i]);
@@ -71,8 +69,8 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
       }
     }
   }
-
-  return ans;
+  
+  return 0.0;
 }
 
 double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
@@ -85,8 +83,7 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
   //This function computes the GEV parameters from the design matrix
   //when ans > 0.0, the GEV parameters are invalid
   int i, j;
-  double ans = 0.0;
-
+  
   for (i=0;i<nSite;i++){
        
     locs[i] = 0.0;
@@ -102,18 +99,11 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
     for (j=0;j<nshapecoeff;j++)
       shapes[i] += shapecoeff[j] * shapedsgnmat[i + nSite * j];
     
-    if (scales[i]<=0){
-      ans += R_pow_di(1.01 - scales[i], 2);
-      scales[i] = 1;
-    }
-    
-    if (shapes[i] <= -1){
-      ans += R_pow_di(shapes[i] - 0.02, 2);
-      shapes[i] = 0.0;
-    }
+    if ((scales[i]<=0) | (shapes[i] <= -1))
+      return MINF;
   }
 
-  return ans;
+  return 0.0;
 }
   
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,

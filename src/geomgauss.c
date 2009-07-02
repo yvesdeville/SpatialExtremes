@@ -15,42 +15,40 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   rho = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
-  *dns = 1.0;
-  
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
-      if (scales[i] <= 0){
-	//printf("scales <= 0!!!\n");
-	*dns += R_pow_di(1 - scales[i], 2);
-	scales[i] = 1.0;
-      }
-      
-      if (shapes[i] <= -1){
-	//printf("shapes <= -1!!!\n");
-	*dns += R_pow_di(shapes[i], 2);
-	shapes[i] = 0.0;
+      if ((scales[i] <= 0) | (shapes[i] <= -1)){
+	*dns = MINF;
+	return;
       }
     }
   }
    
   //Stage 0: Compute the covariance at each location
-  *dns += geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
-			 *smooth, rho);
+  *dns = geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
+			*smooth, rho);
+
+  if (*dns != 0.0)
+    return;
     
   //Stage 1: Transformation to unit Frechet
-  if (*fitmarge)
-    *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		      jac, frech);
+  if (*fitmarge){
+    *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		     jac, frech);
+
+    if (*dns != 0.0)
+      return;
+    
+    *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
+  }
     
   else {
-    for (i=0;i<(*nSite * *nObs);i++){
-      frech[i] = data[i];
+    for (i=0;i<(*nSite * *nObs);i++)
       jac[i] = 0.0;
-    }
-  }
-
-  *dns *= lpliksmith(frech, rho, jac, *nObs, *nSite);
+   
+    *dns = lpliksmith(data, rho, jac, *nObs, *nSite);
+  }  
   
   if (!R_FINITE(*dns))
     *dns = MINF;
@@ -79,23 +77,30 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
-  *dns = 1.0;
-
   //Stage 1: Compute the covariance at each location
-  *dns += geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
+  *dns = geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
 			*smooth, rho);
+
+  if (*dns != 0.0)
+    return;
     
   //Stage 2: Compute the GEV parameters using the design matrix
-  *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-			loccoeff, scalecoeff, shapecoeff, *nSite,
-			*nloccoeff, *nscalecoeff, *nshapecoeff,
-			locs, scales, shapes);
+  *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+		       loccoeff, scalecoeff, shapecoeff, *nSite,
+		       *nloccoeff, *nscalecoeff, *nshapecoeff,
+		       locs, scales, shapes);
+
+  if (*dns != 0.0)
+      return;
 
   //Stage 3: Transformation to unit Frechet
-  *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		    jac, frech);
+  *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		   jac, frech);
+
+  if (*dns != 0.0)
+    return;
     
-  *dns *= lpliksmith(frech, rho, jac, *nObs, *nSite);
+  *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
     
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter

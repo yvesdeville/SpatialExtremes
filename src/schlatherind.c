@@ -17,63 +17,56 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   rho = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
-  *dns = 1.0;
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
-      if (scales[i] <= 0){
+      if ((scales[i] <= 0) | (shapes[i] <= -1)){
 	//printf("scales <= 0!!!\n");
-	*dns += R_pow_di(1 - scales[i], 2);
-	scales[i] = 1;
-      }
-      
-      if (shapes[i] <= -1){
-	//printf("shapes <= -1!!!\n");
-	*dns += R_pow_di(shapes[i], 2);
-	shapes[i] = 0.0;
+	*dns = MINF;
+	return;
       }
     }
   }
 
   if ((*alpha < 0) || (*alpha > 1)){
-    if (*alpha < 0){
-      *dns += R_pow_di(1 - *alpha, 2);
-      *alpha = 0.0;
-    }
-
-    else{
-      *dns += R_pow_di(*alpha, 2);
-      *alpha = 1.0;
-    }
+    *dns = MINF;
+    return;
   }    
    
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    *dns += whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 2:
-    *dns += cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 3:
-    *dns += powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   }
   
+  if (*dns != 0.0)
+    return;
+  
   //Stage 1: Transformation to unit Frechet
-  if (*fitmarge)
-    *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		      jac, frech);
+  if (*fitmarge){
+    *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		     jac, frech);
+
+    if (*dns != 0.0)
+      return;
     
-  else {
-    for (i=0;i<(*nSite * *nObs);i++){
-      frech[i] = data[i];
-      jac[i] = 0.0;
-    }
+    *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
   }
   
-  *dns *= lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+  else {
+    for (i=0;i<(*nSite * *nObs);i++)
+      jac[i] = 0.0;
 
+    *dns = lplikschlatherind(data, *alpha, rho, jac, *nObs, *nSite);
+  }
+  
   if (!R_FINITE(*dns))
     *dns = MINF;
 
@@ -102,42 +95,44 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
-  *dns = 1.0;
-
-  if (*alpha < 0){
-    *dns += R_pow_di(1 - *alpha, 2);
-    *alpha = 0.0;
-  }
-
-  if (*alpha > 1){
-    *dns += R_pow_di(*alpha, 2);
-    *alpha = 1.0;
+  if ((*alpha < 0) | (*alpha > 1)){
+    *dns = MINF;
+    return;
   }
 
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    *dns += whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 2:
-    *dns += cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 3:
-    *dns += powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   }
+
+  if (*dns != 0.0)
+    return;
   
   //Stage 2: Compute the GEV parameters using the design matrix
-  *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-			loccoeff, scalecoeff, shapecoeff, *nSite,
-			*nloccoeff, *nscalecoeff, *nshapecoeff,
-			locs, scales, shapes);
+  *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+		       loccoeff, scalecoeff, shapecoeff, *nSite,
+		       *nloccoeff, *nscalecoeff, *nshapecoeff,
+		       locs, scales, shapes);
+
+  if (*dns != 0.0)
+    return;
 
   //Stage 3: Transformation to unit Frechet
-  *dns -= gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		    jac, frech);
+  *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		   jac, frech);
 
-  *dns *= lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+  if (*dns != 0.0)
+    return;
+
+  *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
     
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter

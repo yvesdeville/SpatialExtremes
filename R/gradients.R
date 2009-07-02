@@ -281,3 +281,60 @@
 
   return(jacobian)
 }
+
+.spatgevgrad <- function(par, data, loc.dsgn.mat, scale.dsgn.mat,
+                         shape.dsgn.mat, std.err.type = "score",
+                         fixed.param, param.names){
+
+  ##data is a matrix with each column corresponds to one location
+  n.site <- ncol(data)
+  n.obs <- nrow(data)
+  
+  n.loccoeff <- ncol(loc.dsgn.mat)
+  n.scalecoeff <- ncol(scale.dsgn.mat)
+  n.shapecoeff <- ncol(shape.dsgn.mat)
+
+  loc.idx <- which(substr(names(par), 1, 3) == "loc")
+  scale.idx <- which(substr(names(par), 1, 6) == "scaleC")
+  shape.idx <- which(substr(names(par), 1, 5) == "shape")
+
+  loc.param <- par[loc.idx]
+  scale.param <- par[scale.idx]
+  shape.param <- par[shape.idx]
+  
+  grad <- .C("spatgevgrad", as.double(data), as.integer(n.site),
+             as.integer(n.obs), as.double(loc.dsgn.mat),
+             as.integer(n.loccoeff), as.double(scale.dsgn.mat),
+             as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
+             as.integer(n.shapecoeff), as.double(loc.param),
+             as.double(scale.param), as.double(shape.param),
+             grad = double(n.obs * length(param.names)),
+             PACKAGE = "SpatialExtremes")$grad
+
+  grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
+
+  n.fixed <- length(fixed.param)
+  if (n.fixed > 0){
+    idx <- NULL
+    for (i in 1:n.fixed)
+      idx <- c(idx, which(param.names == fixed.param[i]))
+    
+    grad <- grad[,-idx]
+  }
+
+  if (any(is.na(grad)))
+    return(NA)
+  
+  if (std.err.type == "score")
+    jacobian <- var(grad) * n.obs
+
+  if (std.err.type == "grad"){
+    jacobian <- 0
+    for (i in 1:n.obs){
+      grad.vec <- matrix(grad[i,], ncol = 1)
+      jacobian <- jacobian + grad.vec %*% t(grad.vec)
+    }
+  }
+
+  return(jacobian)
+}

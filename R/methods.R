@@ -1,3 +1,40 @@
+print.spatgev <- function(x, digits = max(3, getOption("digits") - 3), ...){
+
+  cat("   Deviance:", x$deviance, "\n")
+
+  param <- x$fitted.values
+  loc.idx <- which(substr(names(param), 1, 3) == "loc")
+  scale.idx <- which(substr(names(param), 1, 5) == "scale")
+  shape.idx <- which(substr(names(param), 1, 5) == "shape")
+
+  cat("    Location Parameters:\n")
+  print.default(format(param[loc.idx], digits = digits), print.gap = 2, 
+                quote = FALSE)
+  cat("       Scale Parameters:\n")
+  print.default(format(param[scale.idx], digits = digits), print.gap = 2, 
+                quote = FALSE)
+  cat("       Shape Parameters:\n")
+  print.default(format(param[shape.idx], digits = digits), print.gap = 2, 
+                quote = FALSE)
+    
+  if(!is.null(x$std.err)) {
+    cat("\nStandard Errors\n")
+    print.default(format(x$std.err, digits = digits), print.gap = 2, 
+                  quote = FALSE)
+  }
+  if(!is.null(x$var.cov)) {
+    cat("\nAsymptotic Variance Covariance\n")
+    print.default(format(x$var.cov, digits = digits), print.gap = 2, 
+                  quote = FALSE)
+  }
+  cat("\nOptimization Information\n")
+  cat("  Convergence:", x$convergence, "\n")
+  cat("  Function Evaluations:", x$counts["function"], "\n")
+  if(!is.na(x$counts["gradient"]))
+    cat("  Gradient Evaluations:", x$counts["gradient"], "\n")
+  if(!is.null(x$message)) cat("\nMessage:", x$message, "\n")
+  cat("\n")
+}
 
 print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 

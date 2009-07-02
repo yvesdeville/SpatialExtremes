@@ -3,16 +3,16 @@
 \title{Computes madograms}
 \description{Computes the madogram for max-stable processes.}
 \usage{
-madogram(data, coord, bins, gev.param = c(0, 1, 0), which =
-c("mado", "ext"), xlab, ylab, angles = NULL, \dots)
+madogram(data, coord, n.bins, gev.param = c(0, 1, 0), which =
+c("mado", "ext"), xlab, ylab, angles = NULL, marge = "mle", ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
-  \item{bins}{Numeric vector giving the bins for which the madogram is
-    computed.}
+  \item{n.bins}{The number of bins to be used. If missing, pairwise
+    madogram estimates will be computed.}
   \item{gev.param}{Numeric vector of length 3 specifying the location,
     scale and shape parameters for the GEV.}
   \item{which}{A character vector of maximum size 2. It specifies if the
@@ -22,24 +22,27 @@ c("mado", "ext"), xlab, ylab, angles = NULL, \dots)
     that \code{ylab} must have the same length has \code{which}.}
   \item{angles}{A numeric vector. A partition of the interval
     \eqn{(-\pi, \pi)}{(-\pi, \pi)} to help detecting anisotropy.}
+  \item{marge}{Character string. If 'emp', the observation are first
+    transformed to the unit Frechet scale by using the empirical CDF. If
+    'mle' (default), maximum likelihood estimates are used.}
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.} 
 }
 \value{
   A graphic and (invisibly) a matrix with the lag distances, the
-  estimated madogram values and extremal coefficients. 
+  madogram and extremal coefficient estimates. 
 }
 \details{
-  Let \eqn{Z(x)}{Z(x)} be a spatial and stationary process. The madogram
-  is defined as follows:
+  Let \eqn{Z(x)}{Z(x)} be a stationary process. The madogram is defined
+  as follows:
 
   \deqn{\nu(h) = \frac{1}{2}\mbox{E}\left[|Z(x+h) - Z(x)|
     \right]}{\nu(h) = 0.5 * E[|Z(x+h) - Z(x)|]}
 
-  If now \eqn{Z(x)}{Z(x)} is a stationary max-stable spatial random
-  field with GEV marginals. Provided the GEV shape parameter
-  \eqn{\xi}{\xi} is such that \eqn{\xi < 1}{\xi <1}. The extremal
-  coefficient \eqn{\theta(h)}{\theta(h)} satisfies:
+  If now \eqn{Z(x)}{Z(x)} is a stationary max-stable random field with
+  GEV marginals. Provided the GEV shape parameter \eqn{\xi}{\xi} is such
+  that \eqn{\xi < 1}{\xi <1}. The extremal coefficient
+  \eqn{\theta(h)}{\theta(h)} satisfies:
 
   \deqn{\theta(h) = \begin{cases} u_\beta \left(\mu +
     \frac{\nu(h)}{\Gamma(1 - \xi)} \right), & \xi \neq 0\\
@@ -59,7 +62,7 @@ c("mado", "ext"), xlab, ylab, angles = NULL, \dots)
     Statistics}, 373--390.
 }
 \seealso{
-  \code{\link{fitextcoeff}}
+  \code{\link{fmadogram}}, \code{\link{lmadogram}}
 }
 \examples{
 require(RandomFields)
@@ -74,7 +77,7 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
 ms0 <- t(ms0)
 
 ##Compute the madogram
-madogram(ms0, locations, angles = seq(-pi,pi, pi/4))
+madogram(ms0, locations)
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

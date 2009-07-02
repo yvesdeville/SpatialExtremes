@@ -57,6 +57,14 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		     double *sigma2dsgnmat, double *sigma2coeff, int *nsigma2coeff,
 		     double *sill, double *range, double *smooth, int *fitmarge,
 		     double *dns);
+void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
+			double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			double *locpenalty, double *scaledsgnmat, double *scalepenmat,
+			int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
+			double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
+			double *sigma2dsgnmat, int *nsigma2coeff, double *loccoeff, double *scalecoeff,
+			double *shapecoeff, double *sigma2coeff, double *sill, double *range,
+			double *smooth, double *dns);
 
 ///////////////////////////////////
 //  From smith.c
@@ -173,6 +181,11 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 		      int *nshapecoeff, double *loccoeff, double *scalecoeff,
 		      double *shapecoeff, double *alpha, double *sill, double *range,
 		      double *smooth, int *fitmarge, double *grad);
+void spatgevgrad(double *data, int *nSite, int *nObs, double *locdsgnmat,
+		 int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
+		 double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
+		 double *scalecoeff, double *shapecoeff, double *grad);
+
 ///////////////////////////////////
 //  From pairwiselik.c
 //
@@ -213,3 +226,28 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
 		   int *nPairs, double *distVec, double *extcoeff,
 		   double *weights, double *ans);
+void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
+		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *weights, double *ans);
+void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
+		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *weights, double *ans);
+
+///////////////////////////////////
+//  From spatgevlik.c
+//
+void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
+		double *locdsgnmat, double *locpenmat, int *nloccoeff,
+		int *npparloc, double *locpenalty, double *scaledsgnmat,
+		double *scalepenmat, int *nscalecoeff, int *npparscale,
+		double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
+		int *nshapecoeff, int *npparshape, double *shapepenalty,
+		double *loccoeff, double *scalecoeff, double *shapecoeff,
+		double *dns);
+
+///////////////////////////////////
+//  From madogram.c
+//
+void madogram(double *data, int *nObs, int *nSite, double *mado);
+void lmadogram(double *data, int *nObs, int *nSite, double *lambda,
+	       int *nLambda, double *lmado);

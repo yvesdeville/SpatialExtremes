@@ -31,10 +31,11 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
   \item{iso}{Logical. If \code{TRUE} an isotropic model is fitted to
     data. Otherwise (default), anisotropy is allowed. Currently, this is
     only implemented for the Smith's model.}
-  \item{\dots}{Several arguments to be passed to the \code{\link{optim}}
-    function. See section details.}
+  \item{\dots}{Several arguments to be passed to the
+    \code{\link{optim}}, \code{\link{nlm}} or \code{\link{nlminb}}
+    functions. See section details.}
   \item{fit.marge}{Logical. If \code{TRUE}, the GEV parameters
-    are estimated ``point-wisely'' or using the formulas given by
+    are estimated pointwise or using the formulas given by
     \code{loc.form}, \code{scale.form} and \code{shape.form}. If
     \code{FALSE}, observations are supposed to be unit Frechet
     distributed. Note that when formulas are given, \code{fit.marge} is
@@ -44,9 +45,10 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
     arised while computing the standard errors.}
   \item{method}{The method used for the numerical optimisation
     procedure. Must be one of \code{BFGS}, \code{Nelder-Mead},
-    \code{CG}, \code{L-BFGS-B}, \code{SANN} or \code{nlm}. See \code{\link{optim}}
-    for details. Please note that passing \code{nlm} will use the
-    \code{\link{nlm}} function instead of \code{\link{optim}}.}
+    \code{CG}, \code{L-BFGS-B}, \code{SANN}, \code{nlm} or
+    \code{nlminb}. See \code{\link{optim}} for details. Please note that
+    passing \code{nlm} or \code{nlminb} will use the \code{\link{nlm}}
+    or \code{\link{nlminb}} functions instead of \code{\link{optim}}.}
   \item{start}{A named list giving the initial values for the
     parameters over which the pairwise likelihood is to be minimized. If
     \code{start} is omitted the routine attempts to find good starting
@@ -83,9 +85,6 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
   \item{cov.mod}{The covariance model for the spatial structure.}
 }
 \details{
-  The function is a wrapper to more specialised functions
-  (\code{schlatherfull, schlatherlm, smithfull, smithlm}).
-
   As spatial data often deal with a large number of locations, it is
   impossible to write analytically the joint distribution. Consequently,
   the fitting procedure substitutes the "full likelihood" for the
@@ -121,10 +120,19 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
 
   \describe{
     \item{\code{grad}}{\eqn{J} is estimated from the gradient e.g. \eqn{J
-	= \nabla \ell_P \nabla \ell_P^T}{J = grad(llik_P) grad(llik_P)^T}}
+	= \nabla \ell_P \nabla \ell_P^T}{J = grad(llik_P)
+    grad(llik_P)^T}.}
     \item{\code{score}}{\eqn{J} is estimated directly from the variance of
       the observed score function.}
   }
+}
+\section{Warning}{
+  When using reponse surfaces to model spatially the GEV parameters, the
+  likelihood is pretty rough so that the general purpose optimization
+  routines may fail. It is your responsability to check if the
+  numerical optimization succeeded or not. I tried, as best as I can, to
+  provide warning messages if the optimizers failed but in some cases,
+  no warning will appear!  
 }
 \references{
   Cox, D. R. and Reid, N. (2004) A note on pseudo-likelihood constructed
@@ -158,8 +166,8 @@ param.shape <- rep(0.2, n.site)
 
 ##Transform the unit Frechet margins to GEV 
 for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-  param.shape[i] + param.loc[i]
+  ms1[,i] <- frech2gev(ms1[,i], param.loc[i], param.scale[i],
+param.shape[i])
 
 ##Define a model for the GEV margins to be fitted
 ##shape ~ 1 stands for the GEV shape parameter is constant

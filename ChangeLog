@@ -1,3 +1,374 @@
+2009-02-07 21:10  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Fix an error in the definition
+	  of a elliptical covariance function
+
+2009-02-05 23:43  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw, inst/doc/layout.sty,
+	  inst/doc/references.bib: Update the vignette
+
+2009-02-05 23:42  mathieu_ribatet
+
+	* R/fitcovmat.R: Fig a bug when held fixing parameter and defining
+	  starting values
+
+2009-02-05 15:03  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw, inst/doc/references.bib:
+	  Update the vignette
+
+2009-02-05 15:03  mathieu_ribatet
+
+	* R/psplines.R: Redifine the GCV score so that it has the same
+	  scale as CV
+
+2009-01-31 23:40  mathieu_ribatet
+
+	* R/utils.R: Found a more clever way to deal with 1-dimensional
+	  coordinates
+
+2009-01-31 23:33  mathieu_ribatet
+
+	* R/utils.R: The function distance wasn't working if the
+	  coordinates where scalar,
+	  fixed!
+
+2009-01-30 23:52  mathieu_ribatet
+
+	* R/fitcovmat.R: Set weights that are really small (i.e. <= 1e-4)
+	  to more feasible
+	  values
+
+2009-01-18 17:36  mathieu_ribatet
+
+	* man/fitcovariance.Rd, man/fitcovmat.Rd, man/fitspatgev.Rd: The
+	  dots arguments was inverting with the start one
+
+2009-01-18 17:35  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Remove draft sections from the
+	  vignette
+
+2009-01-18 17:35  mathieu_ribatet
+
+	* R/fitcovmat.R: Use different function names to avoid warning
+	  messages when compiling
+
+2009-01-18 15:10  mathieu_ribatet
+
+	* R/fitcovmat.R: Improve how starting values are defined
+
+2009-01-18 15:10  mathieu_ribatet
+
+	* R/geomgauss.R, R/schlatherind.R, R/spatgev.R: Improve how
+	  starting values are defined
+
+2009-01-18 15:09  mathieu_ribatet
+
+	* R/starting.values.R: Improve how starting values are defined
+
+2009-01-16 17:35  mathieu_ribatet
+
+	* R/fitcovmat.R, man/fitcovariance.Rd, src/fitcovmat.c,
+	  src/header.h: Allow the use of the independent Schlather and
+	  geometric Gaussian
+	  models for the least squares fitting procedure
+
+2009-01-15 18:31  mathieu_ribatet
+
+	* R/geomgauss.R: Fix a bug in defining the starting values for
+	  geomgaussfull
+
+2009-01-14 23:19  mathieu_ribatet
+
+	* R/extcoeff.R, R/madogram.R, inst/doc/SpatialExtremesGuide.Rnw:
+	  Minor changes
+
+2009-01-14 13:24  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Add some proofs
+
+2009-01-14 13:23  mathieu_ribatet
+
+	* R/starting.values.R: Fix a bug. I omit to specify the covariance
+	  model when computing
+	  appropriate starting values for the Schlather model
+
+2009-01-14 13:23  mathieu_ribatet
+
+	* R/madogram.R, src/madogram.c: We now use the corrected
+	  lambda-madogram - thanks to D. Cooley
+
+2009-01-12 09:06  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Extend the response surfaces
+	  section - not finished
+
+2009-01-12 09:03  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Add proof for the derivation
+	  of the Smith and geometric Gaussian
+	  models
+
+2009-01-06 15:06  mathieu_ribatet
+
+	* man/lmadogram.Rd: Fix a wrong argument in the example
+
+2009-01-03 01:58  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Improve (a lot!) the package
+	  vignette. It's for from being finished
+	  though...
+
+2009-01-03 01:56  mathieu_ribatet
+
+	* R/modelChecking.R, R/starting.values.R: Minor changes
+
+2009-01-02 17:43  mathieu_ribatet
+
+	* inst/doc/references.bib: Update reference list
+
+2009-01-02 17:43  mathieu_ribatet
+
+	* R/plots.R: Move the qqextcoeff function to the modelChecking.R
+	  file
+
+2009-01-02 17:42  mathieu_ribatet
+
+	* R/selection.R: Minor changes
+
+2009-01-02 17:42  mathieu_ribatet
+
+	* R/starting.values.R: Now starting values for the GEV margins are
+	  defined by using the
+	  fitspatgev function
+
+2009-01-02 17:42  mathieu_ribatet
+
+	* R/spatgev.R: Minor changes
+
+2009-01-02 17:41  mathieu_ribatet
+
+	* R/geomgauss.R, R/nsgeomgauss.R, R/schlather.R, R/schlatherind.R,
+	  R/smith.R: Pass defaults values for parscale and change the
+	  initialization for
+	  starting values
+
+2009-01-02 17:40  mathieu_ribatet
+
+	* R/extcoeff.R: Moving the madogram function to the madogram.R file
+
+2009-01-02 17:39  mathieu_ribatet
+
+	* R/covariance.R: If xlim is supplied the function doesn't compute
+	  appropriate x.range
+
+2009-01-02 17:38  mathieu_ribatet
+
+	* src/header.h: The header for the madogram-based approaches
+
+2009-01-02 17:38  mathieu_ribatet
+
+	* src/covariance.c, src/pairwiselik.c, src/utils.c: Optimize the
+	  code: now fitting a max-stable process by maximizing the
+	  pairwise-likelihood is 40% times faster
+
+2009-01-02 17:36  mathieu_ribatet
+
+	* man/anova.Rd, man/fitmaxstab.Rd, man/fitspatgev.Rd,
+	  man/madogram.Rd: Update the documentation files
+
+2009-01-02 17:35  mathieu_ribatet
+
+	* inst/doc/Figures/geomGauss2Sim.eps,
+	  inst/doc/Figures/geomGauss2Sim.pdf: Add figures for the geometric
+	  gaussian process - 2 simulations
+
+2009-01-02 17:34  mathieu_ribatet
+
+	* R/madogram.R, R/modelChecking.R, R/univdist.R, inst/doc/Figures,
+	  man/GEV.Rd, man/GPD.Rd, man/fmadogram.Rd, man/lmadogram.Rd,
+	  man/qqgev.Rd, src/madogram.c: Add the madogram-based approaches,
+	  model checking and univariate EVD
+	  functions
+
+2008-12-19 15:54  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Update the package Vignette
+
+2008-12-19 10:03  mathieu_ribatet
+
+	* man/SpatialExtremes.Rd: Updating the main man page.
+
+2008-12-19 10:00  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Updating the vignette.
+
+2008-12-18 08:35  mathieu_ribatet
+
+	* man/SpatialExtremes.Rd: Wrong link to the profile2d.maxstab
+	  function
+
+2008-12-17 21:18  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Correct English and grammar
+	  thanks to Anthony
+
+2008-12-17 20:22  mathieu_ribatet
+
+	* R/fitcovmat.R, src/fitcovmat.c: Test if we have 0 weights and set
+	  a really huge value for non feasible
+	  regions
+
+2008-12-17 20:21  mathieu_ribatet
+
+	* src/schlatherind.c: Changes due to the new way I deal with non
+	  feasible region
+
+2008-12-16 18:49  mathieu_ribatet
+
+	* R/fitcovmat.R: Improve this functions
+
+2008-12-16 18:48  mathieu_ribatet
+
+	* R/starting.values.R: The sill isn't fix for the starting values
+	  as it may cause troubles
+	  when fixing it for the model definition
+
+2008-12-16 18:47  mathieu_ribatet
+
+	* R/spatgev.R: Minor change: adding the logLik value in the output
+
+2008-12-16 18:47  mathieu_ribatet
+
+	* R/smith.R: I forgot to pass the option iso = iso when computing
+	  the variance of
+	  the score
+
+2008-12-16 18:44  mathieu_ribatet
+
+	* src/gradients.c: Fix a bug in the computation of the gradient
+	  (only present when
+	  reponse surfaces are used for the GEV parameters)
+
+2008-12-16 18:41  mathieu_ribatet
+
+	* src/extcoeff.c: Do not set pointwise estimate to 1 or 2 if they
+	  lie outsite of [1,2]
+
+2008-12-16 18:40  mathieu_ribatet
+
+	* src/covariance.c, src/fitcovmat.c, src/geomgauss.c,
+	  src/nsgeomgauss.c, src/pairwiselik.c, src/schlather.c,
+	  src/schlatherind.c, src/smith.c, src/smith3d.c, src/utils.c:
+	  Final change for unfeasible regions: finally setting MINF to the
+	  log-likelihood for unfeasible region is the "best" way
+
+2008-12-16 18:38  mathieu_ribatet
+
+	* man/covariance.Rd, man/extcoeff.Rd, man/fitmaxstab.Rd,
+	  man/fitspatgev.Rd, man/modeldef.Rd: Update and refine the
+	  documentation files
+
+2008-12-12 16:22  mathieu_ribatet
+
+	* src/univllik.c: Improve the code for speed
+
+2008-12-11 21:25  mathieu_ribatet
+
+	* R/fitcovmat.R, man/fitcovariance.Rd, man/fitcovmat.Rd: Using the
+	  optim as optimizer instead of nlm - more robust
+
+2008-12-11 15:09  mathieu_ribatet
+
+	* R/fitcovmat.R, R/starting.values.R: Adjust the starting values
+
+2008-12-11 15:09  mathieu_ribatet
+
+	* R/gradients.R, R/selection.R, R/spatgev.R, man/TIC.Rd,
+	  man/anova.Rd, man/fitspatgev.Rd, man/print.spatgev.Rd,
+	  src/gradients.c, src/header.h: Computes the sandwich estimate of
+	  the asymptotic covariance
+	  matrix. TIC and ANOVA are thus available.
+
+2008-12-10 20:21  mathieu_ribatet
+
+	* man/fitspatgev.Rd, man/predict.spatgev.Rd, man/print.spatgev.Rd:
+	  Add a function to fit a "spatial" gev model e.g. GEV parameters
+	  are
+	  modelled through response surfaces: doc files.
+
+2008-12-10 15:56  mathieu_ribatet
+
+	* src/univllik.c: Fix a bug in testing if the scale and shape
+	  paremeters were badly
+	  defined.
+
+2008-12-10 15:55  mathieu_ribatet
+
+	* R/methods.R, R/predict.R, R/spatgev.R, src/header.h,
+	  src/spatgevlik.c: Add a function to fit a "spatial" gev model
+	  e.g. GEV parameters are
+	  modelled through response surfaces. Related methods and
+	  predictions
+	  are also implemented.
+
+2008-12-09 16:17  mathieu_ribatet
+
+	* R/nsgeomgauss.R, R/starting.values.R, src/header.h,
+	  src/nsgeomgauss.c: Add the non-stationary geom. gauss. model with
+	  response surfaces for
+	  the GEV parameters
+
+2008-12-07 12:54  mathieu_ribatet
+
+	* src/covariance.c: Minor change
+
+2008-12-07 12:18  mathieu_ribatet
+
+	* src/covariance.c, src/utils.c: Optimizing the C code: improve
+	  conditioning tests
+
+2008-12-07 11:34  mathieu_ribatet
+
+	* man/SpatialExtremes.Rd, man/TIC.Rd, man/condmap.Rd,
+	  man/extcoeff.Rd, man/fitmaxstab.Rd, man/rb.Rd: Proof-read the man
+	  pages due to a mail in the r-devel list
+
+2008-12-06 15:34  mathieu_ribatet
+
+	* src/nsgeomgauss.c: Minor changes
+
+2008-12-06 15:34  mathieu_ribatet
+
+	* src/covariance.c: Fix a bug in the nsgeomgauss covariance
+	  function computations
+
+2008-12-03 09:22  mathieu_ribatet
+
+	* R/fitcovmat.R: Do not use the same function name whatever the iso
+	  argument is to
+	  avoid a warning message while building the package
+
+2008-12-03 09:22  mathieu_ribatet
+
+	* R/nsgeomgauss.R, man/internals.Rd: Masking the non-stationary
+	  geom. gauss. model for the moment
+
+2008-12-03 09:21  mathieu_ribatet
+
+	* src/covariance.c: There was an uninitialized variable
+
+2008-12-03 08:33  mathieu_ribatet
+
+	* src/utils.c: Remove unused variable
+
+2008-12-02 17:15  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION: Update ChangeLog and DESCRIPTION for the
+	  new release
+
 2008-12-02 17:02  mathieu_ribatet
 
 	* R/plots.R, man/qqextcoeff.Rd: Add a function that performs a

@@ -241,31 +241,3 @@ condmap <- function(fitted, fix.coord, x, y, marg.cov = NULL, ...,
 
   invisible(list(x = x, y = y, z = ans))
 }
-
-
-qqextcoeff <- function(fitted, estim = "ST", marge = "emp",
-                       xlab = "Semi-Empirical", ylab = "Model", ...){
-
-  if (!any("maxstab" %in% class(fitted)))
-    stop("This functin is only available for 'maxstab' objects")
-
-  model <- fitted$model
-  data <- fitted$data
-  coord <- fitted$coord
-  ext.coeff <- fitted$ext.coeff
-
-  if (model == "Smith"){
-    dist <- distance(coord, vec = TRUE)
-    exco.mod <- apply(dist, 1, ext.coeff)
-  }
-
-  else{
-    dist <- distance(coord)
-    exco.mod <- ext.coeff(dist)
-  }
-
-  exco.emp <- fitextcoeff(data, coord, plot = FALSE, estim = estim,
-                          marge = marge)$ext.coeff[,"ext.coeff"]
-
-  plot(exco.emp, exco.mod, xlab = xlab, ylab = ylab, ...)
-}

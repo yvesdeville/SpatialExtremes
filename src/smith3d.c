@@ -17,42 +17,44 @@ void smithfull3d(double *data, double *distVec, int *nSite,
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
-  *dns = 1.0;
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
-      if (scales[i] <= 0){
-	//printf("scales <= 0!!!\n");
-	*dns += R_pow_di(1 - scales[i], 2);
-	scales[i] = 1.0;
-      }
-      
-      if (shapes[i] <= -1){
-	//printf("shapes <= -1!!!\n");
-	*dns += *dns + R_pow_di(shapes[i], 2);
-	shapes[i] = 0.0;
+      if ((scales[i] <= 0) | (shapes[i] <= -1)){
+	*dns = MINF;
+	return;
       }
     }
   }
 
   //Stage 1: Computing the Mahalanobis distance
-  *dns += mahalDistFct3d(distVec, nPairs, cov11, cov12, cov13,
-			 cov22, cov23, cov33, mahalDist);
+  *dns = mahalDistFct3d(distVec, nPairs, cov11, cov12, cov13,
+			cov22, cov23, cov33, mahalDist);
+
+  if (*dns != 0.0)
+    return;
   
   //Stage 2: Transformation to unit Frechet
-  if (*fitmarge)
-    *dns += gev2frech(data, *nObs, *nSite, locs, scales,
+  if (*fitmarge){
+    *dns = gev2frech(data, *nObs, *nSite, locs, scales,
 		     shapes, jac, frech);
+
+    if (*dns != 0.0)
+      return;
+    
+    *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+  }
   
   else {
-    for (i=0;i<(*nSite * *nObs);i++){
-      frech[i] = data[i];
+    for (i=0;i<(*nSite * *nObs);i++)
       jac[i] = 0.0;    
-    }
+
+    *dns = lpliksmith(data, mahalDist, jac, *nObs, *nSite);
   }
 
-  *dns *= lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
-
+  if (!R_FINITE(*dns))
+    *dns = MINF;
+  
   return;
 }
 
@@ -78,22 +80,30 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
-  *dns = 1.0;
   //Stage 1: Computing the Mahalanobis distance
-  *dns += mahalDistFct3d(distVec, nPairs, cov11, cov12, cov13,
-			 cov22, cov23, cov33, mahalDist);
+  *dns = mahalDistFct3d(distVec, nPairs, cov11, cov12, cov13,
+			cov22, cov23, cov33, mahalDist);
+
+  if (*dns != 0.0)
+    return;
 
   //Stage 2: Computing the GEV parameters using the design matrix
-  *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-			loccoeff, scalecoeff, shapecoeff, *nSite,
-			*nloccoeff, *nscalecoeff, *nshapecoeff,
-			locs, scales, shapes);
+  *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+		       loccoeff, scalecoeff, shapecoeff, *nSite,
+		       *nloccoeff, *nscalecoeff, *nshapecoeff,
+		       locs, scales, shapes);
+
+  if (*dns != 0.0)
+    return;
 
   //Stage 3: Transformation to unit Frechet
-  *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		    jac, frech);
+  *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		   jac, frech);
 
-  *dns *= lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+  if (*dns != 0.0)
+    return;
+
+  *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
     
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
@@ -110,6 +120,9 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
+
+  if (!R_FINITE(*dns))
+    *dns = MINF;
 
   return;
 }

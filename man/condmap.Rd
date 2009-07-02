@@ -37,13 +37,13 @@ TRUE)
   The function solves the following equation:
 
   \deqn{\Pr\left[Z(x_2) > z_2 | Z(x_1) > z_1 \right] =
-    \frac{1}{ret.per2}}{Pr[Z(x_2) > z_2 | Z(x_1) > z_1] = 1 / ret.per2}
-  where \eqn{z_1 = -1 / \log(1 - 1/ret.per1)}{z_1 = -1 / \log(1 -
-    1/ret.per1)}.
+    \frac{1}{T_2}}{Pr[Z(x_2) > z_2 | Z(x_1) > z_1] = 1 / T_2}
+  where \eqn{z_1 = -1 / \log(1 - 1/T_1)}{z_1 = -1 / \log(1 -
+    1/T_1)}.
 
   In other words, it computes, given that at location \eqn{x_1}{x_1} we
   exceed the level \eqn{z_1}{z_1}, the levels which is expected to be
-  exceeded in average every \code{ret.per2} year.
+  exceeded in average every \eqn{T_2}{T_2} year.
 }
 \seealso{
   \code{\link{map}}, \code{\link{filled.contour}},

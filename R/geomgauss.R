@@ -91,14 +91,24 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     }
 
     if (length(fixed.param) > 0){
-      args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"), fixed.param)
+      if (any(names(fixed.param) == "sigma2")){
+        idx <- which(names(fixed.param) == "sigma2")
+        args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"),
+                  fixed.param[-idx])
+      }
+
+      else
+        args <- c(list(data = data, coord = coord, cov.mod = paste("g", cov.mod, sep=""),
+                       marge = "emp"), fixed.param)
+      
       cov.start <- do.call("fitcovariance", args)$param
     }
 
     else
-      cov.start <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
+      cov.start <- fitcovariance(data, coord, paste("g", cov.mod, sep=""),
+                                 marge = "emp")$param
 
-    start <- c(list(sigma2 = 1), as.list(cov.start), start)
+    start <- c(as.list(cov.start), start)
     start <- start[!(param %in% names(list(...)))]
   }
   
@@ -117,6 +127,14 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
   
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
@@ -401,8 +419,8 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   if (missing(start)) {
 
-    start <- .start.geomgauss(data, coord, cov.mod, loc.model, scale.model,
-                              shape.model, method = method, ...)
+    start <- .start.geomgauss(data, coord, covariables, cov.mod, loc.form,
+                              scale.form, shape.form, method = method, ...)
     
     start <- start[!(param %in% names(list(...)))]
   
@@ -422,6 +440,14 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
   
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
