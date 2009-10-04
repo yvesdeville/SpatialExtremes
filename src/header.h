@@ -185,6 +185,12 @@ void spatgevgrad(double *data, int *nSite, int *nObs, double *locdsgnmat,
 		 int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
 		 double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
 		 double *scalecoeff, double *shapecoeff, double *grad);
+void geomgaussgrad(int *covmod, double *data, double *dist, int *nSite,
+		   int *nObs, double *locdsgnmat, int *nloccoeff,
+		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		   double *shapecoeff, double *sigma2, double *sill, double *range,
+		   double *smooth, int *fitmarge, double *grad);
 
 ///////////////////////////////////
 //  From pairwiselik.c

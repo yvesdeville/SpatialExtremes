@@ -22,14 +22,12 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
 
   //Stage 1: Computing the GEV parameters using the design matrix
   *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-		      loccoeff, scalecoeff, shapecoeff, *nSite,
-		      *nloccoeff, *nscalecoeff, *nshapecoeff,
-		      locs, scales, shapes);
+		       loccoeff, scalecoeff, shapecoeff, *nSite,
+		       *nloccoeff, *nscalecoeff, *nshapecoeff,
+		       locs, scales, shapes);
 
-  if (*dns != 0.0){
-    *dns = MINF;
+  if (*dns != 0.0)
     return;
-  }
 
   //Stage 2: Compute the log-likelihood (assuming independence between
   //stations)

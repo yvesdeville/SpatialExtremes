@@ -6,7 +6,7 @@ void gevlik(double *data, int *n, double *loc, double *scale,
   //It computes the log-likelihood for the GEV
   int i;
   
-  if( (*scale <= 0) | (*shape < -1)) {
+  if( (*scale <= 0) || (*shape < -1)) {
     *dns = -1e6;
     return;
   }
@@ -41,7 +41,7 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
   //It computes the log-likelihood for the GPD
   int i;
   
-  if ((*scale <= 0) | (*shape < -1)) {
+  if ((*scale <= 0) || (*shape < -1)) {
     *dns = -1e6;
     return;
   }

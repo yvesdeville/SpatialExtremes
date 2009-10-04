@@ -238,7 +238,7 @@ Standard errors are not available unless you fix it.")
 
     else{
       ihessian <- var.cov
-      jacobian <- .schlathergrad(param, data, dist, cov.mod.num, as.double(0),
+      jacobian <- .geomgaussgrad(param, data, dist, cov.mod.num, as.double(0),
                                  as.double(0), as.double(0), fit.marge = fit.marge,
                                  std.err.type = std.err.type, fixed.param = names(fixed.param),
                                  param.names = param.names)
@@ -553,7 +553,7 @@ Standard errors are not available unless you fix it.")
 
     else{
       ihessian <- var.cov
-      jacobian <- .schlathergrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
+      jacobian <- .geomgaussgrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
                                  scale.dsgn.mat, shape.dsgn.mat,
                                  fit.marge = fit.marge, std.err.type = std.err.type,
                                  fixed.param = names(fixed.param), param.names =

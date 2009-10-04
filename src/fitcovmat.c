@@ -23,8 +23,9 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
   }
 
   for (i=0;i<*nPairs;i++)
-    *ans += R_pow_di((2 * pnorm(mahalDist[i] / 2, 0.0, 1.0, 1, 0)
-		      - extcoeff[i]) / weights[i], 2);
+    *ans += (2.0 * pnorm(mahalDist[i] / 2.0, 0.0, 1.0, 1, 0) - extcoeff[i]) *
+      (2.0 * pnorm(mahalDist[i] / 2.0, 0.0, 1.0, 1, 0) - extcoeff[i]) / 
+      (weights[i] * weights[i]);
 
   return;
 }
@@ -47,8 +48,9 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
     return;
 
   for (i=0;i<*nPairs;i++)
-    *ans += R_pow_di((2 * pnorm(mahalDist[i] / 2, 0.0, 1.0, 1, 0) -
-		      extcoeff[i]) / weights[i], 2);
+    *ans += (2.0 * pnorm(mahalDist[i] / 2.0, 0.0, 1.0, 1, 0) - extcoeff[i]) *
+      (2.0 * pnorm(mahalDist[i] / 2.0, 0.0, 1.0, 1, 0) - extcoeff[i]) /
+      (weights[i] * weights[i]);
 
   return;
 }
@@ -78,8 +80,9 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
     return;
 
   for (i=0;i<*nPairs;i++)
-    *ans += R_pow_di((1 + sqrt(1 - 0.5 * (rho[i] + 1)) -
-		      extcoeff[i]) / weights[i], 2);
+    *ans += (1 + sqrt(1 - 0.5 * (rho[i] + 1)) - extcoeff[i]) *
+      (1 + sqrt(1 - 0.5 * (rho[i] + 1)) - extcoeff[i]) / 
+      (weights[i] * weights[i]);
 
   return;
 }
@@ -120,9 +123,10 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
     return;
 
   for (i=0;i<*nPairs;i++)
-    *ans += R_pow_di((2 * *alpha + (1 - *alpha) *
-		      (1 + sqrt(1 - 0.5 * (rho[i] + 1)) -
-		       extcoeff[i])) / weights[i], 2);
+    *ans += (2.0 * *alpha + (1 - *alpha) * (1 + sqrt(1 - 0.5 * (rho[i] + 1)) -
+					    extcoeff[i])) *
+      (2.0 * *alpha + (1 - *alpha) * (1 + sqrt(1 - 0.5 * (rho[i] + 1)) -
+				      extcoeff[i])) / (weights[i] * weights[i]);
 
   return;
 }
@@ -158,8 +162,9 @@ void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
     return;
 
   for (i=0;i<*nPairs;i++)
-    *ans += R_pow_di((2 * pnorm(sqrt(*sigma2 * (1 - rho[i]) / 2), 0.0, 1.0, 1, 0) -
-		     extcoeff[i]) / weights[i], 2);
+    *ans += (2.0 * pnorm(sqrt(*sigma2 * (1 - rho[i]) / 2.0), 0.0, 1.0, 1, 0) -
+	     extcoeff[i]) *  (2.0 * pnorm(sqrt(*sigma2 * (1 - rho[i]) / 2.0), 0.0, 1.0, 1, 0) -
+			      extcoeff[i]) / (weights[i] * weights[i]);
 
   return;
 }

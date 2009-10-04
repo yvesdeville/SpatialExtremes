@@ -129,7 +129,15 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
-  
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
+    
   formals(nllik) <- c(f[m], f[-m])
   nllh <- function(p, ...) nllik(p, ...)
 
@@ -148,14 +156,43 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   if (warn && (init.lik >= 1.0e6)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-               control = control)
+  if (method == "nlminb"){
+    start <- as.numeric(start)
+    opt <- nlminb(start, nllh, ..., control = control)
+    opt$counts <- opt$evaluations
+    opt$value <- opt$objective
+    names(opt$par) <- nm
+  }
+  
+  else if (method == "nlm"){
+    start <- as.numeric(start)
+    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt$counts <- opt$iterations
+    names(opt$counts) <- "function"
+    opt$value <- opt$minimum
+    opt$par <- opt$estimate
+    names(opt$par) <- nm
+
+    if (opt$code <= 2){
+      opt$convergence <- 0
+      opt$message <- NULL
+    }
+    
+    if (opt$code > 2){
+      opt$convergence <- 1
+      opt$message <- paste("nlm error code", opt$code)
+    }      
+  }
+
+  else 
+    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
+                 control = control)
     
   if ((opt$convergence != 0) || (opt$value >= 1.0e6)){
     if (warn)
       warning("optimization may not have succeeded")
   }
-
+  
   else
     opt$convergence <- "successful"
 
@@ -214,7 +251,8 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
               logLik = -opt$value, loc.form = loc.form, scale.form = scale.form,
               shape.form = shape.form, convergence = opt$convergence, nllh = nllh,
               deviance = 2 * opt$value, ihessian = ihessian, jacobian = jacobian,
-              data = data, jacobian = jacobian, fixed = unlist(fixed.param))
+              data = data, jacobian = jacobian, fixed = unlist(fixed.param),
+              hessian = opt$hessian)
 
   class(ans) <- "spatgev"
   return(ans)

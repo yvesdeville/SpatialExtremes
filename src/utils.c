@@ -44,10 +44,10 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
   
   int i, j;
     
-  for (i=0;i<nSite;i++){
+  for (i=nSite;i--;){
     if (shapes[i] == 0.0){
             
-      for (j=0;j<nObs;j++){
+      for (j=nObs;j--;){
 	frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
 	jac[i * nObs + j] = frech[i * nObs + j] - log(scales[i]);
 	frech[i * nObs + j] = exp(frech[i * nObs + j]);
@@ -55,7 +55,7 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
     }
       
     else {
-      for (j=0;j<nObs;j++){
+      for (j=nObs;j--;){
 	frech[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) /
 	  scales[i];
 	
@@ -99,7 +99,7 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
     for (j=0;j<nshapecoeff;j++)
       shapes[i] += shapecoeff[j] * shapedsgnmat[i + nSite * j];
     
-    if ((scales[i]<=0) | (shapes[i] <= -1))
+    if ((scales[i]<=0) || (shapes[i] <= -1))
       return MINF;
   }
 

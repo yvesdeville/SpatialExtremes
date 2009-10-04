@@ -18,7 +18,7 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
-      if ((scales[i] <= 0) | (shapes[i] <= -1)){
+      if ((scales[i] <= 0) || (shapes[i] <= -1)){
 	*dns = MINF;
 	return;
       }

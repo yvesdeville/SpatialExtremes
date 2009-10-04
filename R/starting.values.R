@@ -49,7 +49,7 @@
 
   covs <- do.call("smithfull", args)
     
-  start <- c(as.list(covs$param), as.list(spatgev$param))
+  start <- c(as.list(covs$fitted), as.list(spatgev$param))
 
   if (print.start.values){
     cat("Starting values are defined\n")

@@ -1,3 +1,128 @@
+2009-04-10 13:35  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION: Update the version number and the
+	  ChangeLog file
+
+2009-04-10 10:06  mathieu_ribatet
+
+	* src/covariance.c: Minor changes
+
+2009-04-10 10:06  mathieu_ribatet
+
+	* R/geomgauss.R, R/gradients.R, src/gradients.c, src/header.h: Add
+	  the computation of the gradient for the geometric gaussian model
+
+2009-04-09 14:18  mathieu_ribatet
+
+	* src/pairwiselik.c: Minor optimizations
+
+2009-04-09 14:17  mathieu_ribatet
+
+	* src/gradients.c: Minor optimizations - and fix a bug in
+	  Schlather's gradient
+
+2009-04-09 14:16  mathieu_ribatet
+
+	* src/covariance.c: Minor optimizations
+
+2009-04-07 15:45  mathieu_ribatet
+
+	* src/utils.c: Some minor optimizations
+
+2009-04-07 15:44  mathieu_ribatet
+
+	* src/univllik.c: Bug : replace '|' by '||' i.e. logical operator
+
+2009-04-07 15:44  mathieu_ribatet
+
+	* src/spatgevlik.c: Minor change
+
+2009-04-07 15:43  mathieu_ribatet
+
+	* src/smith3d.c: Bug : replace '|' by '||' i.e. logical operator
+
+2009-04-07 15:42  mathieu_ribatet
+
+	* src/smith.c: Bug : replace '|' by '||' i.e. logical operator
+
+2009-04-07 15:42  mathieu_ribatet
+
+	* src/schlatherind.c: Bug : replace '|' by '||' i.e. logical
+	  operator
+
+2009-04-07 15:42  mathieu_ribatet
+
+	* src/schlather.c: Optimize the computation of the pairwise
+	  likelihood
+
+2009-04-07 15:42  mathieu_ribatet
+
+	* src/pairwiselik.c: Optimize the computation of the pairwise
+	  likelihood
+
+2009-04-07 15:41  mathieu_ribatet
+
+	* src/nsgeomgauss.c: Bug : replace '|' by '||' i.e. logical
+	  operator
+
+2009-04-07 15:41  mathieu_ribatet
+
+	* src/gradients.c: Optimize the computation of the gradient and fix
+	  some errors
+
+2009-04-07 15:40  mathieu_ribatet
+
+	* src/geomgauss.c: Bug : replace '|' by '||' i.e. logical operator
+
+2009-04-07 15:40  mathieu_ribatet
+
+	* src/fitcovmat.c: Optmize the computation of weighted sum of
+	  squares
+
+2009-04-07 15:39  mathieu_ribatet
+
+	* src/covariance.c: Optmize the computation of pairwise covariance
+
+2009-04-07 15:39  mathieu_ribatet
+
+	* R/starting.values.R: Minor change
+
+2009-04-07 15:38  mathieu_ribatet
+
+	* R/spatgev.R: Now fitspatgev uses all the optimizers as in
+	  fitmaxstab
+
+2009-04-07 15:37  mathieu_ribatet
+
+	* R/gradients.R: Add argument jacobian = TRUE for consistency with
+	  other functions
+
+2009-04-07 15:37  mathieu_ribatet
+
+	* R/fitcovmat.R: Change the default starting values
+
+2009-02-19 13:05  mathieu_ribatet
+
+	* man/fitmaxstab.Rd: Add references (Mehdi and Simone)
+
+2009-02-17 13:46  mathieu_ribatet
+
+	* src/covariance.c: Speed up the code
+
+2009-02-17 13:45  mathieu_ribatet
+
+	* DESCRIPTION: Update the version number
+
+2009-02-17 13:45  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw, inst/doc/layout.sty,
+	  inst/doc/references.bib: Update the vignette
+
+2009-02-07 21:19  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION: Update the ChangeLog and the DESCRIPTION
+	  file for the version 1.1-0
+
 2009-02-07 21:10  mathieu_ribatet
 
 	* inst/doc/SpatialExtremesGuide.Rnw: Fix an error in the definition

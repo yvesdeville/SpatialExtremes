@@ -20,7 +20,7 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
-      if ((scales[i] <= 0) | (shapes[i] <= -1)){
+      if ((scales[i] <= 0) || (shapes[i] <= -1)){
 	//printf("scales <= 0!!!\n");
 	*dns = MINF;
 	return;
@@ -95,7 +95,7 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
-  if ((*alpha < 0) | (*alpha > 1)){
+  if ((*alpha < 0) || (*alpha > 1)){
     *dns = MINF;
     return;
   }

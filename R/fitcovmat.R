@@ -305,7 +305,7 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
     start <- list(sill = .9, range = 0.75 * max(dist), smooth = .5)
 
     if (model == "iSchlather")
-      start <- c(list(alpha = 0.25), start)
+      start <- c(list(alpha = 0.5), start)
 
     if (model == "Geometric")
       start <- c(list(sigma2 = 1), start)

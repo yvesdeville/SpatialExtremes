@@ -9,7 +9,8 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   //margins are unit Frechet, or the GEV parameters are estimated at
   //each locations.
   
-  const int nPairs = *nSite * (*nSite - 1) / 2;
+  const int nPairs = *nSite * (*nSite - 1) / 2,
+    nSitenObs = *nSite * *nObs;
   int i;
   double *jac, *rho, *frech;
   
@@ -20,7 +21,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
-      if ((scales[i] <= 0) | (shapes[i] <= -1)){
+      if ((scales[i] <= 0) || (shapes[i] <= -1)){
 	*dns = MINF;
 	return;
       }
@@ -55,7 +56,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   }
     
   else {
-    for (i=0;i<(*nSite * *nObs);i++)
+    for (i=nSitenObs;i--;)
       jac[i] = 0.0;
     
     *dns = lplikschlather(data, rho, jac, *nObs, *nSite);
