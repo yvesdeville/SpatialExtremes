@@ -23,6 +23,7 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
       ans <- rep(sill, length(dist))
       ans[!idx] <- sill * 2^(1-smooth) / gamma(smooth) * (dist[!idx] / range)^smooth *
         besselK(dist[!idx] / range, smooth)
+      dim(ans) <- dim(dist)
       return(ans)
     }
   }

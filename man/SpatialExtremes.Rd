@@ -22,6 +22,8 @@
 \details{
   The package provides the following main tools:
   \enumerate{
+    \item \code{\link{rgp}}: simulates gaussian random fields,
+    \item \code{\link{rmaxstab}}: simulates max-stable random fields,
     \item \code{\link{fitspatgev}}: fits a spatial GEV model to data,
     \item \code{\link{fitmaxstab}}: fits max-stable processes to data,
     \item \code{\link[=predict.maxstab]{predict}}: allows predictions

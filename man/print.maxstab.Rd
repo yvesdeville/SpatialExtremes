@@ -1,4 +1,4 @@
-\name{print}
+\name{print.maxstab}
 \alias{print.maxstab}
 \title{Printing objects of class ``maxstab''}
 \description{

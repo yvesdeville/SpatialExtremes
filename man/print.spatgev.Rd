@@ -1,4 +1,4 @@
-\name{print}
+\name{print.spatgev}
 \alias{print.spatgev}
 \title{Printing objects of class ''spatgev''}
 \description{

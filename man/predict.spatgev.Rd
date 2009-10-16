@@ -1,4 +1,4 @@
-\name{predict}
+\name{predict.spatgev}
 \alias{predict.spatgev}
 \title{Prediction of the GEV parameters}
 \description{This function predicts the marginal GEV parameters from a

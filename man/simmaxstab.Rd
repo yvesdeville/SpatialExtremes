@@ -6,7 +6,8 @@
   random field.}
 
 \usage{
-rmaxstab(n, coord, cov.mod = "gauss", grid = FALSE, ...)
+rmaxstab(n, coord, cov.mod = "gauss", grid = FALSE, control =
+list(), \dots)
 }
 
 \arguments{
@@ -15,9 +16,13 @@ rmaxstab(n, coord, cov.mod = "gauss", grid = FALSE, ...)
     location. Each row corresponds to one location - if any.}
   \item{cov.mod}{A character string that gives the max-stable
     model. This must be one of "gauss" for the Smith model or "whitmat",
-  "cauchy", "powexp" and "bessel" for the Schlather model with the given
-  correlation family.}
+    "cauchy", "powexp" and "bessel" for the Schlather model with the given
+    correlation family.}
   \item{grid}{Logical. Does the coordinates represent grid points?}
+  \item{control}{A named list with arguments 'nlines' (number of lines
+    of the TBM simulation), 'method' the name of the simulation
+    method - must be one of 'exact' or 'tbm', and 'uBound' the uniform
+  upper bound. See details.}
   \item{\dots}{The parameters of the max-stable model. See details.}
 }
 \details{
@@ -27,6 +32,12 @@ rmaxstab(n, coord, cov.mod = "gauss", grid = FALSE, ...)
   you must specify \code{var}, otherwise users should supply the
   covariance parameters i.e. parameters with names such as \code{cov11},
   \code{cov12}, \ldots
+
+  Here are the details for each allowed components of 'control'. If
+  'method' is \code{NULL} (default), the function tries to find the 
+  most appropriate simulation technique. If 'nlines' is \code{NULL}, it
+  is set to 1000. If 'uBound' is \code{NULL}, it is set to reasonable
+  values - for example 3.5 for the Schalther model.
 }
 \value{
   A matrix containing observations from the required max-stable
@@ -41,7 +52,7 @@ rmaxstab(n, coord, cov.mod = "gauss", grid = FALSE, ...)
   extremes. Unpublished manuscript.
 }
 \author{Mathieu Ribatet}
-\seealso{\code{\fitmaxstab}}
+\seealso{\code{fitmaxstab}}
 \examples{
 ## 1. Smith's model
 set.seed(8)

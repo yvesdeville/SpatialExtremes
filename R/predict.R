@@ -85,14 +85,37 @@ predict.maxstab <- function(object, newdata, ret.per = NULL,
     loc.pred <- loc.dsgnmat %*% param[idx.loc]
     scale.pred <- scale.dsgnmat %*% param[idx.scale]
     shape.pred <- shape.dsgnmat %*% param[idx.shape]
+
+    if (is.matrix(object$var.cov)){
+      par.est <- object$fitted
+      idx.loc <- which(substr(names(par.est), 1, 8) == "locCoeff")
+      idx.scale <- which(substr(names(par.est), 1, 10) == "scaleCoeff")
+      idx.shape <- which(substr(names(par.est), 1, 10) == "shapeCoeff")
+
+      loc.std.err <- sqrt(diag(loc.dsgnmat %*% object$var.cov[idx.loc, idx.loc] %*%
+                               t(loc.dsgnmat)))
+      scale.std.err <- sqrt(diag(scale.dsgnmat %*% object$var.cov[idx.scale, idx.scale] %*%
+                                 t(scale.dsgnmat)))
+      shape.std.err <- sqrt(diag(shape.dsgnmat %*% object$var.cov[idx.shape, idx.shape] %*%
+                                 t(shape.dsgnmat)))
+    }
+
+    else
+      loc.std.err <- scale.std.err <- shape.std.err <- NULL
   }
 
-  else
+  else {
     loc.pred <- scale.pred <- shape.pred <- rep(1, nrow(data))
+    loc.std.err <- scale.std.err <- shape.std.err <- NULL
+  }
 
   ans <- cbind(loc.pred, scale.pred, shape.pred)
   colnames(ans) <- c("loc", "scale", "shape")
   ans <- cbind(data, ans)
+
+  if (!is.null(loc.std.err))
+    ans <- cbind(ans, loc.std.err = loc.std.err, scale.std.err = scale.std.err,
+                 shape.std.err = shape.std.err)
 
   if (!is.null(ret.per)){
     ret.lev <- NULL

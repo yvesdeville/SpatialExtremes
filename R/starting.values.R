@@ -7,6 +7,9 @@
   if (iso && (method == "Nelder"))
     method2 <- "BFGS"
   
+  else if (method %in% c("nlm", "nlminb"))
+    method2 <- "Nelder"
+  
   else
     method2 <- method
   

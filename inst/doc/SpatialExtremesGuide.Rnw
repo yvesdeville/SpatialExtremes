@@ -29,14 +29,13 @@
 library(SpatialExtremes)
 set.seed(12)
 n.site <- 50
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
+coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 
 ##Simulate a max-stable process - with unit Frechet margins
-data <- rmaxstab(40, locations, "whitmat", sill = 1, range = 1, smooth = 2)
+data <- rmaxstab(40, coord, "whitmat", sill = 1, range = 1, smooth = 2)
 
 ##Compute the lambda-madogram
-lmadogram(data, locations, n.bins = 25, border = "grey", box = FALSE)
+lmadogram(data, coord, n.bins = 25, border = "grey", box = FALSE)
 @ 
   \end{center}
 \end{titlepage}
@@ -355,8 +354,8 @@ data1 <- rmaxstab(1, cbind(x,x), "gauss", cov11 = 9/8, cov12 = 1, cov22 = 9/8,
                   grid = TRUE)
 
 par(mfrow=c(1,2))
-image(x, x, data0[,,1], col = terrain.colors(40))
-image(x, x, data1[,,1], col = terrain.colors(40))
+image(x, x, log(data0[,,1]), col = terrain.colors(40))
+image(x, x, log(data1[,,1]), col = terrain.colors(40))
 @ 
 
 \begin{figure}
@@ -367,7 +366,8 @@ image(x, x, data1[,,1], col = terrain.colors(40))
   \caption{Two simulations of the Smith model with different $\Sigma$
     matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$ and
     $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$
-    and $\sigma_{12} = 1$.}
+    and $\sigma_{12} = 1$. The max-stable processes are transformed to
+  unit Gumbel margins for viewing purposes.}
   \label{fig:Smith2sim}
 \end{figure}
 
@@ -479,10 +479,10 @@ model~\eqref{eq:smithChar}.
 
 Equation~\eqref{eq:SchlatherChar} is very general and we need
 additional assumptions to get practical models. Schlather proposed to
-take $Y_i(\cdot)$ to be a stationary Gaussian process with correlation
-function $\rho(h)$, scaled so that $\mathbb{E}[\max\{0, Y_i(x)\}] =
-1$. With these new assumptions, it can be shown that the bivariate CDF
-of process~\eqref{eq:SchlatherChar} is
+take $Y_i(\cdot)$ to be a stationary standard Gaussian process with
+correlation function $\rho(h)$, scaled so that $\mathbb{E}[\max\{0,
+Y_i(x)\}] = 1$. With these new assumptions, it can be shown that the
+bivariate CDF of process~\eqref{eq:SchlatherChar} is
 \begin{equation}
   \label{eq:schlather}
   \Pr[Z(x_1) \leq z_1, Z(x_2) \leq z_2] = \exp\left[-\frac{1}{2}
@@ -491,7 +491,7 @@ of process~\eqref{eq:SchlatherChar} is
 \end{equation}
 where $h \in \mathbb{R}^+$ is the Euclidean
 distance\index{distance!Euclidean} between location 1 and location
-2. Usually, $\rho(h)$ is chosen from one of the valid parametric
+2. Usually, $\rho(h)$, is chosen from one of the valid parametric
 families, such as
 
 <<label=covariances,echo=FALSE>>=
@@ -560,32 +560,47 @@ legend("topright", c(expression(nu == 2), expression(nu == 1),
 \bigskip
 \begin{tabular}{lll}
   \textbf{Whittle--Matérn}\index{covariance function!Whittle--Mat\'ern}
-  & $\rho(h) = c_1 \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{h}{c_2}
-  \right)^{\nu} K_{\nu}\left(\frac{h}{c_2} \right)$, & $0 \leq c_1
-  \leq 1$, $c_2>0$, $\nu > 0$\\
-  \textbf{Cauchy}\index{covariance function!cauchy} & $\rho(h) = c_1
-  \left[1 + \left(\frac{h}{c_2} \right)^2 \right]^{-\nu}$, & $0 \leq
-  c_1 \leq 1$, $c_2 >0$, $\nu > 0$\\
-  \textbf{Powered Exponential}\index{covariance function!powered exponential} & $\rho(h) = c_1 \exp\left[- \left(\frac{h}{c_2}
-    \right)^{\nu} \right]$, & $0 \leq c_1 \leq 1$, $c_2 > 0$, $0 < \nu
-  \leq 2$\\
-  \textbf{Bessel}\index{covariance function!bessel} & $\rho(h) = c_1
+  & $\rho(h) = \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{h}{c_2}
+  \right)^{\nu} K_{\nu}\left(\frac{h}{c_2} \right)$, & $c_2>0$, \quad
+  $\nu > 0$\\
+  \textbf{Cauchy}\index{covariance function!cauchy} & $\rho(h) =
+  \left[1 + \left(\frac{h}{c_2} \right)^2 \right]^{-\nu}$, & $c_2 >0$,
+  \quad $\nu > 0$\\
+  \textbf{Powered Exponential}\index{covariance function!powered exponential} &
+  $\rho(h) = \exp\left[- \left(\frac{h}{c_2} \right)^{\nu} \right]$, &
+  $c_2 > 0$, \quad $0 < \nu \leq 2$\\
+  \textbf{Bessel}\index{covariance function!bessel} & $\rho(h) =
   \left(\frac{2 c_2}{h} \right)^{\nu} \Gamma(\nu + 1)
-  J_{\nu}\left(\frac{h}{c_2} \right)$, & $0 \leq c_1 \leq 1$, $c_2>0$,
-  $\nu \geq \frac{d - 2}{2}$ 
+  J_{\nu}\left(\frac{h}{c_2} \right)$, & $c_2>0$, \quad $\nu \geq
+  \frac{d - 2}{2}$
 \end{tabular}
 \bigskip
 
-where $c_1$, $c_2$ and $\nu$ are the sill, 
-\index{covariance function!sill} the range
-\index{covariance function!range} and the smooth
-\index{covariance function!smooth} parameters of the correlation
-function, $\Gamma$ is the gamma function and $J_{\nu}$ and $K_{\nu}$
-are the Bessel and the modified Bessel function of the third kind with
-order $\nu$ and $d$ is the dimension of the random
-fields. Figure~\ref{fig:covariances} plots the correlation functions
-for the parametric families introduced above. The left panel was
-generated with the following lines
+where $c_2$ and $\nu$ are the range \index{covariance function!range}
+and the smooth \index{covariance function!smooth} parameters of the
+correlation function, $\Gamma$ is the gamma function and $J_{\nu}$ and
+$K_{\nu}$ are the Bessel and the modified Bessel function of the third
+kind with order $\nu$ and $d$ is the dimension of the random
+fields. 
+
+Accordingly to Gaussian processes, it is possible to add a sill $c_1$
+and a nugget effect $\nu$ to these correlation functions i.e.\
+\begin{equation*}
+  \rho_*(h) =
+  \begin{cases}
+    \nu + c_1, & h = 0\\
+    c_1 \rho(h), & h > 0
+  \end{cases}
+\end{equation*}
+where $\rho$ is one of the correlation functions introduced
+above. However, as \citet{Schlather2002} consider stationary standard
+Gaussian processes, the sill and nugget parameters satisfy $\nu = 1 -
+c_1$ because the correlation function has to be equal to $1$ at the
+origin.
+
+Figure~\ref{fig:covariances} plots the correlation functions for the
+parametric families introduced above. The left panel was generated
+with the following lines
 <<eval=FALSE>>=
 covariance(sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
            xlim = c(0,9), ylim = c(0, 1))
@@ -610,8 +625,8 @@ ms1 <- MaxStableRF(x, y, grid=TRUE, model="stable", param=c(0,1,0,1.5, 1), maxst
 ms1 <- t(ms1)
 
 par(mfrow=c(1,2))
-image(x, y, ms0, col = terrain.colors(30))
-image(x, y, ms1, col = terrain.colors(30))
+image(x, y, log(ms0), col = terrain.colors(30))
+image(x, y, log(ms1), col = terrain.colors(30))
 @ 
 
 \begin{figure}
@@ -622,7 +637,9 @@ image(x, y, ms1, col = terrain.colors(30))
 \caption{Two simulations of the Schlather model with different
   correlation functions having approximately the same practical
   range. Left panel: Whittle--Matérn with $c_1 = c_2 = \nu = 1$. Right
-  panel: Powered exponential with $c_1 = \nu = 1$ and $c_2 = 1.5$.}
+  panel: Powered exponential with $c_1 = \nu = 1$ and $c_2 = 1.5$. The
+  max-stable processes are transformed to unit Gumbel margins for
+  viewing purposes.}
   \label{fig:Schlather2sim}
 \end{figure}
 
@@ -946,23 +963,23 @@ A comprehensive overview of methods for simulating random processes on
 a line from various covariance families is given by \citet{Emery2006}.
 
 <<label=tbm,echo=FALSE>>=
-x <- seq(0, 10, length = 200)
-coord <- cbind(x, x)
+x <- y <- seq(0, 10, length = 200)
+coord <- cbind(x, y)
 seed <- 3
 set.seed(seed)
 data1 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
-             grid = TRUE, nlines = 1)
+             grid = TRUE, control = list(nlines = 1))
 set.seed(seed)
 data2 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
-             grid = TRUE, nlines = 25)
+             grid = TRUE, control = list(nlines = 25))
 set.seed(seed)
 data3 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
-             grid = TRUE, nlines = 625)
+             grid = TRUE, control = list(nlines = 625))
 
 par(mfrow=c(1,3))
-image(x, x, data1[,,1], col = terrain.colors(30))
-image(x, x, data2[,,1], col = terrain.colors(30))
-image(x, x, data3[,,1], col = terrain.colors(30))
+image(x, y, data1[,,1], col = terrain.colors(30))
+image(x, y, data2[,,1], col = terrain.colors(30))
+image(x, y, data3[,,1], col = terrain.colors(30))
 @ 
 
 \begin{figure}
@@ -1062,7 +1079,7 @@ exact simulations on a finite sampling region.
   \begin{equation*}
     \Pr \left[ \left| \max_{1 \leq i \leq m} \frac{Y_i(x -
         U_i)}{\sum_{k=1}^i \xi_k} - \sup_{i \geq 1} \frac{Y_i(x -
-        U_i)}{\sum_{k=1}^i} \right| \neq 0 \right] = 0
+        U_i)}{\sum_{k=1}^i \xi_k} \right| \neq 0 \right] = 0
   \end{equation*}
 \end{proof}
 
@@ -1107,8 +1124,8 @@ where $\sigma_{ii}$ are the diagonal elements of the covariance matrix
 $\Sigma$.
 
 <<echo=FALSE,label=rmaxstabSmith>>=
-x <- seq(0, 10, length = 512)
-coord <- cbind(x, x)
+x <- y <- seq(0, 10, length = 512)
+coord <- cbind(x, y)
 set.seed(8)
 M0 <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 0, cov22 = 9/8,
                grid = TRUE)
@@ -1117,8 +1134,8 @@ M1 <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 3/4, cov22 = 9/8,
                grid = TRUE)
 
 par(mfrow = c(1,2))
-image(x, x, M0[,,1]^0.25, col = terrain.colors(30))
-image(x, x, M1[,,1]^0.25, col = terrain.colors(30))
+image(x, y, log(M0[,,1]), col = terrain.colors(30))
+image(x, y, log(M1[,,1]), col = terrain.colors(30))
 @ 
 
 \begin{figure}
@@ -1129,8 +1146,8 @@ image(x, x, M1[,,1]^0.25, col = terrain.colors(30))
 \caption{Two simulations of the Smith model with different covariance
   matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$,
   $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$,
-  $\sigma_{12} = 3/4$. The observations are scaled for viewing
-  purposes.}
+  $\sigma_{12} = 3/4$. The observations are transformed to unit Gumbel
+  margins for viewing purposes.}
   \label{fig:rmaxstabSmith}
 \end{figure}
 
@@ -1169,7 +1186,7 @@ The package allows for simulation of max-stable processes by using the
 \verb|rmaxstab| function. A typical use for scattered location is
 <<eval=FALSE>>=
 coord <- matrix(runif(100, 0, 10), ncol = 2)
-data1 <- rmaxstab(100, coord, "whitmat", sill = 0.8, range = 1, smooth = 1)
+data1 <- rmaxstab(100, coord, "whitmat", sill = 1, range = 1, smooth = 1)
 @ 
 while for locations located on a grid, users should invoke
 <<eval=FALSE>>=
@@ -1368,21 +1385,18 @@ coefficient between locations $x_1$ and $x_2$:
 <<label=extCoeffST-Smith,echo=FALSE>>=
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms0 <- t(ms0)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1,
+                 smooth = 1)
 cov.fun <- covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
                       plot = FALSE)
 ext.coeff <- function(h)
   1 + sqrt((1 - cov.fun(h))/2)
 
 par(mfrow=c(1,2))
-ST <- fitextcoeff(ms0, cbind(x, y), loess = FALSE, ylim = c(1, 2))
+ST <- fitextcoeff(data, coord, loess = FALSE, ylim = c(1, 2))
 plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
-Smith <- fitextcoeff(ms0, cbind(x, y), estim = "Smith", loess = FALSE, ylim = c(1, 2))
+Smith <- fitextcoeff(data, coord, estim = "Smith", loess = FALSE, ylim = c(1, 2))
 plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
 @ 
 
@@ -1408,15 +1422,13 @@ figure was generated using the following code:
 <<eval=FALSE>>=
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms0 <- t(ms0)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1,
+                 smooth = 1)
+
 par(mfrow=c(1,2))
-fitextcoeff(ms0, cbind(x, y), loess = FALSE)
-fitextcoeff(ms0, cbind(x, y), estim = "Smith", loess = FALSE)
+fitextcoeff(data, coord, loess = FALSE)
+fitextcoeff(data, coord, estim = "Smith", loess = FALSE)
 @ 
 
 \section{Madogram-based approaches}
@@ -1489,17 +1501,13 @@ mado2 <- function(h)
 
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms0 <- t(ms0)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
 
 par(mfrow=c(1,2))
-madogram(ms0, cbind(x, y), which = "mado", ylim = c(0, log(2)))
+madogram(data, coord, which = "mado", ylim = c(0, log(2)))
 plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
-madogram(ms0, cbind(x, y), which = "mado", ylim = c(0, log(2)),
+madogram(data, coord, which = "mado", ylim = c(0, log(2)),
          n.bins = 100, xlim = c(0, 12))
 plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
 @
@@ -1542,16 +1550,12 @@ was
 <<eval=FALSE>>=
 n.site <- 50
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms0 <- t(ms0)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
 
 par(mfrow=c(1,2))
-madogram(ms0, cbind(x, y), which = "mado")
-madogram(ms0, cbind(x, y), which = "mado", n.bins = 100)
+madogram(data, coord, which = "mado")
+madogram(data, coord, which = "mado", n.bins = 100)
 @ 
 
 Using a plugin estimate in equation~\eqref{eq:mado2ExtCoeff} leads to
@@ -1569,12 +1573,8 @@ a simple estimator for $\theta(\cdot)$:
 <<label=madogramExtCoeff,echo=FALSE>>=
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms0 <- t(ms0)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
 
 cov.fun <- covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
                       plot = FALSE)
@@ -1584,9 +1584,9 @@ mado <- function(h)
   log(ext.coeff(h))
 
 par(mfrow=c(1,2))
-madogram(ms0, cbind(x, y), which = "mado", ylim = c(0, log(2)))
+madogram(data, coord, which = "mado", ylim = c(0, log(2)))
 plot(mado, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
-madogram(ms0, cbind(x, y), which = "ext", ylim = c(1, 2))
+madogram(data, coord, which = "ext", ylim = c(1, 2))
 plot(ext.coeff, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
 @ 
 
@@ -1613,13 +1613,10 @@ respectively. The figure was generated using the code below.
 <<eval=FALSE>>=
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms0 <- t(ms0)
-madogram(ms0, cbind(x, y))
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
+
+madogram(data, coord)
 @ 
 
 \subsection{$F$-Madogram}
@@ -1641,17 +1638,8 @@ Fréchet margins and $F(z) = \exp(-1/z)$.
 <<echo=FALSE,label=F-madogram>>=
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-sigma <- matrix(c(1, 0, 0, 1),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid = FALSE, model = model, maxstable = "Bool",
-                   n = n.obs)
-ms0 <- t(ms0)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "gauss", cov11 = 1, cov12 = 0, cov22 = 1)
 
 ext.coeff <- function(h)
   2 * pnorm(h/2)
@@ -1659,9 +1647,9 @@ Fmado <- function(h)
   0.5 * (ext.coeff(h) - 1) / (ext.coeff(h) + 1)
 
 par(mfrow=c(1,2))
-fmadogram(ms0, cbind(x, y), which = "mado", ylim = c(0, 1/5))
+fmadogram(data, coord, which = "mado", ylim = c(0, 1/5))
 plot(Fmado, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
-fmadogram(ms0, cbind(x, y), which = "ext", ylim = c(1, 2.4))
+fmadogram(data, coord, which = "ext", ylim = c(1, 2.4))
 plot(ext.coeff, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
 @
 
@@ -1754,20 +1742,11 @@ isotropic Smith model. The code used to produce this figure was:
 <<eval=FALSE>>=
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-sigma <- matrix(c(1, 0, 0, 1),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid = FALSE, model = model, maxstable = "Bool",
-                   n = n.obs)
-ms0 <- t(ms0)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "gauss", cov11 = 1, cov12 = 0, cov22 = 1)
 
 par(mfrow=c(1,2))
-fmadogram(ms0, cbind(x, y))
+fmadogram(data, coord)
 @ 
 
 As with the madogram presented in the previous Section, it is also
@@ -1904,20 +1883,13 @@ get an estimator for the dependence measure
 <<label=lambda-madogram,echo=FALSE>>=
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=FALSE, model="stable", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms0 <- t(ms0)
-set.seed(12)
-ms1 <- MaxStableRF(x, y, grid=FALSE, model="cauchy", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms1 <- t(ms1)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data1 <- rmaxstab(n.obs, coord, "powexp", sill = 1, range = 1, smooth = 1)
+data2 <- rmaxstab(n.obs, coord, "cauchy", sill = 1, range = 1, smooth = 1)
 
 par(mfrow=c(1,2), pty = "s")
-lmadogram(ms0, cbind(x, y), n.bins = 60)
-lmadogram(ms1, cbind(x, y), n.bins = 60)
+lmadogram(data1, coord, n.bins = 60)
+lmadogram(data2, coord, n.bins = 60)
 @ 
 
 \begin{figure}
@@ -1940,20 +1912,13 @@ to produce this figure was:
 <<eval=FALSE>>=
 n.site <- 40
 n.obs <- 100
-x <- runif(n.site, 0, 10)
-y <- runif(n.site, 0, 10)
-set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=FALSE, model="stable", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms0 <- t(ms0)
-set.seed(12)
-ms1 <- MaxStableRF(x, y, grid=FALSE, model="cauchy", param=c(0,1,0,1, 1),
-                   maxstable="extr", n = n.obs)
-ms1 <- t(ms1)
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+data1 <- rmaxstab(n.obs, coord, "powexp", sill = 1, range = 1, smooth = 1)
+data2 <- rmaxstab(n.obs, coord, "cauchy", sill = 1, range = 1, smooth = 1)
 
-par(mfrow=c(1,2))
-lmadogram(ms0, cbind(x, y), n.bins = 60)
-lmadogram(ms1, cbind(x, y), n.bins = 60)
+par(mfrow=c(1,2), pty = "s")
+lmadogram(data1, coord, n.bins = 60)
+lmadogram(data2, coord, n.bins = 60)
 @ 
 
 It might be useful to use the excellent \emph{persp3d} function
@@ -2010,17 +1975,10 @@ procedure is given by the following lines:
 <<>>=
 n.site <- 40
 n.obs <- 80
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
-sigma <- matrix(c(9/8, 1, 1, 9/8),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-set.seed(12)
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model = model,
-                   maxstable = "Bool", n = n.obs)
-ms0 <- t(ms0)
-fitcovmat(ms0, locations, marge = "emp")
+coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "gauss", cov11 = 9/8, cov12 = 1, cov22 = 9/8)
+
+fitcovmat(data, coord, marge = "emp")
 @ 
 
 This approach suffers from two major drawbacks. First, unless we use
@@ -2156,15 +2114,13 @@ we simulate independent replications of the Schlather model with a
 Whittle--Matérn correlation function having its sill, range and shape
 parameters equal to $0.8$, $3$ and $1.2$ respectively.
 <<>>=
+n.obs <- 80
 n.site <- 40
 set.seed(12)
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
+coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "whitmat", sill = .2, range = 3, smooth = 1.2)
 
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-param = c(0, 1, .2, 3, 1.2), maxstable="extr", n = 80)
-ms0 <- t(ms0)
-fitmaxstab(ms0, locations, cov.mod = "whitmat", std.err.type = "none")
+fitmaxstab(data, coord, cov.mod = "whitmat", std.err.type = "none")
 @ 
 
 From this output, we can see that we indeed use the Schlather's
@@ -2186,30 +2142,29 @@ using prior knowledge on the process smoothness
 specific case and one can consider more exotic models. Fixing
 parameters of the model is illustrated by the following lines
 <<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2,
-           std.err.type = "none")
-fitmaxstab(ms0, locations, cov.mod = "whitmat", sill = 1)
-fitmaxstab(ms0, locations, cov.mod = "whitmat", range = 3)
+fitmaxstab(data, coord, cov.mod = "whitmat", smooth = 1.2)
+fitmaxstab(data, coord, cov.mod = "whitmat", sill = 1)
+fitmaxstab(data, coord, cov.mod = "whitmat", range = 3)
 @ 
 
 Although the Whittle--Matérn model is flexible, one may want to
 consider other families of covariance functions. This is achieved by
 invoking:
 <<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "cauchy")
-fitmaxstab(ms0, locations, cov.mod = "powexp")
+fitmaxstab(data, coord, cov.mod = "cauchy")
+fitmaxstab(data, coord, cov.mod = "powexp")
 @ 
 
 One may also consider the Smith model, this could be done as follows
 <<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "gauss")
+fitmaxstab(data, coord, cov.mod = "gauss")
 @ 
 
 It is also possible to used different optimization routines to fit the
 model to data by passing the \verb|method| argument. For instance, if
 one wants to use the \verb|BFGS| method:
 <<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, method = "BFGS")
+fitmaxstab(data, coord, cov.mod = "gauss", cov12 = 0, method = "BFGS")
 @ 
 
 Instead of using the \verb|optim| function, one may want to use the
@@ -2275,8 +2230,8 @@ replications of $\mathbf{Y}$ are available\footnote{which will mostly
 These two types of standard errors are available by invoking the
 following two lines:
 <<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "gauss", std.err.type = "score")
-fitmaxstab(ms0, locations, cov.mod = "gauss", std.err.type = "grad")
+fitmaxstab(data, coord, cov.mod = "gauss", std.err.type = "score")
+fitmaxstab(data, coord, cov.mod = "gauss", std.err.type = "grad")
 @ 
 
 \chapter{Model Selection}
@@ -2391,21 +2346,23 @@ model selection when composite likelihood is involved.
 In practice, one can have a look at the output of the
 \verb|fitmaxstab| function or use the \verb|TIC| function.
 
-<<>>=
+<<echo=FALSE>>=
 set.seed(1)
-n.site <- 40
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="cauchy",
-                   param=c(0,1,0.2,3, 1.2), maxstable="extr", n = 80)
-ms0 <- t(ms0)
-model1 <- fitmaxstab(ms0, locations, cov.mod = "powexp")
-model2 <- fitmaxstab(ms0, locations, cov.mod = "cauchy")
-TIC(model1, model2)
 @ 
 
-The TIC for \verb|model2| is lower that the one for \verb|model1| so
-that we might prefer using \verb|model2|.
+<<>>=
+n.obs <- 80
+n.site <- 40
+coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+data <- rmaxstab(n.obs, coord, "cauchy", sill = 0.8, range = 3, smooth = 1.2)
+
+M0 <- fitmaxstab(data, coord, cov.mod = "powexp")
+M1 <- fitmaxstab(data, coord, cov.mod = "cauchy")
+TIC(M0, M1)
+@ 
+
+The TIC for \verb|M1| is lower that the one for \verb|M0| so
+that we might prefer using \verb|M1|.
 
 
 \section{Likelihood Ratio Statistic}
@@ -2467,25 +2424,22 @@ better approximation uses results on quadratic forms of normal random
 distribution.
 
 An application of this approach is given by the following lines:
-<<>>=
+<<echo=FALSE>>=
 set.seed(7)
-n.site <- 30
-locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
-colnames(locations) <- c("lon", "lat")
-sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-                   maxstable = "Bool", n = 50)
-ms0 <- t(ms0)
+@ 
 
-M0 <- fitmaxstab(ms0, locations, "gauss", cov11 = 100)
-M1 <- fitmaxstab(ms0, locations, "gauss")
+<<>>=
+n.obs <- 50
+n.site <- 30
+coord <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
+data <- rmaxstab(n.obs, coord, "gauss", cov11 = 100, cov12 = 25, cov22 = 220)
+
+M0 <- fitmaxstab(data, coord, "gauss", cov11 = 100)
+M1 <- fitmaxstab(data, coord, "gauss")
 anova(M0, M1)
 @ 
 
-From this ouput, we can see that the $p$-value is approximately $0.58$
+From this ouput, we can see that the $p$-value is approximately $0.875$
 which turns out to be in favour of $H_0$ i.e. $\sigma_{11} = 100$ in
 $\Sigma$. Note that the eigenvalue estimate was also reported.
 
@@ -2565,7 +2519,7 @@ anova(M0, M1, method = "CB")
 @ 
 
 By using the Chandler and Bate methodology, we draw the same
-conclusion in the previous section, i.e.\ the observations are
+conclusion as in the previous section, i.e.\ the observations are
 consistent with the null hypothesis $\sigma_{11} = 100$.
 
 \chapter[Fitting a Max-Stable Process to Data]{Fitting a Max-Stable
@@ -3164,26 +3118,24 @@ In practice, the spatial GEV model is fitted to data through the
 Lets start by simulating a max-stable process with unit Fréchet
 margins and transform it to have a spatially structured GEV margins.
 
+<<echo=FALSE>>=
+set.seed(15)
+@ 
+
 <<>>=
 n.site <- 20
-set.seed(15)
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
+n.obs <- 50
+coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(coord) <- c("lon", "lat")
 
-sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv/2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid = FALSE, model = model,
-                   maxstable="Bool", n = 50)
-ms1 <- t(ms0)
+data <- rmaxstab(n.obs, coord, "gauss", cov11 = 100, cov12 = 25, cov22 = 220)
 
-param.loc <- -10 + 2 * locations[,2]
-param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
+param.loc <- -10 + 2 * coord[,2]
+param.scale <- 5 + 2 * coord[,1] + coord[,2]^2
 param.shape <- rep(0.2, n.site)
 
 for (i in 1:n.site)
-  ms1[,i] <- frech2gev(ms1[,i], param.loc[i], param.scale[i], param.shape[i])
+  data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i], param.shape[i])
 @ 
 
 Now we define appropriate response surfaces for our spatial GEV model
@@ -3193,8 +3145,8 @@ loc.form <- y ~ lat
 scale.form <- y ~ lon + I(lat^2)
 shape.form <- y ~ 1
 shape.form2 <- y ~ lon
-M1 <- fitspatgev(ms1, locations, loc.form, scale.form, shape.form)
-M2 <- fitspatgev(ms1, locations, loc.form, scale.form, shape.form2)
+M1 <- fitspatgev(data, coord, loc.form, scale.form, shape.form)
+M2 <- fitspatgev(data, coord, loc.form, scale.form, shape.form2)
 M1
 @ 
 
@@ -3208,7 +3160,7 @@ TIC(M1, M2)
 @ 
 
 From these two outputs, we can see that the $p$-value for the
-likelihood ratio test is around $0.80$ which advocates the use of
+likelihood ratio test is around $0.72$ which advocates the use of
 model \verb|M1|. The TIC corroborates this conclusion.
 
 \chapter{Conclusion}

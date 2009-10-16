@@ -8,8 +8,8 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
   //When ans != 0.0, the whittle-matern parameters are ill-defined.
   
   int i;
-  double cst = sill * R_pow(2, 1 - smooth) / gammafn(smooth),
-    irange = 1 / range, cst2;
+  const double cst = sill * R_pow(2, 1 - smooth) / gammafn(smooth),
+    irange = 1 / range;
 
   //Some preliminary steps: Valid points?
   if (smooth < EPS)
@@ -30,6 +30,7 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     return sill *sill * MINF;
   
   for (i=nPairs;i--;){
+    double cst2;
     cst2 = dist[i] * irange;
     rho[i] = cst * R_pow(cst2, smooth) * bessel_k(cst2, smooth, 1);
   }
@@ -45,7 +46,7 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   //When ans != 0.0, the cauchy parameters are ill-defined.
 
   int i;
-  double irange2;
+  const double irange2 = 1 / (range * range);
   
   //Some preliminary steps: Valid points?
   if (smooth < 0)
@@ -59,8 +60,6 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   
   else if (sill > 1)
     return sill * sill * MINF;
-
-  irange2 = 1 / (range * range);
 
   for (i=nPairs;i--;)
     rho[i] = sill * R_pow(1 + dist[i] * dist[i] * irange2, -smooth);
@@ -76,7 +75,7 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   //When ans != 0.0, the powered exponential parameters are ill-defined.
 
   int i;
-  double irange = 1 / range;
+  const double irange = 1 / range;
     
   //Some preliminary steps: Valid points?
   if ((smooth < 0) || (smooth > 2.0))
@@ -104,16 +103,15 @@ double bessel(double *dist, int nPairs, int dim, double sill,
   //When ans != 0.0, the powered exponential parameters are ill-defined.
 
   int i;
-  double irange = 1 / range, cst = R_pow(2, smooth) * gammafn(smooth + 1),
-    cst2;
+  const double irange = 1 / range, cst = sill * R_pow(2, smooth) * gammafn(smooth + 1);
 
   //Some preliminary steps: Valid points?
   if (smooth < (0.5 * (dim - 2)))
     return (1 + 0.5 * (dim - 2) - smooth) * (1 + 0.5 * (dim - 2) - smooth) * MINF;
 
-  else if (smooth > 150)
-    //Require as bessel_j will be mostly infinite otherwise
-    return (smooth - 149) * (smooth - 149) * MINF;
+  else if (smooth > 30)
+    //Require as bessel_j will be numerically undefined
+    return (smooth - 29) * (smooth - 29) * MINF;
 
   if (range <= 0)
     return (1 - range) * (1 - range) * MINF;
@@ -125,9 +123,10 @@ double bessel(double *dist, int nPairs, int dim, double sill,
     return sill * sill * MINF;
 
   for (i=nPairs;i--;){
+    double cst2;
     cst2 = dist[i] * irange;
 
-    rho[i] = sill * cst * R_pow(cst2, -smooth) * bessel_j(cst2, smooth);
+    rho[i] = cst * R_pow(cst2, -smooth) * bessel_j(cst2, smooth);
   }
 
   return 0.0;
@@ -141,10 +140,9 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   //distance is ill-defined.
   
   int i;
-  double det, idet;
+  const double det = *cov11 * *cov22 - *cov12 * *cov12,
+    idet = 1 / det;
 
-  det = *cov11 * *cov22 - *cov12 * *cov12;
-  idet = 1 / det;
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
   if (*cov11 <= 0)
@@ -157,7 +155,6 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
     return (1 - det + 1e-10) * (1 - det + 1e-10) * MINF;
   
   for (i=nPairs;i--;){
-
     mahal[i] = (*cov11 * distVec[nPairs + i] * distVec[nPairs + i] -
 		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
 		*cov22 * distVec[i] * distVec[i]) * idet;
@@ -177,13 +174,12 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   //distance is ill-defined.
   
   int i;
-  double det, detMin, idet;
-
-  det = *cov11 * *cov22 * *cov33 - *cov12 * *cov12 * *cov33 -
+  const double det = *cov11 * *cov22 * *cov33 - *cov12 * *cov12 * *cov33 -
     *cov11 * *cov23 * *cov23 + 2 * *cov12 * *cov13 * *cov23 -
-    *cov13 * *cov13 * *cov22;
-  detMin = *cov11 * *cov22 - *cov12 * *cov12;
-  idet = 1 / det;
+    *cov13 * *cov13 * *cov22,
+    detMin = *cov11 * *cov22 - *cov12 * *cov12,
+    idet = 1 / det;
+
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
   if (det <= 1e-10)
@@ -219,7 +215,8 @@ double geomCovariance(double *dist, int nPairs, int dim, int covmod,
   //between each pair of locations.
   //When ans != 0.0, the parameters are ill-defined.
   int i;
-  double twiceSigma2 = 2 * sigma2, ans = 0.0;
+  const double twiceSigma2 = 2 * sigma2;
+  double ans = 0.0;
 
   switch (covmod){
   case 1:
@@ -249,7 +246,8 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double *sigma2, double sill, double range,
 			double smooth, double *rho){
   
-  int i, j, currentPair = 0, nPairs = nSite * (nSite - 1) / 2;
+  int i, j, currentPair = 0;
+  const int nPairs = nSite * (nSite - 1) / 2;
   double ans = 0.0;
 
   switch (covmod){

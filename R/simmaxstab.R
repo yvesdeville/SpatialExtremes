@@ -1,7 +1,29 @@
-rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE, ...){
+rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
+                     control = list(), ...){
 
-  if (!(cov.mod %in% c("gauss","whitmat","cauchy","powexp","bessel")))
-    stop("'cov.mod' must be one of 'gauss', 'whitmat', 'cauchy', 'powexp' or 'bessel'")
+  if (!(cov.mod %in% c("gauss","whitmat","cauchy","powexp","bessel",
+                       "iwhitmat", "icauchy", "ipowexp", "ibessel",
+                       "gwhitmat", "gcauchy", "gpowexp", "gbessel")))
+    stop("'cov.mod' must be one of 'gauss', '(i/g)whitmat', '(i/g)cauchy', '(i/g)powexp' or '(i/g)bessel'")
+
+  if (!is.null(control$method) && !(control$method %in% c("exact", "tbm")))
+    stop("the argument 'method' for 'control' must be one of 'exact' and 'tbm'")
+
+  if (cov.mod == "gauss")
+    model <- "Smith"
+
+  else if (cov.mod %in% c("whitmat","cauchy","powexp","bessel"))
+    model <- "Schlather"
+
+  else {
+    cov.mod <- substr(cov.mod, 2, 10)
+
+    if (substr(cov.mod, 1, 1) == "i")
+      model <- "iSchlather"
+
+    else
+      model <- "Geometric"
+  }
 
   dist.dim <- ncol(coord)
   
@@ -16,7 +38,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE, ...){
     grid <- FALSE
   }
 
-  if (cov.mod == "gauss"){
+  if (model == "Smith"){
     if ((dist.dim == 1) && (!("var" %in% names(list(...)))))
       stop("You must specify 'var'")
     
@@ -33,14 +55,32 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE, ...){
     cov33 <- list(...)$cov33
   }
 
-  else{
+  else if (model == "Schlather"){
     if (!all(c("sill", "range", "smooth") %in% names(list(...))))
       stop("You must specify 'sill', 'range', 'smooth'")
     
     sill <- list(...)$sill
     range <- list(...)$range
     smooth <- list(...)$smooth
+  }
+
+  else if (model == "iSchlather"){
+    if (!all(c("alpha", "sill", "range", "smooth") %in% names(list(...))))
+      stop("You must specify 'alpha', 'sill', 'range', 'smooth'")
+    
+    sill <- list(...)$sill
+    range <- list(...)$range
+    smooth <- list(...)$smooth
     alpha <- list(...)$alpha
+  }
+
+  else {
+    if (!all(c("sigma2", "sill", "range", "smooth") %in% names(list(...))))
+      stop("You must specify 'sigma2', 'sill', 'range', 'smooth'")
+    
+    sill <- list(...)$sill
+    range <- list(...)$range
+    smooth <- list(...)$smooth
     sigma2 <- list(...)$sigma2
   }
 
@@ -59,8 +99,8 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE, ...){
   }
 
   
-  cov.mod <- switch(cov.mod, "gauss" = "gauss", "whitmat" = 1, "cauchy" = 2,"powexp" = 3,
-                    "bessel" = 4)
+  cov.mod <- switch(cov.mod, "gauss" = "gauss", "whitmat" = 1, "cauchy" = 2,
+                    "powexp" = 3, "bessel" = 4)
 
   if (grid)
     ans <- double(n * n.site^dist.dim)
@@ -68,7 +108,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE, ...){
   else
     ans <- double(n * n.site)
   
-  if (cov.mod == "gauss")
+  if (model == "Smith")
     ans <- switch(dist.dim,
                   .C("rsmith1d", as.double(coord), as.double(center), as.double(edge),
                      as.integer(n), as.integer(n.site), as.double(var), ans = ans,
@@ -76,18 +116,88 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE, ...){
                   .C("rsmith2d", as.double(coord), as.double(center), as.double(edge),
                      as.integer(n), as.integer(n.site), grid, as.double(cov11), as.double(cov12),
                      as.double(cov22), ans = ans, PACKAGE = "SpatialExtremes")$ans)
-  else{
-    if ((length(ans) / n) > 600)
-      fun.name <- "rschlathertbm"
+  
+  else if (model == "Schlather"){
+
+    if (is.null(control$method)){
+      if ((length(ans) / n) > 600)
+        method <- "tbm"
+        
+      else
+        method <- "direct"
+    }
 
     else
-      fun.name <- "rschlatherdirect"
+      method <- control$method
 
-    ans <- .C(fun.name, as.double(coord), as.integer(n), as.integer(n.site),
-              as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
-              as.double(range), as.double(smooth), ans = ans,
-              PACKAGE = "SpatialExtremes")$ans
+    if (is.null(control$uBound))
+      uBound <- 3.5
+
+    else
+      uBound <- control$uBound
+
+    if (method == "direct")
+      ans <- .C("rschlatherdirect", as.double(coord), as.integer(n), as.integer(n.site),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
+                as.double(range), as.double(smooth), as.double(uBound), ans = ans,
+                PACKAGE = "SpatialExtremes")$ans
+
+    else {
+      if (is.null(control$nlines))
+        nlines <- 1000
+
+      else
+        nlines <- control$nlines
+      
+      ans <- .C("rschlathertbm", as.double(coord), as.integer(n), as.integer(n.site),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
+                as.double(range), as.double(smooth), as.double(uBound), as.integer(nlines),
+                ans = ans, PACKAGE = "SpatialExtremes")$ans
+    }
   }
+
+  else if (model == "Geometric"){
+
+    if (is.null(control$method)){
+      if ((length(ans) / n) > 600)
+        method <- "tbm"
+    
+      else
+        method <- "direct"
+    }
+
+    else
+      method <- control$method
+
+    if (is.null(control$uBound))
+      uBound <- exp(3.5 * sqrt(sigma2) - 0.5 * sigma2)
+
+    else
+      uBound <- control$uBound
+
+    if (method == "direct")
+      ans <- .C("rgeomdirect", as.double(coord), as.integer(n), as.integer(n.site),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sigma2),
+                as.double(sill), as.double(range), as.double(smooth),
+                as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
+
+    else {
+
+      if (is.null(control$nlines))
+        nlines <- 1000
+
+      else
+        nlines <- control$nlines
+      
+      ans <- .C("rgeomtbm", as.double(coord), as.integer(n), as.integer(n.site),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sigma2),
+                as.double(sill), as.double(range), as.double(smooth), as.double(uBound),
+                as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
+    }
+  }
+
+  else
+    stop("not implemented yet")
 
   if (grid)
     ans <- array(ans, c(n.site, n.site, n))

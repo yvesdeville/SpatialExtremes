@@ -50,17 +50,21 @@ c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
   GEV marginals. Provided the GEV shape parameter \eqn{\xi}{\xi} is such
   that \eqn{\xi < 1}{\xi <1}. The extremal coefficient
   \eqn{\theta(h)}{\theta(h)} satisfies:
-
-  \deqn{\theta(h) = \begin{cases} u_\beta \left(\mu +
-    \frac{\nu(h)}{\Gamma(1 - \xi)} \right), & \xi \neq 0\\
-    \exp\left(\frac{\nu(h)}{\sigma}\right), & \xi = 0 \end{cases}}{u_\beta (\mu +
-    \nu(h) / \Gamma(1 - \xi)), if \xi < 1, exp(\nu(h)/\sigma), otherwise}
-  where \eqn{\Gamma(\cdot)}{\Gamma(.)} is the gamma function and
-  \eqn{u_\beta}{u_\beta} is defined as follows:
+  \deqn{\theta(h) =
+    \left\{
+    \begin{array}{ll}
+    u_\beta \left(\mu +  \frac{\nu(h)}{\Gamma(1 - \xi)} \right), &\xi
+    \neq 0\\
+    \exp\left(\frac{\nu(h)}{\sigma}\right), &\xi = 0
+    \end{array}
+    \right.}{u_beta (mu + nu(h) / Gamma(1 - xi)), if xi < 1, exp(nu(h)/sigma),
+    otherwise}
+  where \eqn{\Gamma(\cdot)}{Gamma(.)} is the gamma function and
+  \eqn{u_\beta}{u_beta} is defined as follows:
 
   \deqn{u_\beta(u) = \left(1 + \xi \frac{u - \mu}{\sigma}
-    \right)_+^{1/\xi}}{(1 + \xi (u - \mu) / \sigma )_+^{1/\xi}} 
-  and \eqn{\beta = (\mu, \sigma, \xi)}{\beta= (\mu, \sigma, \xi)} i.e
+    \right)_+^{1/\xi}}{(1 + xi (u - mu) / sigma )_+^{1/xi}} 
+  and \eqn{\beta = (\mu, \sigma, \xi)}{beta= (mu, sigma, xi)} i.e
     the vector of the GEV parameters.
 }
 \references{

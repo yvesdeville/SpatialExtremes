@@ -1,16 +1,16 @@
-\name{predict}
+\name{predict.pspline}
 \alias{predict.pspline}
 \title{Prediction of smoothing spline with radial basis functions}
 \description{This function predicts the response from a fitted
   smoothing spline. 
 }
 \usage{
-\method{predict}{pspline}(object, newdata, \dots)
+\method{predict}{pspline}(object, new.data, \dots)
 }
 \arguments{
   \item{object}{An object of class ``pspline''. Most often, it will be
     the output of the function \code{\link{rbpspline}}.}
-  \item{newdata}{An optional data frame in which to look for variables
+  \item{new.data}{An optional data frame in which to look for variables
     with which to predict. If omitted, the fitted values are used.}
   \item{\dots}{further arguments passed to or from other methods.}
 }

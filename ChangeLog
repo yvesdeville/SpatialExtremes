@@ -1,3 +1,117 @@
+2009-10-16 08:37  mathieu_ribatet
+
+	* src/pairwiselik.c, src/simschlather.c: Remove the inline
+	  attribute - not portable
+
+2009-10-12 06:18  mathieu_ribatet
+
+	* src/turningbands.c: Minor change
+
+2009-10-12 06:17  mathieu_ribatet
+
+	* src/pairwiselik.c: Pass the R_InLine function to the lplik???
+	  function. When the
+	  bivariate distribution is numerically degenerates, then it now
+	  returns
+	  MINf instead of the computation of the univariate llik.
+
+2009-10-12 06:14  mathieu_ribatet
+
+	* src/header.h: Minor change
+
+2009-10-12 06:14  mathieu_ribatet
+
+	* src/covariance.c: Improvements in the variable definitions
+
+2009-10-12 06:12  mathieu_ribatet
+
+	* man/madogram.Rd, man/predict.maxstab.Rd, man/predict.pspline.Rd,
+	  man/predict.spatgev.Rd, man/print.maxstab.Rd,
+	  man/print.pspline.Rd, man/print.spatgev.Rd, man/simmaxstab.Rd:
+	  Minor changes to the documention because of complaints of the new
+	  Rd
+	  parser
+
+2009-10-12 06:11  mathieu_ribatet
+
+	* inst/doc/references.bib: Update the references
+
+2009-08-24 12:32  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Some small editing
+
+2009-08-24 12:31  mathieu_ribatet
+
+	* src/header.h, src/simgeometric.c, src/simschlather.c,
+	  src/turningbands.c: The argument control is now added to control
+	  several tuning parameters
+	  for the simulation algo hence the prototype for the C functions
+	  are
+	  updated
+
+2009-08-24 12:29  mathieu_ribatet
+
+	* man/SpatialExtremes.Rd: Add the entry for the simulation of
+	  random fields
+
+2009-08-24 12:29  mathieu_ribatet
+
+	* R/simgaussproc.R, R/simmaxstab.R, man/rgp.Rd, man/simmaxstab.Rd:
+	  The argument control is now added to control several tuning
+	  parameters
+	  for the simulation algo
+
+2009-08-24 12:25  mathieu_ribatet
+
+	* R/covariance.R: If dist is a matrix it now returns a matrix too
+
+2009-07-08 13:19  mathieu_ribatet
+
+	* src/header.h: Add the simulation of the geometric gaussian
+	  process
+
+2009-07-08 13:19  mathieu_ribatet
+
+	* src/gradients.c: Fix a bug in the computation of the gradient -
+	  e.g. gwhitmat
+
+2009-07-08 13:19  mathieu_ribatet
+
+	* R/starting.values.R: Fix a problem when using nlm with the Smith
+	  model
+
+2009-07-08 13:18  mathieu_ribatet
+
+	* R/simmaxstab.R, src/simgeometric.c: Add the simulation of the
+	  geometric gaussian process
+
+2009-07-08 13:17  mathieu_ribatet
+
+	* R/fitcovmat.R: Fix a typo
+
+2009-06-30 08:28  mathieu_ribatet
+
+	* R/plots.R: Fix a bug in the map function - shape parameter maps
+	  were not produced
+
+2009-06-30 08:25  mathieu_ribatet
+
+	* man/simmaxstab.Rd: Fix a typo
+
+2009-05-27 14:11  mathieu_ribatet
+
+	* src/utils.c: Initialize dist within this function to avoid
+	  initialization outside
+
+2009-05-27 14:11  mathieu_ribatet
+
+	* src/direct.c, src/randomlines.c: Minor changes to avoid warnings
+	  from the compilers
+
+2009-05-26 13:49  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION: Update changelog and release version
+
 2009-05-26 13:48  mathieu_ribatet
 
 	* src/Makevars: Minor change to Makevars

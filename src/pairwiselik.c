@@ -19,21 +19,16 @@ double lplikschlather(double *data, double *rho, double *jac,
 	data1Square = data[k + i * nObs] * data[k + i * nObs];
 	data2Square = data[k + j * nObs] * data[k + j * nObs];
 
-	if (rho[currentPair] > .99999996){
+	if (rho[currentPair] > .99999996)
 	  /* This means that only data1 or data2 contributes to the
-	  log-likelihoood.
+	  log-likelihoood.  Hence we consider these parameters as
+	  unfeasible as the bivariate distribution in this case
+	  degenerates.
 
 	  Rmq: a = .99999996 is the limiting numerical precision for
 	  which a^2 = 1 */
 
-	  if (data[k + i * nObs] > data[k + j * nObs])
-	    //Only data1 contributes
-	    dns += -log(data1Square) - 1 / data[k + i * nObs] + jac[k + i * nObs];
-
-	  else
-	    //Only data2 contributes
-	    dns += -log(data2Square) - 1 / data[k + j * nObs] + jac[k + j * nObs];
-	}
+	  return MINF;
 
 	else {
 	  c1 = sqrt(data1Square + data2Square - 2 * data[k + i * nObs] *
@@ -93,20 +88,17 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	idata1Square = idata1 * idata1;
 	idata2Square = idata2 * idata2;
 
-	c1 = log(data[k + j * nObs] * idata1) * imahal + mahalDist[currentPair] / 2;
+	c1 = log(data[k + j * nObs] * idata1) * imahal + 0.5 * mahalDist[currentPair];
 	c2 = mahalDist[currentPair] - c1;
 	
-	if ((fabs(c1) > 38) && (fabs(c2) > 38)){
-	  //This means that only data1 or data2 contributes to the log-likelihood
-	  //Rmq: 38 is the limiting accuracy for dnorm
-	  if (c1 > 0)
-	    //Only data1 contributes
-	    dns += log(idata1Square) - idata1 + jac[k + i * nObs];
+	if ((fabs(c1) > 38) && (fabs(c2) > 38))
+	  /* This means that only data1 or data2 contributes to the
+	     log-likelihood. Hence we consider these parameters as
+	     unfeasible as the bivariate distribution in this case
+	     degenerates
 
-	  else
-	    //Only data2 contributes
-	    dns += log(idata2Square) - idata2 + jac[k + j * nObs];
-	}
+	     Rmq: 38 is the limiting accuracy for dnorm */
+	  return MINF;
 
 	else{
 	  dnormc1 = dnorm(c1, 0, 1, 0);
@@ -180,21 +172,16 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 	  data1Square = data[k + i * nObs] * data[k + i * nObs];
 	  data2Square = data[k + j * nObs] * data[k + j * nObs];
 
-	  if (rho[currentPair] > .99999996){
+	  if (rho[currentPair] > .99999996)
 	    /* This means that only data1 or data2 contributes to the
-	       log-likelihoood for the Schlather part.
+	       log-likelihoood for the Schlather part.  Hence we
+	       consider these parameters as unfeasible as the
+	       bivariate distribution in this case degenerates.
 	       
 	       Rmq: a = .99999996 is the limiting numerical precision for
 	       which a^2 = 1 */
 	    
-	    if (data[k + i * nObs] > data[k + j * nObs])
-	      dns += log(alpha) - log(data1Square * data2Square) - alpha / data[k + j * nObs] 
-		- 1 / data[k + i * nObs] + jac[k + i * nObs] + jac[k + j * nObs];
-	    
-	    else
-	      dns += log(alpha) - log(data1Square * data2Square) - alpha / data[k + i * nObs] 
-		- 1 / data[k + j * nObs] + jac[k + i * nObs] + jac[k + j * nObs];	      
-	  }
+	    return MINF;
 	  
 	  else {
 	    c1 = sqrt(data1Square + data2Square - 2 * data[k + i * nObs] *

@@ -1,4 +1,4 @@
-\name{predict}
+\name{predict.maxstab}
 \alias{predict.maxstab}
 \title{Prediction of the max-stable marginal parameters}
 \description{This function predicts the marginal GEV parameters from a

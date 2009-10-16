@@ -664,7 +664,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	  grad[*nObs + k] += rho[currentPair] * 
 	    (-2 * *smooth / *range + dist[currentPair] * 
 	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1) / 
-	     bessel_k(dist[currentPair] / *range, *smooth, 1) / *range / *range) *
+	     (bessel_k(dist[currentPair] / *range, *smooth, 1) * *range * *range)) *
 	    jacCommonRho;
 	  //The Whittle-Matern covariance function is not
 	  //differentiable w.r.t. to the smooth parameter
@@ -1263,11 +1263,11 @@ void geomgaussgrad(int *covmod, double *data, double *dist, int *nSite,
 	switch (*covmod){
 	case 1:
 	  //i.e. Whittle-Matern
-	  grad[2 * *nObs + k] -= *sigma2 * rho * 
-	    (-2 * *smooth / *range + dist[currentPair] * 
-	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1)) / 
-	    (bessel_k(dist[currentPair] / *range, *smooth, 1) * *range * *range *
-	     mahalDist[currentPair]) * jacCommon;
+	  grad[2 * *nObs + k] += *sigma2 * rho / mahalDist[currentPair] * 
+	    (2 * *smooth / *range - dist[currentPair] * 
+	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1) / 
+	     (bessel_k(dist[currentPair] / *range, *smooth, 1) * *range * *range)) *
+	    jacCommon;
 	  //The Whittle-Matern covariance function is not
 	  //differentiable w.r.t. to the smooth parameter
 	  grad[3 * *nObs + k] = R_NaReal;

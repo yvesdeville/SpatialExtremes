@@ -1,11 +1,15 @@
 rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0, 
-                sill = 1, range = 1, smooth = 1, grid = FALSE, ...){
+                sill = 1, range = 1, smooth = 1, grid = FALSE,
+                control = list()){
 
   if (grid && is.null(dim(coord)))
     stop("'grid' cannot be 'TRUE' if you specify univariate coordinates")
 
   if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+
+  if (!is.null(control$method) && !(control$method %in% c("exact", "tbm")))
+    stop("the argument 'method' for 'control' must be one of 'exact' and 'tbm'")
 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -15,22 +19,33 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
     cov.mod.num <- 3
   if (cov.mod == "bessel")
     cov.mod.num <- 4
-  
-  ##Identify the most accurate method for simulation
-  if (grid && (nrow(coord)^ncol(coord) > 500))
-    method <- "tbm"
 
-  else if (nrow(coord) > 500)
-    method <- "tbm"
+  if (is.null(control$method)){
+    ##Identify the most accurate method for simulation if not specified
+    if (grid && (nrow(coord)^ncol(coord) > 500))
+      method <- "tbm"
+    
+    else if (nrow(coord) > 500)
+      method <- "tbm"
+    
+    else
+      method <- "exact"
+  }
 
   else
-    method <- "exact"
+    method <- control$method
+
+  if (is.null(control$nlines))
+    nlines <- 1000
+
+  else
+    nlines <- control$nlines
 
   gp <- switch(method,
                "tbm" = .tbmgp(n, coord, cov.mod.num, nugget, sill, range,
-                 smooth, grid, ...),
+                 smooth, grid, nlines = nlines),
                "exact" = .exactgp(n, coord, cov.mod.num, nugget, sill, range,
-                 smooth, grid, ...))
+                 smooth, grid))
 
   return(mean + gp)
 }

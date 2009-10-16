@@ -226,7 +226,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, control = list(),
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data,
-                 est = "Least Square", opt.value = opt$value, model = "Smith",
+                 est = "Least Squares", opt.value = opt$value, model = "Smith",
                  coord = coord, fit.marge = FALSE, cov.mod = "Gaussian",
                  ext.coeff = ext.coeff, iso = iso)
 
@@ -424,7 +424,7 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data,
-                 est = "Least Square", opt.value = opt$value, model = model,
+                 est = "Least Squares", opt.value = opt$value, model = model,
                  coord = coord, fit.marge = FALSE, cov.mod = cov.mod,
                  cov.fun = cov.fun, ext.coeff = ext.coeff)
 

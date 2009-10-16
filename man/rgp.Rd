@@ -8,7 +8,7 @@ This functions generates gaussian random fields.
 }
 \usage{
 rgp(n, coord, cov.mod = "powexp", mean = 0, nugget = 0, sill = 1, range
-= 1, smooth = 1, grid = FALSE, ...)
+= 1, smooth = 1, grid = FALSE, control = list())
 }
 \arguments{
   \item{n}{Integer. The number of replications.}
@@ -23,7 +23,11 @@ rgp(n, coord, cov.mod = "powexp", mean = 0, nugget = 0, sill = 1, range
   \item{range}{Numeric. The range parameter in the covariance function.}
   \item{smooth}{Numeric. The smooth parameter in the covariance function.}
   \item{grid}{Logical. Does \code{coord} defines a grid?}
-  \item{\dots}{Other arguments to be passed to the turning bands method.}
+  \item{control}{A named list with arguments 'nlines' (number of lines
+    of the TBM simulation) and 'method' the name of the simulation
+    method - must be one of 'exact' or 'tbm'. If 'method' is \code{NULL}
+  (default), the function tries to find the most appropriate simulation
+  technique. If 'nlines' is \code{NULL} it is set to 1000.}
 }
 \value{
   A matrix or an array containing the random field replicates.

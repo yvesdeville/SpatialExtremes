@@ -1,4 +1,4 @@
-\name{print}
+\name{print.pspline}
 \alias{print.pspline}
 \title{Printing objects of class ``pspline''}
 \description{

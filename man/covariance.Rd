@@ -40,10 +40,10 @@ dist, xlab, ylab, ...)
   \describe{
     \item{Whittle-Matern}{\eqn{\rho(h) = sill
 	\frac{2^{1-smooth}}{\Gamma(smooth)} \left(\frac{h}{range}
-	\right)^{smooth} K_{smooth}\left(frac{h}{range} \right)}{rho(h) =
+	\right)^{smooth} K_{smooth}\left(\frac{h}{range} \right)}{rho(h) =
 	sill * 2^(1-smooth) / \Gamma(smooth) * (h/range)^smooth * K_smooth
 	(h / range)}}
-    \item{Powered Exponential}{\eqn{\rho(h) = sill * \exp \left[-
+    \item{Powered Exponential}{\eqn{\rho(h) = sill \exp \left[-
 	\left(\frac{h}{range} \right)^{smooth} \right]}{rho(h) = sill *
 	exp[-(h/range)^smooth]}}
     \item{Cauchy}{\eqn{\rho(h) = sill \left[1 + \left(\frac{h}{range}

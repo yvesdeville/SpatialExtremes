@@ -119,6 +119,9 @@ map <- function(fitted, param = "quant", ..., ret.per = 100,
                 ranges = apply(fitted$coord, 2, range), n = 80,
                 col = terrain.colors(n), plot.contour = TRUE){
 
+  if (!(param %in% c("loc", "scale", "shape", "quant")))
+    stop("'param' should be one of 'loc', 'scale', 'shape' or 'quant'")
+
   if (ncol(fitted$coord) > 2)
     stop("It's not possible to use this function when the coordinate space has a dimension >= 2")
   
@@ -130,18 +133,13 @@ map <- function(fitted, param = "quant", ..., ret.per = 100,
   xs <- seq(x.range[1], x.range[2], length = n)
   ys <- seq(y.range[1], y.range[2], length = n)
 
-  if (param == "loc")
-    fun <- function(x) x[,"loc"]
-
-  if (param == "scale")
-    fun <- function(x) x[,"scale"]
-
-  if (param == "shape")
-    fun <- function(x) x[,"scale"]
-
   if (param == "quant")
     fun <- function(x)
       .qgev(1 - 1/ret.per, x[,"loc"], x[,"scale"], x[,"shape"])
+
+  else
+    fun <- function(x)
+      x[,param]
   
   for (i in 1:n){
     new.data <- cbind(xs[i], ys)
@@ -163,7 +161,6 @@ map <- function(fitted, param = "quant", ..., ret.per = 100,
   invisible(list(x = xs, y = ys, z = ans))
 }
 
-
 condmap <- function(fitted, fix.coord, x, y, marg.cov = NULL, ...,
                     ret.per1 = 100, ret.per2 = ret.per1,
                     col = terrain.colors(length(x)), plot.contour = TRUE){
@@ -175,7 +172,7 @@ condmap <- function(fitted, fix.coord, x, y, marg.cov = NULL, ...,
   n.y <- length(y)
 
   if (!is.null(marg.cov)){
-    idx.na <- which(is.na(marg.cov) | is.nan(marg.cov))
+    idx.na <- which(!is.finite(marg.cov))
     marg.cov[idx.na] <- 0
   }
   
