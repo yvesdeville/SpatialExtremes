@@ -1,5 +1,17 @@
-fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, control = list(),
-                      ..., start){
+lsmaxstab <- function(data, coord, cov.mod = "gauss", marge = "emp", control = list(),
+                      iso = FALSE, ..., weighted = TRUE){
+
+  if (cov.mod == "gauss")
+    fitcovmat(data, coord, marge, control = control, ..., iso = iso,
+              weighted = weighted)
+
+  else
+    fitcovariance(data, coord, cov.mod, marge = marge, control = list(),
+                  ..., weighted = weighted)
+}
+
+fitcovmat <- function(data, coord, marge = "emp", iso = FALSE, control = list(),
+                      ..., start, weighted = TRUE){
 
   if (is.null(control$maxit))
     control$maxit <- 10000
@@ -8,16 +20,21 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, control = list(),
   n.pairs <- n.site * (n.site - 1) / 2
   dist.dim <- ncol(coord)
 
-  extcoeff <- fitextcoeff(data, coord, estim = "Smith",
-                          plot = FALSE, loess = FALSE,
-                          marge = marge)
-  weights <- extcoeff[,"std.err"]
+  extcoeff <- fitextcoeff(data, coord, estim = "Smith", plot = FALSE, loess = FALSE,
+                          marge = marge, std.err = weighted)
+
+  if (weighted){
+    weights <- extcoeff[,"std.err"]
+    ##Check if there are really small weights, this could happen in few
+    ##cases
+    weights[weights <= 1e-4] <- mean(weights)
+  }
+
+  else
+    weights <- rep(1, n.pairs)
+  
   extcoeff <- extcoeff[,"ext.coeff"]
   dist <- distance(coord, vec = TRUE)
-
-  ##Check if there are really small weights, this could happen in few
-  ##cases
-  weights[weights <= 1e-4] <- mean(weights)
 
   if (dist.dim == 2){
 
@@ -217,26 +234,26 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, control = list(),
 
   if (iso)
     ext.coeff <- function(h)
-      2 * pnorm(sqrt(h^2 / param["cov11"]) / 2)
+      2 * pnorm(0.5 * h / sqrt(param["cov11"]))
 
   else
     ext.coeff <- function(h)
-      2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
+      2 * pnorm(0.5 * sqrt(h %*% iSigma %*% h))
 
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data,
                  est = "Least Squares", opt.value = opt$value, model = "Smith",
                  coord = coord, fit.marge = FALSE, cov.mod = "Gaussian",
-                 ext.coeff = ext.coeff, iso = iso)
+                 ext.coeff = ext.coeff, iso = iso, weighted = weighted)
 
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
   
 }
 
-fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
-                          ..., start){
+fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
+                          ..., start, weighted = TRUE){
 
   if (is.null(control$maxit))
     control$maxit <- 10000
@@ -256,11 +273,14 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
     cov.mod <- substr(cov.mod, 2, 8)
   }
 
+  else if (cov.mod == "brown")
+    model <- "Brown-Resnick"
+
   else
     model <- "Schlather"
 
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel","caugen", "brown")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen', 'brown'")
   
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -270,44 +290,98 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
     cov.mod.num <- 3
   if (cov.mod == "bessel")
     cov.mod.num <- 4
+  if (cov.mod == "caugen")
+    cov.mod.num <- 5
   
-  extcoeff <- fitextcoeff(data, coord, estim = "Smith",
-                          plot = FALSE, loess = FALSE,
-                          marge = marge)
-  weights <- extcoeff[,"std.err"]
+  extcoeff <- fitextcoeff(data, coord, estim = "Smith", plot = FALSE, loess = FALSE,
+                          marge = marge, std.err = weighted)
+
+  if (weighted){
+    weights <- extcoeff[,"std.err"]
+    ##Check if there are really small weights, this could happen in few
+    ##cases
+    weights[weights <= 1e-4] <- mean(weights)
+  }
+
+  else
+    weights <- rep(1, n.pairs)
+  
   extcoeff <- extcoeff[,"ext.coeff"]
   dist <- distance(coord)
+  
+  if (cov.mod == "brown")
+    param <- c("range", "smooth")
 
-  ##Check if there are really small weights, this could happen in few
-  ##cases
-  weights[weights <= 1e-4] <- mean(weights)
-
-  param <- c("sill", "range", "smooth")
+  else
+    param <- c("sill", "range", "smooth")
 
   if (model == "iSchlather")
     param <- c("alpha", param)
 
-  if (model == "Geometric")
+  if (model == "Geometric"){
     param <- c("sigma2", param)
 
-  if (model == "Schlather")
-    funS <- function(sill, range, smooth)
-      .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
-         as.double(smooth), as.integer(n.pairs), as.integer(dist.dim), as.double(dist),
-         as.double(extcoeff), as.double(weights), ans = double(1),
-         PACKAGE = "SpatialExtremes")$ans
+    if (is.null(control$sigma2Bound))
+      sigma2Bound <- 50
 
-  else if (model == "iSchlather")
-    funI <- function(alpha, sill, range, smooth)
-      .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(sill),
-         as.double(range), as.double(smooth), as.integer(n.pairs), as.integer(dist.dim),
-         as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
-         PACKAGE = "SpatialExtremes")$ans
+    else
+      sigma2Bound <- control$sigma2Bound
+  }
+
+  if (cov.mod == "caugen")
+    param <- c(param, "smooth2")
+
+  if (model == "Schlather"){
+    if (cov.mod == "caugen")
+      funS2 <- function(sill, range, smooth, smooth2)
+        .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
+           as.double(smooth), as.double(smooth2), as.integer(n.pairs), as.integer(dist.dim),
+           as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
+           PACKAGE = "SpatialExtremes")$ans
+    
+    else
+      funS1 <- function(sill, range, smooth)
+        .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
+           as.double(smooth), double(1), as.integer(n.pairs), as.integer(dist.dim),
+           as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
+           PACKAGE = "SpatialExtremes")$ans
+  }
+
+  else if (model == "iSchlather"){
+    if (cov.mod == "caugen")
+      funI2 <- function(alpha, sill, range, smooth, smooth2)
+        .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(sill),
+           as.double(range), as.double(smooth), as.double(smooth2), as.integer(n.pairs),
+           as.integer(dist.dim), as.double(dist), as.double(extcoeff), as.double(weights),
+           ans = double(1), PACKAGE = "SpatialExtremes")$ans
+    
+    else
+      funI1 <- function(alpha, sill, range, smooth)
+        .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(sill),
+           as.double(range), as.double(smooth), double(1), as.integer(n.pairs), as.integer(dist.dim),
+           as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
+           PACKAGE = "SpatialExtremes")$ans
+  }
+
+  else if (model == "Geometric"){
+    if (cov.mod == "caugen")
+      funG2 <- function(sigma2, sill, range, smooth, smooth2)
+        .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sigma2Bound),
+           as.double(sill), as.double(range), as.double(smooth), as.double(smooth2),
+           as.integer(n.pairs), as.integer(dist.dim), as.double(dist), as.double(extcoeff),
+           as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+    
+    else
+      funG1 <- function(sigma2, sill, range, smooth)
+        .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sigma2Bound),
+           as.double(sill), as.double(range), as.double(smooth), double(1), as.integer(n.pairs),
+           as.integer(dist.dim), as.double(dist), as.double(extcoeff), as.double(weights),
+           ans = double(1), PACKAGE = "SpatialExtremes")$ans
+  }
 
   else
-    funG <- function(sigma2, sill, range, smooth)
-      .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sill),
-         as.double(range), as.double(smooth), as.integer(n.pairs), as.integer(dist.dim),
+    funBR <- function(range, smooth)
+      .C("fitbrcovariance", as.double(range), as.double(smooth), as.integer(n.pairs),
          as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
          PACKAGE = "SpatialExtremes")$ans
 
@@ -315,22 +389,50 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
 
   if (missing(start)){
 
-    if (cov.mod %in% c("whitmat", "bessel"))
-      range.start <- 0.75 * max(dist) / 3
+    if (cov.mod == "whitmat"){
+      range.start <- 0.75 * max(dist) / 5
+      smooth.start <- 2
+    }
 
-    if (cov.mod == "cauchy")
-      range.start <- 0.75 * max(dist) / 20
+    if (cov.mod == "cauchy"){
+      range.start <- 0.75 * max(dist) / 1.9
+      smooth.start <- 2
+    }
 
-    if (cov.mod == "powexp")
-      range.start <- 0.75 * max(dist) / 9
+    if (cov.mod == "bessel"){
+      range.start <- 0.75 * max(dist) / 8
+      smooth.start <- 2
+    }
     
-    start <- list(sill = .9, range = range.start, smooth = .5)
+    if (cov.mod == "caugen"){
+      range.start <- 0.75 * max(dist) / 20
+      smooth.start <- 1
+    }
+
+    if (cov.mod == "powexp"){
+      range.start <- 0.75 * max(dist) / 3
+      smooth.start <- 1
+    }
+
+    if (cov.mod == "brown"){
+      range.start <- 0.75 * max(dist)
+      smooth.start <- 1
+    }
+
+    if (cov.mod == "brown")
+      start <- list(range = range.start, smooth = smooth.start)
+
+    else
+      start <- list(sill = .9, range = range.start, smooth = smooth.start)
+
+    if (cov.mod == "caugen")
+      start <- c(start, list(smooth2 = 0.5))
 
     if (model == "iSchlather")
       start <- c(list(alpha = 0.5), start)
 
     if (model == "Geometric")
-      start <- c(list(sigma2 = 1), start)
+      start <- c(list(sigma2 = 9), start)
 
     start <- start[!(param %in% names(list(...)))]
   }
@@ -344,14 +446,32 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
   nm <- names(start)
   l <- length(nm)
 
-  if (model == "Schlather")
-    f <- formals(funS)
+  if (model == "Schlather"){
+    if (cov.mod == "caugen")
+      f <- formals(funS2)
 
-  else if (model == "iSchlather")
-    f <- formals(funI)
+    else
+      f <- formals(funS1)
+  }
+
+  else if (model == "iSchlather"){
+    if (cov.mod == "caugen")
+      f <- formals(funI2)
+
+    else
+      f <- formals(funI1)
+  }
+
+  else if (model == "Geometric"){
+    if (cov.mod == "caugen")
+      f <- formals(funG2)
+    
+    else
+      f <- formals(funG1)
+  }
 
   else
-    f <- formals(funG)
+    f <- formals(funBR)
   
   names(f) <- param
   m <- match(nm, param)
@@ -360,29 +480,72 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
     stop("'start' specifies unknown arguments")
 
   if (model == "Schlather"){
-    formals(funS) <- c(f[m], f[-m])
-    obj.fun <- function(p, ...) funS(p, ...)
-    
-    if (l > 1)
-      body(obj.fun) <- parse(text = paste("funS(", paste("p[",1:l,
-                               "]", collapse = ", "), ", ...)"))
+    if (cov.mod == "caugen"){
+      formals(funS2) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) funS2(p, ...)
+      
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("funS2(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
+
+    else {
+      formals(funS1) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) funS1(p, ...)
+      
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("funS1(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
   }
 
   else if (model == "iSchlather"){
-    formals(funI) <- c(f[m], f[-m])
-    obj.fun <- function(p, ...) funI(p, ...)
+    if (cov.mod == "caugen"){
+      formals(funI2) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) funI2(p, ...)
     
-    if (l > 1)
-      body(obj.fun) <- parse(text = paste("funI(", paste("p[",1:l,
-                               "]", collapse = ", "), ", ...)"))
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("funI2(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
+
+    else {
+      formals(funI1) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) funI1(p, ...)
+    
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("funI1(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
+  }
+
+  else if (model == "Geometric"){
+
+    if (cov.mod == "caugen"){
+      formals(funG2) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) funG2(p, ...)
+      
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("funG2(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
+
+    else {
+      formals(funG1) <- c(f[m], f[-m])
+      obj.fun <- function(p, ...) funG1(p, ...)
+      
+      if (l > 1)
+        body(obj.fun) <- parse(text = paste("funG1(", paste("p[",1:l,
+                                 "]", collapse = ", "), ", ...)"))
+    }
   }
 
   else {
-    formals(funG) <- c(f[m], f[-m])
-    obj.fun <- function(p, ...) funG(p, ...)
+    formals(funBR) <- c(f[m], f[-m])
+    obj.fun <- function(p, ...) funBR(p, ...)
     
     if (l > 1)
-      body(obj.fun) <- parse(text = paste("funG(", paste("p[",1:l,
+      body(obj.fun) <- parse(text = paste("funBR(", paste("p[",1:l,
                                "]", collapse = ", "), ", ...)"))
   }
   
@@ -405,28 +568,41 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", control = list(),
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
-  cov.fun <- covariance(sill = param["sill"], range = param["range"],
-                        smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
+  if (cov.mod != "brown"){
+    if (cov.mod != "caugen")
+      cov.fun <- covariance(sill = param["sill"], range = param["range"],
+                            smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
+    
+    else
+      cov.fun <- covariance(sill = param["sill"], range = param["range"],
+                            smooth = param["smooth"], smooth2 = param["smooth2"],
+                            cov.mod = cov.mod, plot = FALSE)
+    
+    if (model == "Schlather")
+      ext.coeff <- function(h)
+        1 + sqrt(0.5 - 0.5 * cov.fun(h))
+    
+    else if (model == "iSchlather")
+      ext.coeff <- function(h)
+        2 * param["alpha"] + (1 - param["alpha"]) * (1 + sqrt(0.5 - 0.5 * cov.fun(h)))
+    
+    else
+      ext.coeff <- function(h)
+        2 * pnorm(sqrt(0.5 * param["sigma2"] * (1 - cov.fun(h))))
+  }
 
-  if (model == "Schlather")
+  else {
+    cov.fun <- NA
     ext.coeff <- function(h)
-      1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
-
-  else if (model == "iSchlather")
-    ext.coeff <- function(h)
-      2 * param["alpha"] + (1 - param["alpha"]) *
-        (1 + sqrt(1 - 1/2 * (cov.fun(h) + 1)))
-
-  else
-    ext.coeff <- function(h)
-      2 * pnorm(sqrt(param["sigma2"] * (1 - cov.fun(h)) / 2))
+      2 * pnorm(0.5 * (h / param["range"])^(0.5 * param["smooth"]))
+  }
 
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data,
                  est = "Least Squares", opt.value = opt$value, model = model,
                  coord = coord, fit.marge = FALSE, cov.mod = cov.mod,
-                 cov.fun = cov.fun, ext.coeff = ext.coeff)
+                 cov.fun = cov.fun, ext.coeff = ext.coeff, weighted = weighted)
 
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)

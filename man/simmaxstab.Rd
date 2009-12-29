@@ -56,11 +56,11 @@ list(), \dots)
 \examples{
 ## 1. Smith's model
 set.seed(8)
-x <- seq(0, 10, length = 200)
+x <- y <- seq(0, 10, length = 200)
 coord <- cbind(x, x)
 data <- rmaxstab(1, coord, cov11 = 9/8, cov12 = 0, cov22 = 9/8, grid = TRUE)
-##We change the margins for visibility
-filled.contour(x, x, sqrt(data[,,1]))
+##We change to unit Gumbel margins for visibility
+filled.contour(x, y, log(data[,,1]), color.palette = terrain.colors)
 
 ## 2. Schlather's model
 coord <- matrix(runif(100, 0, 15), ncol = 2)

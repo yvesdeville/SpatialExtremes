@@ -49,7 +49,7 @@ predict.spatgev <- function(object, newdata, ret.per = NULL,
 }
 
 predict.maxstab <- function(object, newdata, ret.per = NULL,
-                            ...){
+                            std.err = TRUE, ...){
   
   param <- object$param
     
@@ -86,7 +86,7 @@ predict.maxstab <- function(object, newdata, ret.per = NULL,
     scale.pred <- scale.dsgnmat %*% param[idx.scale]
     shape.pred <- shape.dsgnmat %*% param[idx.shape]
 
-    if (is.matrix(object$var.cov)){
+    if (std.err && is.matrix(object$var.cov)){
       par.est <- object$fitted
       idx.loc <- which(substr(names(par.est), 1, 8) == "locCoeff")
       idx.scale <- which(substr(names(par.est), 1, 10) == "scaleCoeff")

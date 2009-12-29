@@ -1,18 +1,22 @@
-covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
-                       plot = TRUE, dist, xlab, ylab, ...){
+covariance <- function(fitted, sill, range, smooth, smooth2 = NULL,
+                       cov.mod = "whitmat", plot = TRUE, dist, xlab,
+                       ylab, ...){
 
   if (!missing(fitted)){
     cov.mod <- fitted$cov.mod
     smooth <- fitted$param["smooth"]
     range <- fitted$param["range"]
     sill <- fitted$param["sill"]
+
+    if (cov.mod == "caugen")
+      smooth2 <- fitted$param["smooth2"]
   }
 
   if (cov.mod == "gauss")
     stop("''covariance'' is not implemented for the Smith's model")
 
-  if (!(cov.mod %in% c("whitmat", "cauchy", "powexp", "bessel")))
-    stop("Invalid covariance model. ''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+  if (!(cov.mod %in% c("whitmat", "cauchy", "powexp", "bessel", "caugen")))
+    stop("Invalid covariance model. ''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
   
   if (cov.mod == "whitmat"){
     if ((smooth <= 0) || (range <= 0) || (smooth > 150) || (sill <= 0))
@@ -33,6 +37,14 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
       stop("invalid parameter for the cauchy covariance function")
     
     cov.fun <- function(dist) sill * (1 + (dist / range)^2)^-smooth
+  }
+
+  if (cov.mod == "caugen"){
+    if ((smooth <= 0) || (range <= 0) || (sill <= 0) || (smooth2 <= 0) ||
+        (smooth2 > 2))
+      stop("invalid parameter for the generalized cauchy covariance function")
+
+    cov.fun <- function(dist) sill * (1 + (dist / range)^smooth2)^(-smooth/smooth2)
   }
 
   if (cov.mod == "powexp"){

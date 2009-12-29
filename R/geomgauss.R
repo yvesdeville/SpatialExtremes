@@ -9,7 +9,8 @@
 ##estimated.
 geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                           fit.marge = FALSE, warn = TRUE, method = "BFGS",
-                          control = list(), std.err.type = "none", corr = FALSE){
+                          control = list(), std.err.type = "none", corr = FALSE,
+                          weights = NULL){
   ##data is a matrix with each column corresponds to one location
   ##locations is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -18,10 +19,21 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   n.pairs <- n.site * (n.site - 1) / 2
 
   dist <- distance(coord)
-  
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+  weighted <- !is.null(weights)
 
+  if (!weighted)
+    ##Set the weights to 0 as they won't be used anyway
+    weights <- 0
+  
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel", "caugen")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
+
+  if (is.null(control$sigma2Bound))
+    sigma2Bound <- 50
+
+  else
+    sigma2Bound <- control$sigma2Bound
+  
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
   if (cov.mod == "cauchy")
@@ -30,34 +42,39 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     cov.mod.num <- 3
   if (cov.mod == "bessel")
     cov.mod.num <- 4
-  
+  if (cov.mod == "caugen")
+    cov.mod.num <- 5
+
+  param <- c("sigma2", "sill", "range", "smooth")
+
+  if (cov.mod == "caugen")
+    param <- c(param, "smooth2")
+
+  else
+    ##Fix it to 0 as it won't be used anyway
+    smooth2 <- 0
+
+  if (fit.marge){
+    loc.names <- paste("loc", 1:n.site, sep="")
+    scale.names <- paste("scale", 1:n.site, sep="")
+    shape.names <- paste("shape", 1:n.site, sep="")
+    param <- c(param, loc.names, scale.names, shape.names)
+  }
+
+  else
+    loc.names <- scale.names <- shape.names <- rep(1, n.site)
+
   ##First create a "void" function
   nplk <- function(x) x
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-  if (fit.marge){
-    loc.names <- paste("loc", 1:n.site, sep="")
-    scale.names <- paste("scale", 1:n.site, sep="")
-    shape.names <- paste("shape", 1:n.site, sep="")
-    
-    param <- c("sigma2", "sill", "range", "smooth", loc.names, scale.names, shape.names)
-
-    body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
-                            paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                            paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                            paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(sigma2), as.double(sill), as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-  }
-
-  else{
-    body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(sigma2), as.double(sill), as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-    param <- c("sigma2", "sill", "range", "smooth")
-  }
+  
+  body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.integer(weighted), as.double(weights),",
+                        paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                        "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
@@ -77,12 +94,6 @@ Standard errors are not available unless you fix it.")
     std.err.type <- "none"
   }
   
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- TRUE
-
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -109,15 +120,8 @@ Standard errors are not available unless you fix it.")
     }
 
     if (length(fixed.param) > 0){
-      if (any(names(fixed.param) == "sigma2")){
-        idx <- which(names(fixed.param) == "sigma2")
-        args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"),
-                  fixed.param[-idx])
-      }
-
-      else
-        args <- c(list(data = data, coord = coord, cov.mod = paste("g", cov.mod, sep=""),
-                       marge = "emp"), fixed.param)
+      args <- c(list(data = data, coord = coord, cov.mod = paste("g", cov.mod, sep=""),
+                     marge = "emp"), fixed.param)
       
       cov.start <- do.call("fitcovariance", args)$param
     }
@@ -180,7 +184,7 @@ Standard errors are not available unless you fix it.")
   
   if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -201,8 +205,7 @@ Standard errors are not available unless you fix it.")
   }
 
   if (!(method %in% c("nlm", "nlminb"))){
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
+    opt <- optim(start, nllh, ..., method = method, control = control)
   
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       
@@ -227,6 +230,10 @@ Standard errors are not available unless you fix it.")
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
+  ##Reset the weights to their original values
+  if ((length(weights) == 1) && (weights == 0))
+    weights <- NULL
+  
   if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
       warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
@@ -244,33 +251,24 @@ Standard errors are not available unless you fix it.")
   }
   
   if (std.err.type != "none"){
+    std.err <- .geomgaussstderr(param, data, dist, cov.mod.num, as.double(0),
+                                as.double(0), as.double(0), fit.marge = fit.marge,
+                                std.err.type = std.err.type, fixed.param = names(fixed.param),
+                                param.names = param.names, weights = weights)
+                                   
+    opt$hessian <- std.err$hessian
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
-    if(!is.matrix(var.cov)){
+    if(!is.matrix(ihessian)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
-      return
     }
 
-    else{
-      ihessian <- var.cov
-      jacobian <- .geomgaussgrad(param, data, dist, cov.mod.num, as.double(0),
-                                 as.double(0), as.double(0), fit.marge = fit.marge,
-                                 std.err.type = std.err.type, fixed.param = names(fixed.param),
-                                 param.names = param.names)
-
-      if(any(is.na(jacobian))){
-        if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ''none''")
-        
-        std.err.type <- "none"
-      }
-    }
-
-    if (std.err.type != "none"){      
-      var.cov <- var.cov %*% jacobian %*% var.cov
+    else{    
+      var.cov <- ihessian %*% var.score %*% ihessian
       std.err <- diag(var.cov)
 
       std.idx <- which(std.err <= 0)
@@ -299,14 +297,20 @@ Standard errors are not available unless you fix it.")
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- ihessian <- jacobian <- NULL
+    var.cov <- ihessian <- var.score <- NULL
   }
 
-  cov.fun <-  covariance(sill = param["sill"], range = param["range"],
-                         smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
+  if (cov.mod == "caugen")
+    cov.fun <-  covariance(sill = param["sill"], range = param["range"],
+                           smooth = param["smooth"], smooth2 = param["smooth2"],
+                           cov.mod = cov.mod, plot = FALSE)
+
+  else
+    cov.fun <-  covariance(sill = param["sill"], range = param["range"],
+                           smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    2 * pnorm(sqrt(param["sigma2"] * (1 - cov.fun(h)) / 2))
+    2 * pnorm(sqrt(0.5 * param["sigma2"] * (1 - cov.fun(h))))
 
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
@@ -315,7 +319,7 @@ Standard errors are not available unless you fix it.")
                  logLik = -opt$value, opt.value = opt$value, model = "Geometric",
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                 jacobian = jacobian, marg.cov = NULL, nllh = nllh)
+                 var.score = var.score, marg.cov = NULL, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -328,7 +332,7 @@ Standard errors are not available unless you fix it.")
 geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form,
                           start, fit.marge = TRUE, marg.cov = NULL, ...,
                           warn = TRUE, method = "BFGS", control = list(),
-                          std.err.type = "none", corr = FALSE){
+                          std.err.type = "none", corr = FALSE, weights = NULL){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -337,9 +341,20 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   n.pair <- n.site * (n.site - 1) / 2
 
   dist <- distance(coord)
-     
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+  weighted <- !is.null(weights)
+
+  if (!weighted)
+    ##Set the weights to 0 as they won't be used anyway
+    weights <- 0
+  
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel", "caugen")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
+
+  if (is.null(control$sigma2Bound))
+    sigma2Bound <- 50
+
+  else
+    sigma2Bound <- control$sigma2Bound
 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -349,6 +364,8 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     cov.mod.num <- 3
   if (cov.mod == "bessel")
     cov.mod.num <- 4
+  if (cov.mod == "caugen")
+    cov.mod.num <- 5
 
   ##With our notation, formula must be of the form y ~ xxxx
   loc.form <- update(loc.form, y ~ .)
@@ -397,18 +414,28 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
   shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
   
-  param <- c("sigma2", "sill", "range", "smooth", loc.names, scale.names, shape.names)
+  param <- c("sigma2", "sill", "range", "smooth")
+
+  if (cov.mod == "caugen")
+    param <- c(param, "smooth2")
+
+  else
+    ##Fix it to 0 as it won't be used anyway
+    smooth2 <- 0
+  
+  param <- c(param, loc.names, scale.names, shape.names)
 
   ##First create a "void" function
   nplk <- function(x) x
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-   body(nplk) <- parse(text = paste("-.C('geomgaussdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
-                          paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                          paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                          paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                         "as.double(sigma2), as.double(sill), as.double(range), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+  body(nplk) <- parse(text = paste("-.C('geomgaussdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+                        paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                        "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -466,12 +493,6 @@ Standard errors are not available unless you fix it.")
     std.err.type <- "none"
   }
 
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- TRUE
-
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
   
@@ -499,7 +520,7 @@ Standard errors are not available unless you fix it.")
   
   if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -521,8 +542,7 @@ Standard errors are not available unless you fix it.")
   }
 
   if (!(method %in% c("nlm", "nlminb"))){
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
+    opt <- optim(start, nllh, ..., method = method, control = control)
     
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)){
       if (warn)
@@ -546,6 +566,10 @@ Standard errors are not available unless you fix it.")
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
+  ##Reset the weights to their original values
+  if ((length(weights) == 1) && (weights == 0))
+    weights <- NULL
+  
   if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
       warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
@@ -563,34 +587,25 @@ Standard errors are not available unless you fix it.")
   }
   
   if (std.err.type != "none"){
+    std.err <- .geomgaussstderr(param, data, dist, cov.mod.num, loc.dsgn.mat,
+                                scale.dsgn.mat, shape.dsgn.mat,
+                                fit.marge = fit.marge, std.err.type = std.err.type,
+                                fixed.param = names(fixed.param), param.names =
+                                param.names, weights = weights)
     
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
-    if(!is.matrix(var.cov)){
+    opt$hessian <- std.err$hessian
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
+    
+    if(!is.matrix(ihessian)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
-      return
     }
 
-    else{
-      ihessian <- var.cov
-      jacobian <- .geomgaussgrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
-                                 scale.dsgn.mat, shape.dsgn.mat,
-                                 fit.marge = fit.marge, std.err.type = std.err.type,
-                                 fixed.param = names(fixed.param), param.names =
-                                 param.names)
-
-      if(any(is.na(jacobian))){
-        if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ''none''")
-        
-        std.err.type <- "none"
-      }
-    }
-
-    if (std.err.type != "none"){      
-      var.cov <- var.cov %*% jacobian %*% var.cov
+    else{     
+      var.cov <- ihessian %*% var.score %*% ihessian
       
       std.err <- diag(var.cov)
       
@@ -621,14 +636,20 @@ Standard errors are not available unless you fix it.")
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- ihessian <- jacobian <- NULL
+    var.cov <- ihessian <- var.score <- NULL
   }
 
-  cov.fun <- covariance(sill = param["sill"], range = param["range"],
-                        smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
+  if (cov.mod == "caugen")
+    cov.fun <- covariance(sill = param["sill"], range = param["range"],
+                          smooth = param["smooth"], smooth2 = param["smooth2"],
+                          cov.mod = cov.mod, plot = FALSE)
+
+  else
+    cov.fun <- covariance(sill = param["sill"], range = param["range"],
+                          smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    2 * pnorm(sqrt(param["sigma2"] * (1 - cov.fun(h)) / 2))
+    2 * pnorm(sqrt(0.5 * param["sigma2"] * (1 - cov.fun(h))))
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
@@ -638,7 +659,7 @@ Standard errors are not available unless you fix it.")
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
+                 shape.type = shape.type, ihessian = ihessian, var.score = var.score,
                  marg.cov = marg.cov, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")

@@ -1,8 +1,8 @@
 #include "header.h"
 
-void smithfull(double *data, double *distVec, int *nSite,
-	       int *nObs, double *locs, double *scales, double *shapes,
-	       double *cov11, double *cov12, double *cov22,
+void smithfull(double *data, double *distVec, int *nSite, int *nObs,
+	       int *weighted, double *weights, double *locs, double *scales,
+	       double *shapes, double *cov11, double *cov12, double *cov22,
 	       int *fitmarge, double *dns){
   //This is the Smith's model. It's a wrapper to several
   //sub-functions. It's named xxxfull as it either assume that the
@@ -42,21 +42,29 @@ void smithfull(double *data, double *distVec, int *nSite,
     if (*dns != 0.0)
       return;
 
-    *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+    if (*weighted)
+      *dns = wlpliksmith(frech, mahalDist, jac, *nObs, *nSite, weights);
+
+    else
+      *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
   }
   
   else {
     for (i=0;i<(*nSite * *nObs);i++)
       jac[i] = 0.0;    
 
-    *dns = lpliksmith(data, mahalDist, jac, *nObs, *nSite);
+    if (*weighted)
+      *dns = wlpliksmith(data, mahalDist, jac, *nObs, *nSite, weights);
+
+    else
+      *dns = lpliksmith(data, mahalDist, jac, *nObs, *nSite);
   }
   
   return;
 }
 
-void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, 
-		  double *locdsgnmat, double *locpenmat, int *nloccoeff,
+void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *weighted,
+		  double *weights, double *locdsgnmat, double *locpenmat, int *nloccoeff,
 		  int *npparloc, double *locpenalty, double *scaledsgnmat,
 		  double *scalepenmat, int *nscalecoeff, int *npparscale,
 		  double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
@@ -99,8 +107,12 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
   if (*dns != 0.0)
     return;
   
-  *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
-    
+  if (*weighted)
+    *dns = wlpliksmith(frech, mahalDist, jac, *nObs, *nSite, weights);
+
+  else
+    *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
   if (*locpenalty > 0)

@@ -4,7 +4,7 @@
 \description{Computes the F-madogram for max-stable processes.}
 \usage{
 fmadogram(data, coord, fitted, n.bins, which = c("mado", "ext"), xlab,
-ylab, col = c(1, 2), angles = NULL, marge = "mle", add = FALSE, ...)
+ylab, col = c(1, 2), angles = NULL, marge = "emp", add = FALSE, ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -57,7 +57,7 @@ ylab, col = c(1, 2), angles = NULL, marge = "mle", add = FALSE, ...)
   \code{\link{madogram}}, \code{\link{lmadogram}}
 }
 \examples{
-n.site <- 50
+n.site <- 15
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
@@ -67,6 +67,10 @@ smooth = 2)
 
 ##Compute the F-madogram
 fmadogram(data, locations)
+
+##Compare the F-madogram with a fitted max-stable process
+fitted <- fitmaxstab(data, locations, "whitmat", sill = 1)
+fmadogram(fitted = fitted, which = "ext")
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

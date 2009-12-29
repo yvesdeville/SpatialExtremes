@@ -5,7 +5,8 @@
   fitted max-stable process. 
 }
 \usage{
-\method{predict}{maxstab}(object, newdata, ret.per = NULL, \dots)
+\method{predict}{maxstab}(object, newdata, ret.per = NULL, std.err =
+TRUE, \dots)
 }
 \arguments{
   \item{object}{An object of class ``maxstab''. Most often, it will be
@@ -15,6 +16,8 @@
   \item{ret.per}{Numeric vector giving the return periods for which
     return levels are computed. If \code{NULL} (default), no return
     levels are computed.}
+  \item{std.err}{Logical. If \code{TRUE} (default), standard erros will
+    be computed if possible.}
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \value{'predict.maxstab' produces a vector of predictions or a matrix of

@@ -10,7 +10,7 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
 		 double *weights, double *ans){
   
   int i;
-  double *mahalDist;
+  double *mahalDist, res;
 
   mahalDist = (double *)R_alloc(*nPairs, sizeof(double));
 
@@ -22,10 +22,10 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
     return;
   }
 
-  for (i=0;i<*nPairs;i++)
-    *ans += (2.0 * pnorm(mahalDist[i] / 2.0, 0.0, 1.0, 1, 0) - extcoeff[i]) *
-      (2.0 * pnorm(mahalDist[i] / 2.0, 0.0, 1.0, 1, 0) - extcoeff[i]) / 
-      (weights[i] * weights[i]);
+  for (i=0;i<*nPairs;i++){
+    res = 2 * pnorm(0.5 * mahalDist[i], 0, 1, 1, 0) - extcoeff[i];
+    *ans +=  res * res / (weights[i] * weights[i]);
+  }
 
   return;
 }
@@ -37,7 +37,7 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 		 double *weights, double *ans){
   
   int i;
-  double *mahalDist;
+  double *mahalDist, res;
 
   mahalDist = (double *)R_alloc(*nPairs, sizeof(double));
 
@@ -47,20 +47,20 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++)
-    *ans += (2.0 * pnorm(mahalDist[i] / 2.0, 0.0, 1.0, 1, 0) - extcoeff[i]) *
-      (2.0 * pnorm(mahalDist[i] / 2.0, 0.0, 1.0, 1, 0) - extcoeff[i]) /
-      (weights[i] * weights[i]);
+  for (i=0;i<*nPairs;i++){
+    res = 2 * pnorm(0.5 * mahalDist[i], 0, 1, 1, 0) - extcoeff[i];
+    *ans += res * res / (weights[i] * weights[i]);
+  }
 
   return;
 }
 
 void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
-		   int *nPairs, int *dim, double *dist, double *extcoeff,
-		   double *weights, double *ans){
+		   double *smooth2, int *nPairs, int *dim, double *dist,
+		   double *extcoeff, double *weights, double *ans){
   
   int i;
-  double *rho;
+  double *rho, res;
 
   rho = (double *)R_alloc(*nPairs, sizeof(double));
 
@@ -77,26 +77,29 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
   case 4:
     *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
     break;
+  case 5:
+    *ans = -caugen(dist, *nPairs, *sill, *range, *smooth, *smooth2, rho);
+    break;
   }
   
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++)
-    *ans += (1 + sqrt(1 - 0.5 * (rho[i] + 1)) - extcoeff[i]) *
-      (1 + sqrt(1 - 0.5 * (rho[i] + 1)) - extcoeff[i]) / 
-      (weights[i] * weights[i]);
+  for (i=0;i<*nPairs;i++){
+    res = 1 + sqrt(0.5 - 0.5 * rho[i]) - extcoeff[i];
+    *ans += res * res / (weights[i] * weights[i]);
+  }
 
   return;
 }
 
 void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
-		    double *smooth, int *nPairs, int *dim, double *dist, double *extcoeff,
-		    double *weights, double *ans){
+		    double *smooth, double *smooth2, int *nPairs, int *dim,
+		    double *dist, double *extcoeff, double *weights, double *ans){
   /* This computes the least squares for the independent Schlather model */
   
   int i;
-  double *rho;
+  double *rho, res;
 
   rho = (double *)R_alloc(*nPairs, sizeof(double));
 
@@ -123,56 +126,66 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
   case 4:
     *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
     break;
+  case 5:
+    *ans = -caugen(dist, *nPairs, *sill, *range, *smooth, *smooth2, rho);
+    break;
   }
   
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++)
-    *ans += (2.0 * *alpha + (1 - *alpha) * (1 + sqrt(1 - 0.5 * (rho[i] + 1)) -
-					    extcoeff[i])) *
-      (2.0 * *alpha + (1 - *alpha) * (1 + sqrt(1 - 0.5 * (rho[i] + 1)) -
-				      extcoeff[i])) / (weights[i] * weights[i]);
+  for (i=0;i<*nPairs;i++){
+    res = 2 * *alpha + (1 - *alpha) * (1 + sqrt(0.5 - 0.5 * rho[i])) - extcoeff[i];
+    *ans +=  res * res / (weights[i] * weights[i]);
+  }
 
   return;
 }
 
-void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
-		    double *smooth, int *nPairs, int *dim, double *dist, double *extcoeff,
-		    double *weights, double *ans){
+void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *sill,
+		    double *range, double *smooth, double *smooth2, int *nPairs,
+		    int *dim, double *dist, double *extcoeff, double *weights,
+		    double *ans){
   /* This computes the least squares for the geometric Gaussian model */
   
   int i;
-  double *rho;
+  double *rho, res;
 
   rho = (double *)R_alloc(*nPairs, sizeof(double));
 
-  if (*sigma2 <= 0){
-    *ans = -(1 - *sigma2) * (1 - *sigma2) * MINF;
-    return;
-  }
-  
-  switch (*covmod){
-  case 1:
-    *ans = -whittleMatern(dist, *nPairs, *sill, *range, *smooth, rho);
-    break;
-  case 2:
-    *ans = -cauchy(dist, *nPairs, *sill, *range, *smooth, rho);
-    break;
-  case 3:
-    *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
-    break;
-  case 4:
-    *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
-  }
-  
+  *ans = -geomCovariance(dist, *nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
+			 *sill, *range, *smooth, *smooth2, rho);
+    
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++)
-    *ans += (2.0 * pnorm(sqrt(*sigma2 * (1 - rho[i]) / 2.0), 0.0, 1.0, 1, 0) -
-	     extcoeff[i]) *  (2.0 * pnorm(sqrt(*sigma2 * (1 - rho[i]) / 2.0), 0.0, 1.0, 1, 0) -
-			      extcoeff[i]) / (weights[i] * weights[i]);
+  for (i=0;i<*nPairs;i++){
+    res = 2 * pnorm(0.5 * rho[i], 0.0, 1.0, 1, 0) - extcoeff[i];
+    *ans += res * res / (weights[i] * weights[i]);
+  }
+
+  return;
+}
+
+void fitbrcovariance(double *range, double *smooth, int *nPairs,
+		     double *dist, double *extcoeff, double *weights,
+		     double *ans){
+  /* This computes the least squares for the Brown-Resnick model */
+  
+  int i;
+  double *rho, res;
+
+  rho = (double *)R_alloc(*nPairs, sizeof(double));
+
+  *ans = -brownResnick(dist, *nPairs, *range, *smooth, rho);
+    
+  if (*ans != 0.0)
+    return;
+
+  for (i=0;i<*nPairs;i++){
+    res = 2 * pnorm(0.5 * rho[i], 0.0, 1.0, 1, 0) - extcoeff[i];
+    *ans += res * res / (weights[i] * weights[i]);
+  }
 
   return;
 }

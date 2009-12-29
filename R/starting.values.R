@@ -43,7 +43,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -75,7 +75,7 @@
                              method = "Nelder", ...){
 
   n.site <- ncol(data)
-  param <- c("sill", "range", "smooth")
+  param <- c("sill", "range", "smooth", "smooth2")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)
@@ -96,7 +96,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -128,7 +128,7 @@
                                 method = "Nelder", ...){
 
   n.site <- ncol(data)
-  param <- c("alpha", "sill", "range", "smooth")
+  param <- c("alpha", "sill", "range", "smooth", "smooth2")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)
@@ -150,7 +150,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -181,7 +181,7 @@
                              method = "Nelder", ...){
 
   n.site <- ncol(data)
-  param <- c("sigma2", "sill", "range", "smooth")
+  param <- c("sigma2", "sill", "range", "smooth", "smooth2")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)
@@ -203,7 +203,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -250,7 +250,7 @@
   else
     sigma2.names <- paste("sigma2Coeff", 1:n.sigma2coeff, sep="")
 
-  param <- c(sigma2.names, "sill", "range", "smooth")
+  param <- c(sigma2.names, "sill", "range", "smooth", "smooth2")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)
@@ -271,7 +271,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -301,3 +301,54 @@
   return(start)
 }
 
+.start.brownresnick <- function(data, coord, covariables, loc.form, scale.form,
+                                shape.form, print.start.values = TRUE,
+                                method = "Nelder", ...){
+
+  n.site <- ncol(data)
+  param <- c("range", "smooth")
+  fixed.param <- list(...)[names(list(...)) %in% param]
+
+  idx.cov <- which(names(fixed.param) %in% param)
+  fixed.param.cov <- fixed.param[idx.cov]
+  fixed.param.gev <- fixed.param[-idx.cov]
+  
+  if (print.start.values)
+    cat("Computing appropriate starting values\n")
+  
+  if (length(fixed.param.cov) > 0){
+    args <- c(list(data = data, coord = coord, cov.mod = "brown",
+                   marge = "emp"), fixed.param.cov)
+    cov.param <- do.call("fitcovariance", args)$fitted
+  }
+  
+  else
+    cov.param <- fitcovariance(data, coord, "brown", marge = "emp")$fitted
+
+  args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
+                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
+                 method = method, warn = FALSE), fixed.param.gev)
+
+  spatgev <- do.call("fitspatgev", args)
+
+  frech <- data
+  gev <- predict(spatgev)
+  for (i in 1:n.site)
+    frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
+
+  args <- c(list(data = frech, coord = coord, fit.marge = FALSE,
+                 start = as.list(cov.param), warn = FALSE, method = method,
+                 std.err.type = "none"), fixed.param.cov)
+
+  cov.param <- do.call("brownresnickfull", args)
+  
+  start <- c(as.list(cov.param$param), as.list(spatgev$param))
+  
+  if (print.start.values){
+    cat("Starting values are defined\n")
+    cat("Starting values are:\n")
+    print(c(cov.param$fitted, spatgev$fitted))
+  }
+  
+  return(start)
+}

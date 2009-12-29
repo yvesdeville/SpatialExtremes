@@ -7,8 +7,8 @@
 }
 \usage{fitmaxstab(data,  coord, cov.mod, loc.form, scale.form,
 shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
-= TRUE, method = "Nelder", start, control = list(), std.err.type =
-"score", corr = FALSE)}
+= TRUE, method = "Nelder", start, control = list(), weights = NULL,
+std.err.type = "score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
@@ -16,9 +16,10 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
     model in the max-stable representation. Must be one of "gauss" for
-    the Smith's model; or "whitmat", "cauchy", "powexp" or "bessel" for
-    the Whittle-Matern, the Cauchy, the Powered Exponential and the
-    Bessel covariance family with the Schlather's model.} 
+    the Smith's model; or "whitmat", "cauchy", "powexp", "bessel" or
+    "caugen" for the Whittle-Matern, the Cauchy, the Powered Exponential, the
+    Bessel and the Generalized Cauchy correlation families with the
+    Schlather's model; "brown" for Brown-Resnick processes.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
     section details.}
@@ -52,6 +53,9 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
     values - but might fail.}
   \item{control}{A list giving the control parameters to be passed to
     the \code{\link{optim}} function.}
+  \item{weights}{A numeric vector specifying the weights in the pairwise
+  likelihood - and so has length the number of pairs. If \code{NULL}
+  (default), no weighting scheme is used.}
   \item{std.err.type}{Character string. Must be one of "none", "score",
     "grad". If "none", standard errors are not computed. Otherwise,
     standard errors are estimated using the sandwich estimates - see

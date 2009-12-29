@@ -3,8 +3,8 @@
 void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		     int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		     double *sigma2dsgnmat, double *sigma2coeff, int *nsigma2coeff,
-		     double *sill, double *range, double *smooth, int *fitmarge,
-		     double *dns){
+		     double *sill, double *range, double *smooth, double *smooth2,
+		     int *fitmarge, double *dns){
   //This is the non-stationary geometric gaussian model. It computes
   //the pairwise log-likelihood
   
@@ -33,7 +33,7 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
    
   //Stage 1: Compute the covariance at each location
   *dns = nsgeomCovariance(dist, *nSite, *dim, *covmod, sigma2, *sill, *range,
-			  *smooth, rho);
+			  *smooth, *smooth2, rho);
 
   if (*dns != 0.0)
     return;
@@ -70,7 +70,7 @@ void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int
 			double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 			double *sigma2dsgnmat, int *nsigma2coeff, double *loccoeff, double *scalecoeff,
 			double *shapecoeff, double *sigma2coeff, double *sill, double *range,
-			double *smooth, double *dns){
+			double *smooth, double *smooth2, double *dns){
   //This is the geometric gaussian model
   //The GEV parameters are defined using a polynomial response surface
   
@@ -91,7 +91,7 @@ void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int
   
   //Stage 1: Compute the covariance at each location
   *dns = nsgeomCovariance(dist, *nSite, *dim, *covmod, sigma2, *sill, *range,
-			  *smooth, rho);
+			  *smooth, *smooth2, rho);
 
   if (*dns != 0.0)
     return;

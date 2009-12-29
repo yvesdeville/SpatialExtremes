@@ -1,9 +1,9 @@
 #include "header.h"
 
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		   int *dim, double *locs, double *scales, double *shapes,
-		   double *sill, double *range, double *smooth,
-		   int *fitmarge,double *dns){
+		   int *dim, int *weighted, double *weights, double *locs,
+		   double *scales, double *shapes, double *sill, double *range,
+		   double *smooth, double *smooth2, int *fitmarge,double *dns){
   //This is the schlather's model. It's a wrapper to several
   //sub-functions. It's named xxxfull as it either assume that the
   //margins are unit Frechet, or the GEV parameters are estimated at
@@ -42,6 +42,9 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
   case 4:
     *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
     break;
+  case 5:
+    *dns = caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
+    break;
   }
 
   if (*dns != 0.0)
@@ -55,14 +58,22 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
     if (*dns != 0.0)
       return;
     
-    *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
+    if (*weighted)
+      *dns = wlplikschlather(frech, rho, jac, *nObs, *nSite, weights);
+
+    else
+      *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
   }
     
   else {
     for (i=nSitenObs;i--;)
       jac[i] = 0.0;
     
-    *dns = lplikschlather(data, rho, jac, *nObs, *nSite);
+    if (*weighted)
+      *dns = wlplikschlather(data, rho, jac, *nObs, *nSite, weights);
+
+    else
+      *dns = lplikschlather(data, rho, jac, *nObs, *nSite);
   }  
 
   return;
@@ -70,12 +81,14 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
 }
 
 void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+		      int *dim, int *weighted, double *weights, double *locdsgnmat,
+		      double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
-		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
-		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
-		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sill,
-		      double *range, double *smooth, double *dns){
+		      int *nscalecoeff, int *npparscale, double *scalepenalty,
+		      double *shapedsgnmat, double *shapepenmat, int *nshapecoeff,
+		      int *npparshape, double *shapepenalty, double *loccoeff,
+		      double *scalecoeff, double *shapecoeff, double *sill,
+		      double *range, double *smooth, double *smooth2, double *dns){
   //This is the Schlather's model.
   //The GEV parameters are defined using a polynomial response surface
   
@@ -103,6 +116,9 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   case 4:
     *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
     break;
+  case 5:
+    *dns = caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
+    break;
   }
 
   if (*dns != 0.0)
@@ -124,7 +140,11 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   if (*dns != 0.0)
     return;
 
-  *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
+  if (*weighted)
+    *dns = wlplikschlather(frech, rho, jac, *nObs, *nSite, weights);
+
+  else
+    *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
 
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter

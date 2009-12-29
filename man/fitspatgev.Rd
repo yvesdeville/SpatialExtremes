@@ -7,7 +7,7 @@
 \usage{
 fitspatgev(data, covariables, loc.form, scale.form, shape.form, ...,
 start, control = list(maxit = 10000), method = "Nelder", std.err.type =
-"score", warn = TRUE)
+"score", warn = TRUE, corr = FALSE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -31,7 +31,9 @@ start, control = list(maxit = 10000), method = "Nelder", std.err.type =
   \item{std.err.type}{Character string. Must be one of "score", "grad"
     or "none". If none, no standard errors are computed.}
   \item{warn}{Logical. If \code{TRUE} (default), users will be warned if
-  the starting values lie in a zero density region.}
+    the starting values lie in a zero density region.}
+  \item{corr}{Logical. If \code{TRUE}, the asymptotic correlation matrix
+    is computed.}
 }
 \details{
   A kind of "spatial" GEV model can be defined by using response

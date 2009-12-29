@@ -6,8 +6,8 @@
   non-parametric estimates of the pairwise extremal coefficients.
 }
 \usage{
-fitcovmat(data, coord, marge = "mle", iso = FALSE, control = list(),
-..., start)
+fitcovmat(data, coord, marge = "emp", iso = FALSE, control = list(),
+..., start, weighted = TRUE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -27,6 +27,7 @@ fitcovmat(data, coord, marge = "mle", iso = FALSE, control = list(),
     parameters over which the weighted sum of square is to be
     minimized. If \code{start} is omitted the routine attempts to find
     good starting values.}
+  \item{weighted}{Logical. Should weighted least squares be used?}
 }
 \details{
   The fitting procedure is based on weighted least squares. More
@@ -61,10 +62,10 @@ colnames(locations) <- c("lon", "lat")
 data <- rmaxstab(50, locations, cov.mod = "gauss", cov11 = 200, cov12 =
 0, cov22 = 200)
 
-fitcovmat(data, locations, marge = "emp")
+fitcovmat(data, locations)
 
 ##Force an isotropic model
-fitcovmat(data, locations, marge = "emp", iso = TRUE)
+fitcovmat(data, locations, iso = TRUE)
 }
 \keyword{htest}
 

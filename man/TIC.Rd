@@ -1,15 +1,13 @@
 \name{TIC}
 \alias{TIC}
-\alias{TIC.maxstab}
-\alias{TIC.spatgev}
+\alias{TIC.default}
 \title{Takeuchi's information criterion}
 \description{
-  Computes a "generalization" of the Takeuchi's information criterion
-  when the model is miss-specified.
+  Computes a the Takeuchi's information criterion which is equivalent to
+  the AIC when the model is miss-specified.
 }
 \usage{
-\method{TIC}{maxstab}(object, \dots)
-\method{TIC}{spatgev}(object, \dots)
+TIC(object, \dots, k = 2)
 }
 \arguments{
   \item{object}{An object of class \code{maxstab} or
@@ -17,6 +15,10 @@
     \code{\link{fitmaxstab}} or \code{\link{fitspatgev}} function.}
   \item{\dots}{Additional objects of class \code{maxstab} or
     \code{spatgev} for which TIC should be computed.}
+  \item{k}{Numeric. The penalty per parameter to be used. The case k = 2
+    (default) correspond to the classical TIC and \eqn{k = \log n}{k=
+      log n}, n number of observations, is the robust version of the
+    BIC.}
 }
 \value{
   Numeric.
@@ -26,6 +28,13 @@
   lowest TIC score.
 }
 \references{
+  Gao, X. and Song, P. X.-K. (2009) Composite likelihood Bayesian
+  information criteria for model selection in high dimensional
+  data. Preprint.
+
+  Sakamoto, Y., Ishiguro, M., and Kitagawa G. (1986) Akaike Information
+  Criterion Statistics. D. Reidel Publishing Company.
+
   Varin, C. and Vidoni, P. (2005) A note on composite likelihood
   inference and model selection. Biometrika \bold{92}(3):519--528.
 }
@@ -48,6 +57,7 @@ M1 <- fitmaxstab(data, locations, "cauchy", std.err.type = "score",
                  fit.marge = FALSE)
 
 TIC(M0, M1)
+TIC(M0, M1, k = log(nrow(data)))
 }
 \author{Mathieu Ribatet}
 \keyword{htest}

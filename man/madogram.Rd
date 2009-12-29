@@ -5,7 +5,7 @@
 \usage{
 madogram(data, coord, fitted, n.bins, gev.param = c(0, 1, 0), which =
 c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
-"mle", add = FALSE, ...)
+"emp", add = FALSE, ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -76,7 +76,7 @@ c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
   \code{\link{fmadogram}}, \code{\link{lmadogram}}
 }
 \examples{
-n.site <- 50
+n.site <- 15
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
@@ -86,6 +86,10 @@ smooth = 2)
 
 ##Compute the madogram
 madogram(data, locations)
+
+##Compare the madogram with a fitted max-stable model
+fitted <- fitmaxstab(data, locations, "whitmat", sill = 1)
+madogram(fitted = fitted, which = "ext")
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

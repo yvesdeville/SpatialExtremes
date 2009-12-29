@@ -212,7 +212,7 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
   Memcpy(xvals, covmat, neffSite * neffSite);
   
   {
-    int *iwork= (int *) R_alloc(8 * *nSite, sizeof(int));
+    int *iwork= (int *) R_alloc(8 * neffSite, sizeof(int));
     
     /* ask for optimal size of work array */
     lwork = -1;

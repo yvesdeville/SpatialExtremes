@@ -1,24 +1,23 @@
-TIC.maxstab <- function(object, ...){
+TIC.default <- function(object, ..., k = 2){
 
   all.objects <- c(list(object), list(...))
-  tic <- NULL
-  for (i in 1:length(all.objects)){
+  n.models <- length(all.objects)
+  tic <- rep(NA, n.models)
+  
+  for (i in 1:n.models){
 
     object <- all.objects[[i]]
     ihessian <- object$ihessian
-    jacobian <- object$jacobian
+    var.score <- object$var.score
     
-    if (is.null(ihessian) || is.null(jacobian))
-      tic <- c(tic, NA)
-    
-    else{
-      penalty <- jacobian %*% ihessian
-
-      tic <- c(tic, deviance(object) + 2 * sum(diag(penalty)))
+    if (!is.null(ihessian) && !is.null(var.score)){
+      penalty <- var.score %*% ihessian
+      tic[i] <- deviance(object) + k * sum(diag(penalty))
     }
+    
   }
 
-  names(tic) <- as.character(sys.call())[-1]
+  names(tic) <- as.character(sys.call())[2:(n.models + 1)]
   tic <- tic[order(tic)]
   
   return(tic)  
@@ -78,7 +77,7 @@ anova.maxstab <- function(object, object2, method = "RJ",
     theta0 <- M0$param
     theta0 <- theta0[colnames(ihessian)]
 
-    jac <- M1$jacobian
+    jac <- M1$var.score
     ijac <- try(solve(jac), silent = TRUE)
     hessian <- try(solve(ihessian), silent = TRUE)
 
@@ -169,30 +168,6 @@ anova.maxstab <- function(object, object2, method = "RJ",
               class = c("anova", "data.frame"))
 }
 
-TIC.spatgev <- function(object, ...){
-  all.objects <- c(list(object), list(...))
-  tic <- NULL
-  for (i in 1:length(all.objects)){
-
-    object <- all.objects[[i]]
-    ihessian <- object$ihessian
-    jacobian <- object$jacobian
-    
-    if (is.null(ihessian) || is.null(jacobian))
-      tic <- c(tic, NA)
-    
-    else{
-      penalty <- jacobian %*% ihessian
-
-      tic <- c(tic, deviance(object) + 2 * sum(diag(penalty)))
-    }
-  }
-
-  names(tic) <- as.character(sys.call())[-1]
-  tic <- tic[order(tic)]
-  
-  return(tic)  
-}
 
 anova.spatgev <- function(object, object2, method = "RJ",
                           square = "chol", ...){
@@ -245,7 +220,7 @@ anova.spatgev <- function(object, object2, method = "RJ",
     theta0 <- M0$param
     theta0 <- theta0[colnames(ihessian)]
 
-    jac <- M1$jacobian    
+    jac <- M1$var.score    
     ijac <- try(solve(jac), silent = TRUE)
     hessian <- try(solve(ihessian), silent = TRUE)
 

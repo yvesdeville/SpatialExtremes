@@ -1,6 +1,6 @@
 Package: SpatialExtremes
-Version: 1.4-0
-Date: 2009-16-10
+Version: 1.5-0
+Date: 2009-29-12
 Title: Modelling Spatial Extremes
 Author: Mathieu Ribatet <mathieu.ribatet@epfl.ch>
 Maintainer: Mathieu Ribatet <mathieu.ribatet@epfl.ch>
@@ -10,6 +10,8 @@ Description: This package proposes several approaches for spatial
 License: GPL (>= 2)
 URL: http://people.epfl.ch/mathieu.ribatet,
         http://spatialextremes.r-forge.r-project.org/
-Packaged: 2009-10-16 08:57:38 UTC; mathieu
 Repository: CRAN
-Date/Publication: 2009-10-16 11:11:20
+Repository/R-Forge/Project: spatialextremes
+Repository/R-Forge/Revision: 511
+Date/Publication: 2009-12-30 16:06:00
+Packaged: 2009-12-29 21:09:24 UTC; rforge

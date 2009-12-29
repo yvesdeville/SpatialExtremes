@@ -344,7 +344,7 @@ Smith's model with different covariance matrices.
 \end{proof}
 
 <<label=Smith2Sim,echo=FALSE>>=
-x <- seq(0, 10, length = 150)
+x <- seq(0, 10, length = 100)
 seed <- 19
 set.seed(seed)
 data0 <- rmaxstab(1, cbind(x,x), "gauss", cov11 = 9/8, cov12 = 0, cov22 = 9/8,
@@ -768,8 +768,8 @@ relies on the following property \citep{Davis1987}.
   \end{equation*}
   The covariance of $Y$ is therefore
   \begin{equation*}
-    \mathbb{E}[Y Y^T] = \mathbb{E}[D^{1/2} X X^T (D^{1/2})^T] =
-    \mathbb{E}[D^{1/2} I_n (D^{1/2})^T] = D^{1/2} (D^{1/2})^T = D
+    \mathbb{E}[Y Y^T] = D^{1/2} \mathbb{E}[X X^T] (D^{1/2})^T =
+    D^{1/2} I_n (D^{1/2})^T = D^{1/2} (D^{1/2})^T = D
   \end{equation*}
   where $I_n$ is the $n \times n$ identity matrix.
 \end{proof}
@@ -963,7 +963,7 @@ A comprehensive overview of methods for simulating random processes on
 a line from various covariance families is given by \citet{Emery2006}.
 
 <<label=tbm,echo=FALSE>>=
-x <- y <- seq(0, 10, length = 200)
+x <- y <- seq(0, 10, length = 100)
 coord <- cbind(x, y)
 seed <- 3
 set.seed(seed)
@@ -1124,7 +1124,7 @@ where $\sigma_{ii}$ are the diagonal elements of the covariance matrix
 $\Sigma$.
 
 <<echo=FALSE,label=rmaxstabSmith>>=
-x <- y <- seq(0, 10, length = 512)
+x <- y <- seq(0, 10, length = 100)
 coord <- cbind(x, y)
 set.seed(8)
 M0 <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 0, cov22 = 9/8,

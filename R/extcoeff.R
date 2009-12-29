@@ -2,8 +2,13 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
                         prob = 0, plot = TRUE, loess = TRUE, method = "BFGS",
                         std.err = TRUE, xlab, ylab, angles = NULL,
                         identify = FALSE){
-  
-  if (nrow(coord) != ncol(data))
+
+  if (is.null(dim(coord))){
+    if (length(coord) != ncol(data))
+      stop("'data' and 'coord' don't match")
+  }
+
+  else if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
   
   if (!(estim %in% c("ST", "Smith")))

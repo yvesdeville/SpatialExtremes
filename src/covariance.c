@@ -15,16 +15,16 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
   if (smooth < EPS)
     return (1 - smooth + EPS) * (1 - smooth + EPS) * MINF;
 
-  else if (smooth > 150)
-    /* Required because it could lead to infinite rho values - gamma
-    function */
-    return (smooth - 149) * (smooth - 149) * MINF;
+  else if (smooth > 100)
+    /* Not really required but larger smooth parameters are unlikely
+       to occur */
+    return (smooth - 99) * (smooth - 99) * MINF;
 
-  if (range < 1e-2)
-    return (1.01 - range) * (1.01 - range) * MINF;
+  if (range <= 0)
+    return (1 - range) * (1 - range) * MINF;
 
-  if (sill <= 1e-2)
-    return (1.01 - sill) * (1.01 - sill) * MINF;
+  if (sill <= 0)
+    return (1 - sill) * (1 - sill) * MINF;
   
   else if (sill > 1)
     return sill *sill * MINF;
@@ -52,6 +52,9 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   if (smooth < 0)
     return (1 - smooth) * (1 - smooth) * MINF;
   
+  else if (smooth > 100)
+    return (smooth - 99) * (smooth - 99) * MINF;
+
   if (range <= 0.0)
     return (1 - range) * (1 - range)* MINF;
 
@@ -67,6 +70,42 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   return 0.0;
 }
 
+double caugen(double *dist, int nPairs, double sill, double range,
+	      double smooth, double smooth2, double *rho){
+
+  /*This function computes the generalized cauchy covariance function
+    between each pair of locations.  When ans != 0.0, the parameters
+    are ill-defined. */
+
+  int i;
+  const double irange = 1 / range, ratioSmooth = -smooth / smooth2;
+  
+  //Some preliminary steps: Valid points?
+  if (smooth < 0)
+    return (1 - smooth) * (1 - smooth) * MINF;
+
+  /*else if (smooth1 > 500)
+    return (smooth1 - 499) * (smooth1 - 499) * MINF; */
+
+  if ((smooth2 > 2) || (smooth2 <= 0))
+    return (1 - smooth2) * (1 - smooth2) * MINF;
+  
+  if (range <= 0)
+    return (1 - range) * (1 - range)* MINF;
+
+  if (sill <= 0)
+    return (1 - sill) * (1 - sill) * MINF;
+  
+  else if (sill > 1)
+    return sill * sill * MINF;
+
+  for (i=nPairs;i--;)
+    rho[i] = sill * R_pow(1 + R_pow(dist[i] * irange, smooth2),
+			  ratioSmooth);
+    
+  return 0.0;
+}
+
 double powerExp(double *dist, int nPairs, double sill, double range,
 		double smooth, double *rho){
 
@@ -78,13 +117,13 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   const double irange = 1 / range;
     
   //Some preliminary steps: Valid points?
-  if ((smooth < 0) || (smooth > 2.0))
+  if ((smooth < 0) || (smooth > 2))
     return (1 - smooth) * (1 - smooth) * MINF;
 
-  if (range <= 0.0)
+  if (range <= 0)
     return (1 - range) * (1 - range) * MINF;
 
-  if (sill <= 0.0)
+  if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
   
   else if (sill > 1)
@@ -109,9 +148,9 @@ double bessel(double *dist, int nPairs, int dim, double sill,
   if (smooth < (0.5 * (dim - 2)))
     return (1 + 0.5 * (dim - 2) - smooth) * (1 + 0.5 * (dim - 2) - smooth) * MINF;
 
-  else if (smooth > 30)
+  /* else if (smooth > 100)
     //Require as bessel_j will be numerically undefined
-    return (smooth - 29) * (smooth - 29) * MINF;
+    return (smooth - 99) * (smooth - 99) * MINF; */
 
   if (range <= 0)
     return (1 - range) * (1 - range) * MINF;
@@ -126,7 +165,13 @@ double bessel(double *dist, int nPairs, int dim, double sill,
     double cst2;
     cst2 = dist[i] * irange;
 
-    rho[i] = cst * R_pow(cst2, -smooth) * bessel_j(cst2, smooth);
+    if (cst2 <= 1e5)
+      rho[i] = cst * R_pow(cst2, -smooth) * bessel_j(cst2, smooth);
+
+    else
+      // approximation of the besselJ function for large x
+      rho[i] = cst * R_pow(cst2, -smooth) * M_SQRT_2dPI *
+	cos(cst2 - smooth * M_PI_2 - M_PI_4);
   }
 
   return 0.0;
@@ -208,8 +253,9 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 }
 
 double geomCovariance(double *dist, int nPairs, int dim, int covmod,
-		      double sigma2, double sill, double range,
-		      double smooth, double *rho){
+		      double sigma2, double sigma2Bound, double sill,
+		      double range, double smooth, double smooth2,
+		      double *rho){
 
   //This function computes the geometric gaussian covariance function
   //between each pair of locations.
@@ -217,6 +263,12 @@ double geomCovariance(double *dist, int nPairs, int dim, int covmod,
   int i;
   const double twiceSigma2 = 2 * sigma2;
   double ans = 0.0;
+
+  if (sigma2 <= 0)
+    return (1 - sigma2) * (1 - sigma2) * MINF;
+
+  if (sigma2 > sigma2Bound)
+    return (sigma2Bound - 1 - sigma2) * (sigma2Bound - 1 - sigma2) * MINF;
 
   switch (covmod){
   case 1:
@@ -231,6 +283,8 @@ double geomCovariance(double *dist, int nPairs, int dim, int covmod,
   case 4:
     ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
     break;
+  case 5:
+    ans = caugen(dist, nPairs, sill, range, smooth, smooth2, rho);
   }
 
   if (ans != 0.0)
@@ -244,7 +298,7 @@ double geomCovariance(double *dist, int nPairs, int dim, int covmod,
 
 double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double *sigma2, double sill, double range,
-			double smooth, double *rho){
+			double smooth, double smooth2, double *rho){
   
   int i, j, currentPair = 0;
   const int nPairs = nSite * (nSite - 1) / 2;
@@ -263,6 +317,8 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
   case 4:
     ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
     break; 
+  case 5:
+    ans = caugen(dist, nPairs, sill, range, smooth, smooth2, rho);
   }
 
   if (ans != 0.0)
@@ -279,6 +335,21 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
   return ans;
 }
       
+
+double brownResnick(double *dist, int nPairs, double range, double smooth,
+		    double *rho){
+
+  int i;
+  const double halfSmooth = 0.5 * smooth, irange = 1 / range;
+
+  if ((smooth <= 0) || (smooth > 2))
+    return (smooth - 1) * (smooth - 1) * MINF;
+
+  for (i=nPairs;i--;)
+    rho[i] = R_pow(dist[i] * irange, halfSmooth);
+
+  return 0;
+}
 
   
   

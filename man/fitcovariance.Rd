@@ -6,8 +6,8 @@
   non-parametric estimates of the pairwise extremal coefficients.
 }
 \usage{
-fitcovariance(data, coord, cov.mod, marge = "mle", control = list(),
-..., start)
+fitcovariance(data, coord, cov.mod, marge = "emp", control = list(),
+..., start, weighted = TRUE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -16,8 +16,9 @@ fitcovariance(data, coord, cov.mod, marge = "mle", control = list(),
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
     model in the Schlather's model. Must be one of "whitmat", "cauchy",
-    "powexp" or "bessel" for the Whittle-Matern, the Cauchy, the Powered
-    Exponential and the Bessel covariance family.}
+    "powexp", "bessel" or "caugen" for the Whittle-Matern, the Cauchy,
+    the Powered Exponential, the Bessel and the Generalized Cauchy
+    correlation families.}
   \item{marge}{Character string specifying how margins are transformed
     to unit Frechet. Must be one of "emp", "frech" or "mle" - see
     function \code{\link{fitextcoeff}}.}
@@ -29,6 +30,7 @@ fitcovariance(data, coord, cov.mod, marge = "mle", control = list(),
     parameters over which the weighted sum of square is to be
     minimized. If \code{start} is omitted the routine attempts to find
     good starting values.}
+  \item{weighted}{Logical. Should weighted least squares be used?}
 }
 \details{
   The fitting procedure is based on weighted least squares. More
@@ -63,7 +65,7 @@ colnames(locations) <- c("lon", "lat")
 data <- rmaxstab(50, locations, cov.mod = "whitmat", sill = 1, range =
 30, smooth = 1)
 
-fitcovariance(data, locations, "whitmat", marge = "emp")
+fitcovariance(data, locations, "whitmat")
 }
 \keyword{htest}
 

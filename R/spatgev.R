@@ -1,13 +1,8 @@
 fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
                        ..., start, control = list(maxit = 10000),
-                       method = "Nelder", std.err.type = "score", warn = TRUE){
+                       method = "Nelder", std.err.type = "score", warn = TRUE,
+                       corr = FALSE){
 
-  if (std.err.type != "none")
-    hessian <- std.err.flag <- TRUE
-
-  else
-    hessian <- std.err.flag <- FALSE
-  
   n.site <- ncol(data)
   n.obs <- nrow(data)
 
@@ -89,10 +84,10 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
     ##To be sure that the scale parameter is always positive at starting
     ##values
     scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
-  
+    
     if (any(scales.hat <= 0))
       scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
-  
+    
     names(locCoeff) <- loc.names
     names(scaleCoeff) <- scale.names
     names(shapeCoeff) <- shape.names
@@ -119,7 +114,7 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
 
   if(l > 1)
     body(nllh) <- parse(text = paste("nllik(", paste("p[",1:l,
-                            "]", collapse = ", "), ", ...)"))
+                          "]", collapse = ", "), ", ...)"))
   
   fixed.param <- list(...)[names(list(...)) %in% param]
   
@@ -142,7 +137,7 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   
   else if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -161,9 +156,8 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   }
 
   else 
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
-    
+    opt <- optim(start, nllh, ..., method = method, control = control)
+  
   if ((opt$convergence != 0) || (opt$value >= 1.0e6)){
     if (warn)
       warning("optimization may not have succeeded")
@@ -176,50 +170,63 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
-  if (std.err.flag){
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
+  if (std.err.type != "none"){
+    std.err <- .spatgevstderr(param, data, loc.dsgn.mat,scale.dsgn.mat,
+                              shape.dsgn.mat, std.err.type,
+                              fixed.param = names(fixed.param),
+                              param.names = param.names)
+
+    opt$hessian <- std.err$hessian
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    if(!is.matrix(var.cov)){
-      std.err.flag <- FALSE
-      warning("observed information matrix is singular; std. err. won't be computed")
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
+      if (warn)
+        warning("observed information matrix is singular; std. err. won't be computed")
+
+      std.err.type <- "none"
     }
     
     else{
-      ihessian <- var.cov
-      jacobian <- .spatgevgrad(param, data, loc.dsgn.mat,scale.dsgn.mat,
-                               shape.dsgn.mat, std.err.type,
-                               fixed.param = names(fixed.param), param.names = param.names)
-      
-      if (any(is.na(jacobian))){
+      var.cov <- ihessian %*% var.score %*% ihessian
+      std.err <- diag(var.cov)
+
+      std.idx <- which(std.err <= 0)
+      if(length(std.idx) > 0){
         if (warn)
-          warning("observed information matrix is singular; std. err. won't be computed")
+          warning("Some (observed) standard errors are negative;\n passing them to NA")
         
-        std.err.flag <- FALSE
+        std.err[std.idx] <- NA
       }
+      
+      
+      std.err <- sqrt(std.err)
+      
+      if(corr) {
+        .mat <- diag(1/std.err, nrow = length(std.err))
+        corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
+        diag(corr.mat) <- rep(1, length(std.err))
+      }
+      
+      else
+        corr.mat <- NULL
+      
+      colnames(var.cov) <- colnames(ihessian) <- rownames(var.cov) <-
+        rownames(ihessian) <- names(std.err) <- nm
     }
   }
 
-  if (std.err.flag){
-    var.cov <- var.cov %*% jacobian %*% var.cov
-    std.err <- sqrt(diag(var.cov))
-
-    colnames(var.cov) <- colnames(ihessian) <- rownames(var.cov) <-
-      rownames(ihessian) <- colnames(jacobian) <- rownames(jacobian) <-
-        names(std.err) <- nm
-  }
-
-  else
+  if (std.err.type == "none")
     std.err <- std.err.type <- corr.mat <- var.cov <- ihessian <-
-      jacobian <- NULL
+      var.score <- NULL
   
   ans <- list(fitted.values = opt$par, param = param, std.err = std.err, var.cov = var.cov,
               counts = opt$counts, message = opt$message, covariables = covariables,
               logLik = -opt$value, loc.form = loc.form, scale.form = scale.form,
               shape.form = shape.form, convergence = opt$convergence, nllh = nllh,
-              deviance = 2 * opt$value, ihessian = ihessian, jacobian = jacobian,
-              data = data, jacobian = jacobian, fixed = unlist(fixed.param),
-              hessian = opt$hessian)
-
+              deviance = 2 * opt$value, ihessian = ihessian, var.score = var.score,
+              data = data, fixed = unlist(fixed.param), hessian = opt$hessian)
+  
   class(ans) <- "spatgev"
   return(ans)
 }

@@ -127,7 +127,7 @@ void rsmith2d(double *coord, double *center, double *edge, int *nObs,
 	nKO = *nSites * *nSites;
 	for (j=*nSites;j--;){
 	  for (k=*nSites;k--;){
-	    if (thresh > ans[j + k * *nSites * (1 + i * *nSites)]){
+	    if (thresh > ans[j + k * *nSites + i * *nSites * *nSites]){
 	      /* This is the bivariate normal density with 0 mean and
 		 cov. matrix [cov11, cov12; cov12, cov22] */
 	      y = exp((-*cov22 * (coord[j] - u1) * (coord[j] - u1) + 2 * *cov12 *
@@ -135,7 +135,8 @@ void rsmith2d(double *coord, double *center, double *edge, int *nObs,
 		       (coord[*nSites + k] - u2) * (coord[*nSites + k] - u2)) *
 		      itwiceDet) * thresh;
 	      
-	      ans[j + k * *nSites * ( 1 + i * *nSites)] = fmax2(y, ans[j + k * *nSites * (1 + i * *nSites)]);
+	      ans[j + k * *nSites + i * *nSites * *nSites] = 
+		fmax2(y, ans[j + k * *nSites + i * *nSites * *nSites]);
 	    }
 	
 	    else

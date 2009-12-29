@@ -75,3 +75,8 @@ frech2gev <- function(x, loc, scale, shape){
     
     return(ans)
 }
+
+.frech2gev <- function(x, loc, scale, shape)
+  ##This is a specific function that do the same as frech2gev but
+  ##without any checking. x MUST be a vector. Use with caution.
+  loc + scale * (pmax(x, 0)^shape - 1) / shape

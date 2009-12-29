@@ -4,7 +4,7 @@
 \description{Computes the lambda-madogram for max-stable processes.}
 \usage{
 lmadogram(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11, marge =
-"mle", col = terrain.colors(50, alpha = 0.5), theta = 90, phi = 20,
+"emp", col = terrain.colors(50, alpha = 0.5), theta = 90, phi = 20,
 border = NA, ...)
 }
 \arguments{

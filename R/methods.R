@@ -1,6 +1,7 @@
 print.spatgev <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
   cat("   Deviance:", x$deviance, "\n")
+  cat("        TIC:", TIC(x), "\n\n")
 
   param <- x$fitted.values
   loc.idx <- which(substr(names(param), 1, 3) == "loc")
@@ -44,9 +45,11 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     cat("   Pair. Deviance:", x$deviance, "\n")
     cat("              TIC:", TIC(x), "\n")
   }
-  if (x$est == "Least Square")
+  if (x$est == "Least Squares"){
+    cat("         Weighted:", x$weighted, "\n")
     cat("  Objective Value:", x$opt.value, "\n")
-  if ((x$model == "Schlather") || (x$model == "Geometric")){
+  }
+  if ((x$model == "Schlather") || (x$model == "Geometric") || (x$model == "Brown-Resnick")){
 
     if (x$cov.mod == "emp")
       cov.mod <- "Empirical"
@@ -59,8 +62,15 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
     if (x$cov.mod == "cauchy")
       cov.mod <- "Cauchy"
+
+    if (x$cov.mod == "caugen")
+      cov.mod <- "Generalized Cauchy"
+    
     if (x$cov.mod == "bessel")
       cov.mod <- "Bessel"    
+
+    if (x$cov.mod == "brown")
+      cov.mod <- "Fractional Brownian Motion"
     
     cat("Covariance Family:", cov.mod, "\n")
     
@@ -73,7 +83,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
       idx <- c(idx, which(names(x$fitted.values) == "sill"))
       idx <- c(idx, which(names(x$fitted.values) == "range"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth"))
-      
+      idx <- c(idx, which(names(x$fitted.values) == "smooth2"))      
 
       margin.param <- x$fitted.values[-idx]
       loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")
@@ -95,7 +105,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     }
 
     else{
-      cat("  Assuming unit Frechet.\n")
+      cat("  Assuming unit Frechet.\n\n")
       cat("  Dependence Parameters:\n")
       print.default(format(x$fitted.values, digits = digits), print.gap = 2, 
                     quote = FALSE)
@@ -186,6 +196,6 @@ print.pspline <- function(x, ...){
   cat("Res. Degree of freedom:", round(x$res.df, 3), "\n")  
 }
 
-TIC <- function(object, ...){
+TIC <- function(object, ..., k = 2){
   UseMethod("TIC")
 }

@@ -42,8 +42,7 @@ data <- rmaxstab(60, locations, cov.mod = "whitmat", sill = 1, range =
 3, smooth = 1)
 
 ## 2- Fit a max-stable processes
-schlather <- fitmaxstab(data, locations, "whitmat",
-                        fit.marge = FALSE)
+schlather <- fitmaxstab(data, locations, "whitmat", sill = 1)
 
 ## 3- Plot the extremal coefficient
 extcoeff(schlather)
