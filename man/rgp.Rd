@@ -25,9 +25,10 @@ rgp(n, coord, cov.mod = "powexp", mean = 0, nugget = 0, sill = 1, range
   \item{grid}{Logical. Does \code{coord} defines a grid?}
   \item{control}{A named list with arguments 'nlines' (number of lines
     of the TBM simulation) and 'method' the name of the simulation
-    method - must be one of 'exact' or 'tbm'. If 'method' is \code{NULL}
-  (default), the function tries to find the most appropriate simulation
-  technique. If 'nlines' is \code{NULL} it is set to 1000.}
+    method - must be one of 'exact', 'tbm' or 'circ'. If 'method' is
+    \code{NULL} (default), the function tries to find the most
+    appropriate simulation technique. If 'nlines' is \code{NULL} it is
+    set to 1000.}
 }
 \value{
   A matrix or an array containing the random field replicates.
@@ -42,6 +43,6 @@ rgp(n, coord, cov.mod = "powexp", mean = 0, nugget = 0, sill = 1, range
 x <- y <- seq(0, 20, length = 100)
 coord <- cbind(x, y)
 gp <- rgp(1, coord, cov.mod = "whitmat", grid = TRUE)
-filled.contour(x, y, gp[,,1], color.palette = terrain.colors)
+filled.contour(x, y, gp, color.palette = terrain.colors)
 }
 \keyword{distribution}

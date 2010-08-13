@@ -6,56 +6,107 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
 		double *scalepenmat, int *nscalecoeff, int *npparscale,
 		double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
 		int *nshapecoeff, int *npparshape, double *shapepenalty,
-		double *loccoeff, double *scalecoeff, double *shapecoeff,
-		double *dns){
+		int *usetempcov, double *tempdsgnmatloc, double *temppenmatloc,
+		int *ntempcoeffloc, int *nppartempcoeffloc, double *temppenaltyloc,
+		double *tempdsgnmatscale, double *temppenmatscale, int *ntempcoeffscale,
+		int *nppartempcoeffscale, double *temppenaltyscale, double *tempdsgnmatshape,
+		double *temppenmatshape, int *ntempcoeffshape, int *nppartempcoeffshape,
+		double *temppenaltyshape, double *loccoeff, double *scalecoeff,
+		double *shapecoeff, double *tempcoeffloc, double *tempcoeffscale,
+		double *tempcoeffshape, double *dns){
   
   /* This function computes the log-likelihood for a spatial GEV model
      i.e. the GEV paramters are defined through a response surface
      that could be either is simple linear model or a p-spline. */
 
-  int i, j;
-  double *locs, *scales, *shapes;
+  int i, j, flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
+  double *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes;
 
   locs = (double *)R_alloc(*nSite, sizeof(double));
   scales = (double *)R_alloc(*nSite, sizeof(double));
   shapes = (double *)R_alloc(*nSite, sizeof(double));
-
+  
   //Stage 1: Computing the GEV parameters using the design matrix
-  *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-		       loccoeff, scalecoeff, shapecoeff, *nSite,
-		       *nloccoeff, *nscalecoeff, *nshapecoeff,
-		       locs, scales, shapes);
+  *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat, loccoeff, scalecoeff,
+		       shapecoeff, *nSite, *nloccoeff, *nscalecoeff, *nshapecoeff, locs,
+		       scales, shapes);
 
-  if (*dns != 0.0)
+  if (flag){
+    trendlocs = (double *)R_alloc(*nObs, sizeof(double));
+    trendscales = (double *)R_alloc(*nObs, sizeof(double));
+    trendshapes = (double *)R_alloc(*nObs, sizeof(double));
+
+    dsgnmat2temptrend(tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, tempcoeffloc,
+		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
+		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
+
+    for (i=*nSite;i--;)
+      for (j=*nObs;j--;)
+	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
+	  *dns = MINF;
+	  return;
+	}
+  }
+  
+  else if (*dns != 0.0)
     return;
 
   //Stage 2: Compute the log-likelihood (assuming independence between
   //stations)
-  
-  for (i=0;i<*nSite;i++){
-
-    if (fabs(shapes[i]) <= 1e-6){
+  if (flag){
+    for (i=0;i<*nSite;i++){
       for (j=0;j<*nObs;j++){
-	data[j + i * *nObs] = (data[j + i * *nObs] - locs[i]) /
-	  scales[i];
-	
-	*dns += -log(scales[i]) - data[j + i * *nObs] -
-	  exp(-data[j + i * *nObs]);
+	if (fabs(shapes[i] + trendshapes[j]) <= 1e-6){
+	  data[j + i * *nObs] = (data[j + i * *nObs] - locs[i] - trendlocs[j]) /
+	    (scales[i] + trendscales[j]);
+	  
+	  *dns += -log(scales[i] + trendscales[j]) - data[j + i * *nObs] -
+	    exp(-data[j + i * *nObs]);
+	}
+      
+      else{
+	data[j + i * *nObs] = 1 + (shapes[i] + trendshapes[j]) * 
+	  (data[j + i * *nObs] - locs[i] - trendlocs[j]) / (scales[i] + trendscales[j]);
+	  
+	  if (data[j + i * *nObs] <= 0){
+	    *dns = MINF;
+	    return;
+	  }
+	  
+	  *dns += -log(scales[i] + trendscales[j]) - 
+	    R_pow(data[j + i * *nObs], -1 / (shapes[i] + trendshapes[j])) -
+	    (1 / (shapes[i] + trendshapes[j]) + 1) * log(data[j + i * *nObs]);
+	}
       }
     }
-    
-    else{
-      for (j=0;j<*nObs;j++){
-	data[j + i * *nObs] = 1 + shapes[i] * (data[j + i * *nObs] - locs[i]) /
-	  scales[i];
-	
-	if (data[j + i * *nObs] <= 0){
-	  *dns = MINF;
-	  return;
+  }
+
+  else {
+    for (i=0;i<*nSite;i++){
+      
+      if (fabs(shapes[i]) <= 1e-6){
+	for (j=0;j<*nObs;j++){
+	  data[j + i * *nObs] = (data[j + i * *nObs] - locs[i]) /
+	    scales[i];
+	  
+	  *dns += -log(scales[i]) - data[j + i * *nObs] -
+	    exp(-data[j + i * *nObs]);
 	}
-	
-	*dns += -log(scales[i]) - R_pow(data[j + i * *nObs], -1/shapes[i]) -
-	  (1/shapes[i] + 1) * log(data[j + i * *nObs]);
+      }
+      
+      else{
+	for (j=0;j<*nObs;j++){
+	  data[j + i * *nObs] = 1 + shapes[i] * (data[j + i * *nObs] - locs[i]) /
+	    scales[i];
+	  
+	  if (data[j + i * *nObs] <= 0){
+	    *dns = MINF;
+	    return;
+	  }
+	  
+	  *dns += -log(scales[i]) - R_pow(data[j + i * *nObs], -1/shapes[i]) -
+	    (1/shapes[i] + 1) * log(data[j + i * *nObs]);
+	}
       }
     }
   }
@@ -76,6 +127,19 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
 
+  // 4- Doing the same thing for the temporal component
+  if (*temppenaltyloc > 0)
+    *dns -= penalization(temppenmatloc, tempcoeffloc, *temppenaltyloc,
+			 *ntempcoeffloc, *nppartempcoeffloc);
+
+  if (*temppenaltyscale > 0)
+    *dns -= penalization(temppenmatscale, tempcoeffscale, *temppenaltyscale,
+			 *ntempcoeffscale, *nppartempcoeffscale);
+
+  if (*temppenaltyshape > 0)
+    *dns -= penalization(temppenmatshape, tempcoeffshape, *temppenaltyshape,
+			 *ntempcoeffshape, *nppartempcoeffshape);
+  
   return;
 }
 

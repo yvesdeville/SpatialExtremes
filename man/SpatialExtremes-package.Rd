@@ -1,4 +1,5 @@
 \name{SpatialExtremes}
+\docType{package}
 \alias{SpatialExtremes}
 \title{Analysis of Spatial Extremes}
 \description{

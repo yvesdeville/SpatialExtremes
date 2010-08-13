@@ -5,7 +5,7 @@
 \usage{
 madogram(data, coord, fitted, n.bins, gev.param = c(0, 1, 0), which =
 c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
-"emp", add = FALSE, ...)
+"emp", add = FALSE, xlim = c(0, max(dist)), ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -26,12 +26,14 @@ c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
   \item{col}{The colors used for the points and optionnaly for the
     fitted curve.}
   \item{angles}{A numeric vector. A partition of the interval
-    \eqn{(-\pi, \pi)}{(-\pi, \pi)} to help detecting anisotropy.}
+    \eqn{(0, \pi)}{(0, \pi)} to help detecting anisotropy.}
   \item{marge}{Character string. If 'emp', the observation are first
     transformed to the unit Frechet scale by using the empirical CDF. If
     'mle' (default), maximum likelihood estimates are used.}
   \item{add}{Logical. If \code{TRUE}, the plot is added to the current
     figure; otherwhise (default) a new plot is computed.}
+  \item{xlim}{A numeric vector of length 2 specifying the x coordinate
+    range.} 
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.} 
 }

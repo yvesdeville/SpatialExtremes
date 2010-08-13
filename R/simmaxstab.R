@@ -3,15 +3,20 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
   if (!(cov.mod %in% c("gauss","whitmat","cauchy","powexp","bessel",
                        "iwhitmat", "icauchy", "ipowexp", "ibessel",
-                       "gwhitmat", "gcauchy", "gpowexp", "gbessel")))
-    stop("'cov.mod' must be one of 'gauss', '(i/g)whitmat', '(i/g)cauchy', '(i/g)powexp' or '(i/g)bessel'")
+                       "gwhitmat", "gcauchy", "gpowexp", "gbessel",
+                       "twhitmat", "tcauchy", "tpowexp", "tbessel",
+                       "brown")))
+    stop("'cov.mod' must be one of 'gauss', '(i/g/t)whitmat', '(i/g/t)cauchy', '(i/g/t)powexp', '(i/g/t)bessel' or 'brown'")
 
-  if (!is.null(control$method) && !(control$method %in% c("exact", "tbm")))
-    stop("the argument 'method' for 'control' must be one of 'exact' and 'tbm'")
+  if (!is.null(control$method) && !(control$method %in% c("direct", "tbm", "circ")))
+    stop("the argument 'method' for 'control' must be one of 'direct', 'tbm' and 'circ'")
 
   if (cov.mod == "gauss")
     model <- "Smith"
 
+  else if (cov.mod == "brown")
+    model <- "Brown-Resnick"
+  
   else if (cov.mod %in% c("whitmat","cauchy","powexp","bessel"))
     model <- "Schlather"
 
@@ -21,8 +26,11 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     if (substr(cov.mod, 1, 1) == "i")
       model <- "iSchlather"
 
-    else
+    else if (substr(cov.mod, 1, 1) == "g")
       model <- "Geometric"
+
+    else
+      model <- "Extremal-t"
   }
 
   dist.dim <- ncol(coord)
@@ -74,7 +82,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     alpha <- list(...)$alpha
   }
 
-  else {
+  else if (model == "Geometric") {
     if (!all(c("sigma2", "sill", "range", "smooth") %in% names(list(...))))
       stop("You must specify 'sigma2', 'sill', 'range', 'smooth'")
     
@@ -82,6 +90,21 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     range <- list(...)$range
     smooth <- list(...)$smooth
     sigma2 <- list(...)$sigma2
+  }
+
+  else if (model == "Extremal-t"){
+     if (!all(c("DoF", "sill", "range", "smooth") %in% names(list(...))))
+      stop("You must specify 'DoF', 'sill', 'range', 'smooth'")
+    
+    sill <- list(...)$sill
+    range <- list(...)$range
+    smooth <- list(...)$smooth
+    DoF <- list(...)$DoF
+  }
+  
+  else if (model == "Brown-Resnick"){
+    range <- list(...)$range
+    smooth <- list(...)$smooth
   }
 
   if (dist.dim !=1){
@@ -102,12 +125,40 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   cov.mod <- switch(cov.mod, "gauss" = "gauss", "whitmat" = 1, "cauchy" = 2,
                     "powexp" = 3, "bessel" = 4)
 
-  if (grid)
-    ans <- double(n * n.site^dist.dim)
+  if (grid){
+    ans <- rep(-1e10, n * n.site^dist.dim)
+    reg.grid <- .isregulargrid(coord[,1], coord[,2])
+    steps <- reg.grid$steps
+    reg.grid <- reg.grid$reg.grid
+  }
 
   else
-    ans <- double(n * n.site)
-  
+    ans <- rep(-1e10, n * n.site)
+
+  ##Identify which simulation technique is the most adapted or use the
+  ##one specified by the user --- this is useless for the Smith model.
+  if (is.null(control$method)){
+      if (grid && reg.grid)
+        method <- "circ"
+      
+      else if ((length(ans) / n) > 600)
+        method <- "tbm"
+        
+      else
+        method <- "direct"
+    }
+
+    else
+      method <- control$method
+
+  if (method == "tbm"){
+    if (is.null(control$nlines))
+      nlines <- 1000
+
+    else
+      nlines <- control$nlines
+  }      
+    
   if (model == "Smith")
     ans <- switch(dist.dim,
                   .C("rsmith1d", as.double(coord), as.double(center), as.double(edge),
@@ -118,17 +169,6 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                      as.double(cov22), ans = ans, PACKAGE = "SpatialExtremes")$ans)
   
   else if (model == "Schlather"){
-
-    if (is.null(control$method)){
-      if ((length(ans) / n) > 600)
-        method <- "tbm"
-        
-      else
-        method <- "direct"
-    }
-
-    else
-      method <- control$method
 
     if (is.null(control$uBound))
       uBound <- 3.5
@@ -141,33 +181,20 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                 as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
                 as.double(range), as.double(smooth), as.double(uBound), ans = ans,
                 PACKAGE = "SpatialExtremes")$ans
-
-    else {
-      if (is.null(control$nlines))
-        nlines <- 1000
-
-      else
-        nlines <- control$nlines
-      
+    
+    else if (method == "circ")
+      ans <- .C("rschlathercirc", as.integer(n), as.integer(n.site), as.double(steps),
+                as.integer(dist.dim), as.integer(cov.mod), as.double(sill), as.double(range),
+                as.double(smooth),  as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
+    
+    else     
       ans <- .C("rschlathertbm", as.double(coord), as.integer(n), as.integer(n.site),
                 as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
                 as.double(range), as.double(smooth), as.double(uBound), as.integer(nlines),
                 ans = ans, PACKAGE = "SpatialExtremes")$ans
-    }
   }
 
   else if (model == "Geometric"){
-
-    if (is.null(control$method)){
-      if ((length(ans) / n) > 600)
-        method <- "tbm"
-    
-      else
-        method <- "direct"
-    }
-
-    else
-      method <- control$method
 
     if (is.null(control$uBound))
       uBound <- exp(3.5 * sqrt(sigma2) - 0.5 * sigma2)
@@ -181,29 +208,69 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                 as.double(sill), as.double(range), as.double(smooth),
                 as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
 
-    else {
-
-      if (is.null(control$nlines))
-        nlines <- 1000
-
-      else
-        nlines <- control$nlines
-      
+    else if (method == "circ")
+      ans <- .C("rgeomcirc", as.integer(n), as.integer(n.site), as.double(steps),
+                as.integer(dist.dim), as.integer(cov.mod), as.double(sigma2),
+                as.double(sill), as.double(range), as.double(smooth),  as.double(uBound),
+                ans = ans, PACKAGE = "SpatialExtremes")$ans
+    
+    else      
       ans <- .C("rgeomtbm", as.double(coord), as.integer(n), as.integer(n.site),
                 as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sigma2),
                 as.double(sill), as.double(range), as.double(smooth), as.double(uBound),
                 as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
-    }
+  }
+
+  else if (model == "Extremal-t"){
+    if (is.null(control$block.size))
+        block.size <- 500
+
+    else
+      block.size <- control$block.size
+
+    if (method == "direct")
+      ans <- .C("rextremaltdirect", as.double(coord), as.integer(n), as.integer(n.site),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
+                as.double(range), as.double(smooth), as.double(DoF), as.integer(block.size),
+                ans = ans, PACKAGE = "SpatialExtremes")$ans
+
+    else if (method == "circ")
+      ans <- .C("rextremaltcirc", as.integer(n), as.integer(n.site), as.double(steps),
+                as.integer(dist.dim), as.integer(cov.mod), as.double(sill), as.double(range),
+                as.double(smooth), as.double(DoF), as.integer(block.size), ans = ans,
+                PACKAGE = "SpatialExtremes")$ans
+    
+    else      
+      ans <- .C("rextremalttbm", as.double(coord), as.integer(n), as.integer(n.site),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
+                as.double(range), as.double(smooth), as.double(DoF), as.integer(block.size),
+                as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
+  }
+
+  else if (model == "Brown-Resnick"){
+    if (dist.dim == 1)
+      bounds <- range(coord)
+    
+    else
+      bounds <- apply(coord, 2, range)
+
+    if (method == "direct")
+      ans <- .C("rbrowndirect", as.double(coord), as.double(bounds),
+                as.integer(n), as.integer(n.site), as.integer(dist.dim),
+                as.integer(grid), as.double(range), as.double(smooth),
+                ans = ans, PACKAGE = "SpatialExtremes")$ans
+  }
+
+  if (grid){
+    if (n == 1)
+      ans <- matrix(ans, n.site, n.site)
+
+    else
+      ans <- array(ans, c(n.site, n.site, n))
   }
 
   else
-    stop("not implemented yet")
-
-  if (grid)
-    ans <- array(ans, c(n.site, n.site, n))
-
-  else
     ans <- matrix(ans, nrow = n, ncol = n.site)
-  
+
   return(ans)
 }

@@ -21,8 +21,8 @@ list(), \dots)
   \item{grid}{Logical. Does the coordinates represent grid points?}
   \item{control}{A named list with arguments 'nlines' (number of lines
     of the TBM simulation), 'method' the name of the simulation
-    method - must be one of 'exact' or 'tbm', and 'uBound' the uniform
-  upper bound. See details.}
+    method - must be one of 'exact', 'tbm' or 'circ', and 'uBound' the
+  uniform upper bound. See details.}
   \item{\dots}{The parameters of the max-stable model. See details.}
 }
 \details{
@@ -35,9 +35,12 @@ list(), \dots)
 
   Here are the details for each allowed components of 'control'. If
   'method' is \code{NULL} (default), the function tries to find the 
-  most appropriate simulation technique. If 'nlines' is \code{NULL}, it
-  is set to 1000. If 'uBound' is \code{NULL}, it is set to reasonable
-  values - for example 3.5 for the Schalther model.
+  most appropriate simulation technique. Current simulation techniques
+  are a direct approach, i.e. Cholesky decomposition of the covariance
+  matrix, the turning bands and the circular embedding methods. If
+  'nlines' is \code{NULL}, it is set to 1000. If 'uBound' is
+  \code{NULL}, it is set to reasonable values - for example 3.5 for the
+  Schlather model.
 }
 \value{
   A matrix containing observations from the required max-stable
@@ -56,15 +59,16 @@ list(), \dots)
 \examples{
 ## 1. Smith's model
 set.seed(8)
-x <- y <- seq(0, 10, length = 200)
-coord <- cbind(x, x)
-data <- rmaxstab(1, coord, cov11 = 9/8, cov12 = 0, cov22 = 9/8, grid = TRUE)
+x <- y <- seq(0, 10, length = 100)
+coord <- cbind(x, y)
+data <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 0, cov22 = 9/8,
+  grid = TRUE)
 ##We change to unit Gumbel margins for visibility
-filled.contour(x, y, log(data[,,1]), color.palette = terrain.colors)
+filled.contour(x, y, log(data), color.palette = terrain.colors)
 
 ## 2. Schlather's model
-coord <- matrix(runif(100, 0, 15), ncol = 2)
-data <- rmaxstab(100, coord, cov.mod = "whitmat", sill = 1, range = 10,
-smooth = 1)
+data <- rmaxstab(1, coord, cov.mod = "powexp", sill = 1, range = 3,
+smooth = 1, grid = TRUE)
+filled.contour(x, y, log(data), color.palette = terrain.colors)
 }
 \keyword{distribution}

@@ -28,16 +28,14 @@ void smithfull(double *data, double *distVec, int *nSite, int *nObs,
   }
   
   //Stage 1: Computing the Mahalanobis distance
-  *dns = mahalDistFct(distVec, nPairs, cov11,
-		      cov12, cov22, mahalDist);
+  *dns = mahalDistFct(distVec, nPairs, cov11, cov12, cov22, mahalDist);
 
   if (*dns != 0.0)
       return;
 
   //Stage 2: Transformation to unit Frechet
   if (*fitmarge){
-    *dns = gev2frech(data, *nObs, *nSite, locs, scales,
-		     shapes, jac, frech);
+    *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes, jac, frech);
 
     if (*dns != 0.0)
       return;
@@ -50,9 +48,8 @@ void smithfull(double *data, double *distVec, int *nSite, int *nObs,
   }
   
   else {
-    for (i=0;i<(*nSite * *nObs);i++)
-      jac[i] = 0.0;    
-
+    memset(jac, 0, *nSite * *nObs * sizeof(double));
+    
     if (*weighted)
       *dns = wlpliksmith(data, mahalDist, jac, *nObs, *nSite, weights);
 
@@ -69,13 +66,22 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
 		  double *scalepenmat, int *nscalecoeff, int *npparscale,
 		  double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
 		  int *nshapecoeff, int *npparshape, double *shapepenalty,
-		  double *loccoeff, double *scalecoeff, double *shapecoeff,
-		  double *cov11, double *cov12, double *cov22, double *dns){
+		  int *usetempcov, double *tempdsgnmatloc, double *temppenmatloc,
+		  int *ntempcoeffloc, int *nppartempcoeffloc, double *temppenaltyloc,
+		  double *tempdsgnmatscale, double *temppenmatscale, int *ntempcoeffscale,
+		  int *nppartempcoeffscale, double *temppenaltyscale, double *tempdsgnmatshape,
+		  double *temppenmatshape, int *ntempcoeffshape, int *nppartempcoeffshape,
+		  double *temppenaltyshape, double *loccoeff, double *scalecoeff,
+		  double *shapecoeff, double *tempcoeffloc, double *tempcoeffscale,
+		  double *tempcoeffshape, double *cov11, double *cov12, double *cov22,
+		  double *dns){
   //This is the Smith's model. It's named xxxdsgnmat as either linear
   //models or p-splines are used for the gev parameters.
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  double *jac, *mahalDist, *locs, *scales, *shapes, *frech;
+  int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
+  double *jac, *mahalDist, *locs, *scales, *shapes, *frech, *trendlocs, *trendscales,
+    *trendshapes;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
@@ -85,24 +91,43 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
   //Stage 1: Computing the Mahalanobis distance
-  *dns = mahalDistFct(distVec, nPairs, cov11, cov12,
-		      cov22, mahalDist);
+  *dns = mahalDistFct(distVec, nPairs, cov11, cov12, cov22, mahalDist);
 
-  if (*dns != 0.0)
+  if (*dns != 0)
     return;
 
   //Stage 2: Computing the GEV parameters using the design matrix
-  *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-		       loccoeff, scalecoeff, shapecoeff, *nSite,
-		       *nloccoeff, *nscalecoeff, *nshapecoeff,
-		       locs, scales, shapes);
+  *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat, loccoeff, scalecoeff, shapecoeff,
+		       *nSite, *nloccoeff, *nscalecoeff, *nshapecoeff, locs, scales, shapes);
 
-  if (*dns != 0.0)
+  if (flag){
+    int i, j;
+    trendlocs = (double *)R_alloc(*nObs, sizeof(double));
+    trendscales = (double *)R_alloc(*nObs, sizeof(double));
+    trendshapes = (double *)R_alloc(*nObs, sizeof(double));
+
+    dsgnmat2temptrend(tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, tempcoeffloc,
+		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
+		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
+
+    for (i=*nSite;i--;)
+      for (j=*nObs;j--;)
+	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
+	  *dns = MINF;
+	  return;
+	}
+  }
+
+  else if (*dns != 0.0)
     return;
 
   //Stage 3: Transformation to unit Frechet
-  *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		   jac, frech);
+  if (flag)
+    *dns = gev2frechTrend(data, *nObs, *nSite, locs, scales, shapes, trendlocs, trendscales,
+			  trendshapes, jac, frech);
+
+  else
+    *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes, jac, frech);
 
   if (*dns != 0.0)
     return;
@@ -116,18 +141,41 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
   if (*locpenalty > 0)
-    *dns -= penalization(locpenmat, loccoeff, *locpenalty,
-			 *nloccoeff, *npparloc);
+    *dns -= penalization(locpenmat, loccoeff, *locpenalty, *nloccoeff, *npparloc);
   
   // 2- For the scale parameter
   if (*scalepenalty > 0)    
-    *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
-			 *nscalecoeff, *npparscale);
+    *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty, *nscalecoeff, *npparscale);
   
   // 3- For the shape parameter
   if (*shapepenalty > 0)
-    *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
-			 *nshapecoeff, *npparshape);
+    *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty, *nshapecoeff, *npparshape);
   
+  // 4- Doing the same thing for the temporal component
+  if (*temppenaltyloc > 0)
+    *dns -= penalization(temppenmatloc, tempcoeffloc, *temppenaltyloc, *ntempcoeffloc,
+			 *nppartempcoeffloc);
+
+  if (*temppenaltyscale > 0)
+    *dns -= penalization(temppenmatscale, tempcoeffscale, *temppenaltyscale, *ntempcoeffscale,
+			 *nppartempcoeffscale);
+
+  if (*temppenaltyshape > 0)
+    *dns -= penalization(temppenmatshape, tempcoeffshape, *temppenaltyshape, *ntempcoeffshape,
+			 *nppartempcoeffshape);
+
+  // 4- Doing the same thing for the temporal component
+  if (*temppenaltyloc > 0)
+    *dns -= penalization(temppenmatloc, tempcoeffloc, *temppenaltyloc, *ntempcoeffloc,
+			 *nppartempcoeffloc);
+
+  if (*temppenaltyscale > 0)
+    *dns -= penalization(temppenmatscale, tempcoeffscale, *temppenaltyscale, *ntempcoeffscale,
+			 *nppartempcoeffscale);
+
+  if (*temppenaltyshape > 0)
+    *dns -= penalization(temppenmatshape, tempcoeffshape, *temppenaltyshape, *ntempcoeffshape,
+			 *nppartempcoeffshape);
+
   return;
 }

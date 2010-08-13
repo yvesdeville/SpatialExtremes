@@ -9,23 +9,50 @@ print.spatgev <- function(x, digits = max(3, getOption("digits") - 3), ...){
   shape.idx <- which(substr(names(param), 1, 5) == "shape")
 
   cat("    Location Parameters:\n")
-  print.default(format(param[loc.idx], digits = digits), print.gap = 2, 
+  print.default(format(param[loc.idx], digits = digits), print.gap = 2,
                 quote = FALSE)
   cat("       Scale Parameters:\n")
-  print.default(format(param[scale.idx], digits = digits), print.gap = 2, 
+  print.default(format(param[scale.idx], digits = digits), print.gap = 2,
                 quote = FALSE)
   cat("       Shape Parameters:\n")
-  print.default(format(param[shape.idx], digits = digits), print.gap = 2, 
+  print.default(format(param[shape.idx], digits = digits), print.gap = 2,
                 quote = FALSE)
-    
+
+  loc.idx <- which(substr(names(param), 1, 12) == "tempCoeffLoc")
+  scale.idx <- which(substr(names(param), 1, 14) == "tempCoeffScale")
+  shape.idx <- which(substr(names(param), 1, 14) == "tempCoeffShape")
+
+  if ((length(loc.idx) + length(scale.idx) + length(shape.idx)) > 0){
+    cat("\nTemporal Parameters\n")
+
+    if (length(loc.idx) > 0){
+      cat("    Location Parameters:\n")
+      print.default(format(param[loc.idx], digits = digits), print.gap = 2,
+                    quote = FALSE)
+    }
+
+    if (length(scale.idx)> 0){
+      cat("       Scale Parameters:\n")
+      print.default(format(param[scale.idx], digits = digits), print.gap = 2,
+                    quote = FALSE)
+    }
+
+    if (length(shape.idx)>0){
+      cat("       Shape Parameters:\n")
+
+      print.default(format(param[shape.idx], digits = digits), print.gap = 2,
+                    quote = FALSE)
+    }
+  }
+
   if(!is.null(x$std.err)) {
     cat("\nStandard Errors\n")
-    print.default(format(x$std.err, digits = digits), print.gap = 2, 
+    print.default(format(x$std.err, digits = digits), print.gap = 2,
                   quote = FALSE)
   }
   if(!is.null(x$var.cov)) {
     cat("\nAsymptotic Variance Covariance\n")
-    print.default(format(x$var.cov, digits = digits), print.gap = 2, 
+    print.default(format(x$var.cov, digits = digits), print.gap = 2,
                   quote = FALSE)
   }
   cat("\nOptimization Information\n")
@@ -41,22 +68,23 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
   cat("        Estimator:", x$est, "\n")
   cat("            Model:", x$model, "\n")
+  cat("         Weighted:", x$weighted, "\n")
   if (x$est == 'MPLE'){
     cat("   Pair. Deviance:", x$deviance, "\n")
     cat("              TIC:", TIC(x), "\n")
   }
-  if (x$est == "Least Squares"){
-    cat("         Weighted:", x$weighted, "\n")
+  if (x$est == "Least Squares")    
     cat("  Objective Value:", x$opt.value, "\n")
-  }
-  if ((x$model == "Schlather") || (x$model == "Geometric") || (x$model == "Brown-Resnick")){
+
+  if ((x$model == "Schlather") || (x$model == "Geometric") || (x$model == "Brown-Resnick") ||
+      (x$model == "Extremal-t")){
 
     if (x$cov.mod == "emp")
       cov.mod <- "Empirical"
-    
+
     if (x$cov.mod == "whitmat")
       cov.mod <- "Whittle-Matern"
-    
+
     if (x$cov.mod == "powexp")
       cov.mod <- "Powered Exponential"
 
@@ -65,15 +93,15 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
     if (x$cov.mod == "caugen")
       cov.mod <- "Generalized Cauchy"
-    
+
     if (x$cov.mod == "bessel")
-      cov.mod <- "Bessel"    
+      cov.mod <- "Bessel"
 
     if (x$cov.mod == "brown")
       cov.mod <- "Fractional Brownian Motion"
-    
+
     cat("Covariance Family:", cov.mod, "\n")
-    
+
     cat("\nEstimates\n")
     cat("  Marginal Parameters:\n")
 
@@ -83,7 +111,8 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
       idx <- c(idx, which(names(x$fitted.values) == "sill"))
       idx <- c(idx, which(names(x$fitted.values) == "range"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth"))
-      idx <- c(idx, which(names(x$fitted.values) == "smooth2"))      
+      idx <- c(idx, which(names(x$fitted.values) == "smooth2"))
+      idx <- c(idx, which(names(x$fitted.values) == "DoF"))
 
       margin.param <- x$fitted.values[-idx]
       loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")
@@ -91,30 +120,54 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
       shape.idx <- which(substr(names(margin.param), 1, 5) == "shape")
 
       cat("    Location Parameters:\n")
-      print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2, 
+      print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
       cat("       Scale Parameters:\n")
-      print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2, 
+      print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
       cat("       Shape Parameters:\n")
-      print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2, 
+      print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
+
+      loc.idx <- which(substr(names(margin.param), 1, 12) == "tempCoeffLoc")
+      scale.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffScale")
+      shape.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffShape")
+
+      if (length(loc.idx) > 0){
+        cat("Temporal Location Parameters:\n")
+        print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
+                      quote = FALSE)
+      }
+
+      if (length(scale.idx)> 0){
+        cat("Temporal Scale Parameters:\n")
+        print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
+                      quote = FALSE)
+      }
+
+      if (length(shape.idx)>0){
+        cat("Temporal Shape Parameters:\n")
+
+        print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
+                      quote = FALSE)
+      }
+
       cat("  Dependence Parameters:\n")
-      print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2, 
+      print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2,
                     quote = FALSE)
     }
 
     else{
       cat("  Assuming unit Frechet.\n\n")
       cat("  Dependence Parameters:\n")
-      print.default(format(x$fitted.values, digits = digits), print.gap = 2, 
+      print.default(format(x$fitted.values, digits = digits), print.gap = 2,
                     quote = FALSE)
     }
   }
 
   else{
     cat("Covariance Family:", x$cov.mod, "\n")
-    
+
     cat("\nEstimates\n")
     cat("  Marginal Parameters:\n")
 
@@ -127,41 +180,65 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
       shape.idx <- which(substr(names(margin.param), 1, 5) == "shape")
 
       cat("    Location Parameters:\n")
-      print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2, 
+      print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
       cat("       Scale Parameters:\n")
-      print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2, 
+      print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
       cat("       Shape Parameters:\n")
-      print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2, 
+      print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
+
+      loc.idx <- which(substr(names(margin.param), 1, 12) == "tempCoeffLoc")
+      scale.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffScale")
+      shape.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffShape")
+
+      if (length(loc.idx) > 0){
+        cat("Temporal Location Parameters:\n")
+        print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
+                      quote = FALSE)
+      }
+
+      if (length(scale.idx)> 0){
+        cat("Temporal Scale Parameters:\n")
+        print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
+                      quote = FALSE)
+      }
+
+      if (length(shape.idx)>0){
+        cat("Temporal Shape Parameters:\n")
+
+        print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
+                      quote = FALSE)
+      }
+
       cat("  Dependence Parameters:\n")
-      print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2, 
+      print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2,
                     quote = FALSE)
     }
 
     else{
       cat("  Not estimated.\n")
       cat("  Dependence Parameters:\n")
-      print.default(format(x$fitted.values, digits = digits), print.gap = 2, 
+      print.default(format(x$fitted.values, digits = digits), print.gap = 2,
                     quote = FALSE)
     }
   }
-    
+
   if(!is.null(x$std.err)) {
     cat("\nStandard Error Type:", x$std.err.type, "\n")
     cat("\nStandard Errors\n")
-    print.default(format(x$std.err, digits = digits), print.gap = 2, 
+    print.default(format(x$std.err, digits = digits), print.gap = 2,
                   quote = FALSE)
   }
   if(!is.null(x$var.cov)) {
     cat("\nAsymptotic Variance Covariance\n")
-    print.default(format(x$var.cov, digits = digits), print.gap = 2, 
+    print.default(format(x$var.cov, digits = digits), print.gap = 2,
                   quote = FALSE)
   }
   if(!is.null(x$corr)) {
     cat("\nCorrelation\n")
-    print.default(format(x$corr, digits = digits), print.gap = 2, 
+    print.default(format(x$corr, digits = digits), print.gap = 2,
                   quote = FALSE)
   }
   cat("\nOptimization Information\n")
@@ -193,7 +270,7 @@ print.pspline <- function(x, ...){
   cat("Degree:", x$degree, "\t Penalty: ",
       round(x$penalty, 3), "\n")
   cat("\n     Degree of freedom:", round(x$df, 3), "\n")
-  cat("Res. Degree of freedom:", round(x$res.df, 3), "\n")  
+  cat("Res. Degree of freedom:", round(x$res.df, 3), "\n")
 }
 
 TIC <- function(object, ..., k = 2){

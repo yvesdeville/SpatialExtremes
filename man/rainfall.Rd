@@ -1,5 +1,8 @@
 \name{rainfall}
+\docType{data}
 \alias{rainfall}
+\alias{rain}
+\alias{coord}
 \title{Summer annual maxima precipitation in Switzerland}
 \usage{data(rainfall)}
 \description{
@@ -7,7 +10,7 @@
   during June--August at 79 sites in Switzerland.
   }
 \format{This data set contains two R objects: 'rain' and 'coord'. 'rain'
-  is a 47 by 79 matrix giving the amount of rain in centimeters, each
+  is a 47 by 79 matrix giving the amount of rain in millimeters, each
   column correspond to one locations. 'coord' is a 79 by 3 matrix giving
   the longitude, latitude and the elevation for each station, all of
   them being in meters.}

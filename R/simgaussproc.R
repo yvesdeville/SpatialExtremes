@@ -2,14 +2,24 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
                 sill = 1, range = 1, smooth = 1, grid = FALSE,
                 control = list()){
 
+  dist.dim <- ncol(coord)
+
+  if (is.null(dist.dim)){
+    dist.dim <- 1
+    n.site <- length(coord)
+  }
+
+  else
+    n.site <- nrow(coord)
+  
   if (grid && is.null(dim(coord)))
     stop("'grid' cannot be 'TRUE' if you specify univariate coordinates")
 
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel", "fbm")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'fbm'")
 
-  if (!is.null(control$method) && !(control$method %in% c("exact", "tbm")))
-    stop("the argument 'method' for 'control' must be one of 'exact' and 'tbm'")
+  if (!is.null(control$method) && !(control$method %in% c("exact", "tbm", "circ")))
+    stop("the argument 'method' for 'control' must be one of 'exact', 'tbm' or 'circ'")
 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -19,13 +29,30 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
     cov.mod.num <- 3
   if (cov.mod == "bessel")
     cov.mod.num <- 4
+  if (cov.mod == "fbm")
+    cov.mod.num <- 6
 
+  ##Check if a regular grid is specified
+  if (grid){
+    reg.grid <- .isregulargrid(coord[,1], coord[,2])
+    steps <- reg.grid$steps
+    reg.grid <- reg.grid$reg.grid
+    ngrid <- nrow(coord)
+  }
+
+  else
+    reg.grid <- FALSE
+    
   if (is.null(control$method)){
     ##Identify the most accurate method for simulation if not specified
-    if (grid && (nrow(coord)^ncol(coord) > 500))
+
+    if (reg.grid)
+      method <- "circ"
+    
+    else if (grid && (n.site^dist.dim > 500))
       method <- "tbm"
     
-    else if (nrow(coord) > 500)
+    else if ((n.site > 500) && (dist.dim > 1))
       method <- "tbm"
     
     else
@@ -45,7 +72,9 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
                "tbm" = .tbmgp(n, coord, cov.mod.num, nugget, sill, range,
                  smooth, grid, nlines = nlines),
                "exact" = .exactgp(n, coord, cov.mod.num, nugget, sill, range,
-                 smooth, grid))
+                 smooth, grid),
+               "circ" = .circgp(n, ngrid, steps, dist.dim, cov.mod.num, nugget,
+                 sill, range, smooth))
 
   return(mean + gp)
 }
@@ -71,11 +100,11 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
            PACKAGE = "SpatialExtremes")$ans
   
   if (grid){
-    if (dist.dim == 2)
-      gp <- array(gp, c(n.site, n.site, n))
-
+    if ((n == 1) && (dist.dim == 2))
+      gp <- matrix(gp, n.site, n.site)
+    
     else
-      gp <- array(gp, c(n.site, n.site, n.site, n))
+      gp <- array(gp, c(rep(n.site, dist.dim), n))
   }
 
   else
@@ -102,15 +131,29 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
            as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
 
   if (grid){
-    if (dim == 2)
-      gp <- array(gp, c(n.site, n.site, n))
-
+    if ((n == 1) && (dim == 2))
+      gp <- matrix(gp, n.site, n.site)
+    
     else
-      gp <- array(gp, c(n.site, n.site, n.site, n))
+      gp <- array(gp, c(rep(n.site, dim), n))
   }
 
   else
     gp <- matrix(gp, nrow = n, ncol = n.site)
 
   return(gp)
+}
+
+.circgp <- function(n, n.grid, steps, dim, cov.mod, nugget, sill, range, smooth){
+  
+  gp <- .C("circemb", as.integer(n), as.integer(n.grid), as.double(steps),
+           as.integer(dim), as.integer(cov.mod), as.double(nugget),
+           as.double(sill), as.double(range), as.double(smooth),
+           ans = double(n * n.grid^2), PACKAGE = "SpatialExtremes")$ans
+
+  if (n == 1)
+    return(matrix(gp, n.grid, n.grid))
+
+  else
+    return(array(gp, c(n.grid, n.grid, n)))
 }

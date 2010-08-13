@@ -19,16 +19,18 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
     nlines: the number of lines used for the TBM algo
        ans: the generated random field */
 
-  int i;
-  double *lines;
-
+  /* lagi, lagj are integers useful to fill in the output depending on
+     if locations are on a grid or not */
+  int i, neffSite, lagi = 1, lagj = 1;
+  double nugget = 1 - *sill;
+  
   //rescale the coordinates
   for (i=(*nSite * *dim);i--;){
     const double irange = 1 / *range;
     coord[i] = coord[i] * irange;
   }
 
-  lines = (double *)R_alloc(3 * *nlines, sizeof(double));
+  double *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
   
   if ((*covmod == 3) && (*smooth == 2))
     //This is the gaussian case
@@ -36,133 +38,68 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 
   //Generate lines
   vandercorput(nlines, lines);
-  
-  GetRNGstate();
+
   if (*grid){
-    //coord defines a grid
-    int neffSite = R_pow_di(*nSite, *dim);
-    for (i=*nObs;i--;){
-      int nKO = neffSite;
-      double poisson = 0;
-
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	int j;
-	double nugget = 1 - *sill, ipoisson, u, v, w,
-	  angle, inorm, thresh, *gp;
-
-	gp = (double *)R_alloc(neffSite, sizeof(double));
-
-	/* ------- Random rotation of the lines ----------*/
-	u = unif_rand() - 0.5;
-	v = unif_rand() - 0.5;
-	w = unif_rand() - 0.5;
-	angle = runif(0, M_2PI);
-	
-	inorm = 1 / sqrt(u * u + v * v + w * w);
-	
-	u *= inorm;
-	v *= inorm;
-	w *= inorm;
-	
-	rotation(lines, nlines, &u, &v, &w, &angle);
-	/* -------------- end of rotation ---------------*/
-	
-	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
-	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	
-	for (j=neffSite;j--;)
-	  gp[j] = 0;
-
-	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-		sill, range, smooth, nlines, lines, gp);
-	
-	nKO = neffSite;
-	for (j=neffSite;j--;){
-	  if (thresh > ans[j + i * neffSite])
-	    ans[j + i * neffSite] = fmax2(gp[j] * ipoisson, ans[j + i * neffSite]);
-	  
-	  else
-	    nKO--;
-	  
-	}
-      }
-    }
-
-    //Lastly we multiply by 1 / E[max(0, Y)]
-    for (i=(neffSite * *nObs);i--;){
-      const double imean = M_SQRT2 * M_SQRT_PI;
-      ans[i] *= imean;
-    }
+    neffSite = R_pow_di(*nSite, *dim);
+    lagi = neffSite;
   }
 
   else{
-    //coord doesn't define a grid
-    int neffSite = *nSite;
-    for (i=*nObs;i--;){
-      double poisson = 0;
-      int nKO = neffSite;
-      
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	int j;
-	double nugget = 1 - *sill, ipoisson, u, v, w,
-	  angle, inorm, thresh, *gp;
-
-	gp = (double *)R_alloc(neffSite, sizeof(double));
-
-	/* ------- Random rotation of the lines ----------*/
-	u = unif_rand() - 0.5;
-	v = unif_rand() - 0.5;
-	w = unif_rand() - 0.5;
-	angle = runif(0, M_2PI);
-	
-	inorm = 1 / sqrt(u * u + v * v + w * w);
-	
-	u *= inorm;
-	v *= inorm;
-	w *= inorm;
-	
-	rotation(lines, nlines, &u, &v, &w, &angle);
-	/* -------------- end of rotation ---------------*/
-
-	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
-	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	for (j=neffSite;j--;)
-	  gp[j] = 0;
-	
-	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-		sill, range, smooth, nlines, lines, gp);
-	
-	nKO = neffSite;
-	for (j=*nSite;j--;){
-	  if (thresh > ans[i + j * *nObs])
-	    ans[i + j * *nObs] = fmax2(gp[j] * ipoisson, ans[i + j * *nObs]);
-	  
-	  else
-	    nKO--;
-	}
-      }
-    }
-
-    //Lastly we multiply by 1 / E[max(0, Y)]
-    for (i=(neffSite * *nObs);i--;){
-      const double imean = M_SQRT2 * M_SQRT_PI;
-      ans[i] *= imean;
-    }
+    neffSite = *nSite;
+    lagj = *nObs;
   }
 
+  GetRNGstate();
+
+  for (i=*nObs;i--;){
+    int nKO = neffSite;
+    double poisson = 0;
+    
+    while (nKO) {
+      /* The stopping rule is reached when nKO = 0 i.e. when each site
+	 satisfies the condition in Eq. (8) of Schlather (2002) */
+      int j;
+      double *gp = (double *)R_alloc(neffSite, sizeof(double));
+      
+      /* ------- Random rotation of the lines ----------*/
+      double u = unif_rand() - 0.5,
+	v = unif_rand() - 0.5,
+	w = unif_rand() - 0.5,
+	angle = runif(0, M_2PI),	
+	inorm = 1 / sqrt(u * u + v * v + w * w);
+      
+      u *= inorm;
+      v *= inorm;
+      w *= inorm;
+      
+      rotation(lines, nlines, &u, &v, &w, &angle);
+      /* -------------- end of rotation ---------------*/
+      
+      poisson += exp_rand();
+      double ipoisson = 1 / poisson,
+	thresh = *uBound * ipoisson;
+      
+      /* We simulate one realisation of a gaussian random field with
+	 the required covariance function */
+      memset(gp, 0, neffSite * sizeof(double));
+      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
+	      sill, range, smooth, nlines, lines, gp);
+      
+      nKO = neffSite;
+      for (j=neffSite;j--;){
+	ans[j * lagj + i * lagi] = fmax2(gp[j] * ipoisson, ans[j * lagj + i * lagi]);
+	nKO -= (thresh <= ans[j * lagj + i * lagi]);
+	
+      }
+    }
+  }
+  
   PutRNGstate();
+
+  //Lastly we multiply by 1 / E[max(0, Y)]
+  const double imean = M_SQRT2 * M_SQRT_PI;
+  for (i=(neffSite * *nObs);i--;)    
+    ans[i] *= imean;
 
   return;
 }
@@ -183,23 +120,26 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
     smooth: the smooth parameter
        ans: the generated random field */
 
-  int i, j, k, lwork, nKO, info = 0, neffSite;
-  double poisson, ipoisson, thresh, *gp, nugget = 1 - *sill,
-    *covmat, one = 1, zero = 0, *work, *xvals, tmp, *d, *u,
-    *v, sum, dummy;
+  int i, j, k, lwork, nKO, info = 0, neffSite, lagi = 1, lagj = 1;
+  double poisson, ipoisson, thresh, nugget = 1 - *sill,
+    one = 1, zero = 0, *work, tmp, sum, dummy;
 
-  if (*grid)
+  if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
+    lagi = neffSite;
+  }
 
-  else
+  else{
     neffSite = *nSite;
+    lagj = *nObs;
+  }
 
-  covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  d = (double *)R_alloc(neffSite, sizeof(double));
-  u = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  v = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double));
-  gp = (double *)R_alloc(neffSite, sizeof(double));
+  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *d = (double *)R_alloc(neffSite, sizeof(double)),
+    *u = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *v = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
+    *gp = (double *)R_alloc(neffSite, sizeof(double));
 
   buildcovmat(nSite, grid, covmod, coord, dim, &nugget, sill, range,
 	      smooth, covmat);
@@ -234,10 +174,10 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
 
   /* Compute the square root of the covariance matrix */
   // a) First compute diag(sqrt(d)) %*% u
-  for (i=0;i<neffSite;i++){
+  for (i=neffSite;i--;){
     dummy = sqrt(d[i]);
     
-    for (j=0;j<neffSite;j++)
+    for (j=neffSite;j--;)
       u[i + neffSite * j] *= dummy;
   }
 
@@ -246,89 +186,208 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
 		  v, &neffSite, u, &neffSite, &zero, covmat, &neffSite);
   
   GetRNGstate();
-  if (*grid){
-    //coord defines a grid
-    for (i=*nObs;i--;){
-      poisson = 0;
-      nKO = neffSite;
+ 
+  for (i=*nObs;i--;){
+    poisson = 0;
+    nKO = neffSite;
+    
+    while (nKO) {
+      /* The stopping rule is reached when nKO = 0 i.e. when each site
+	 satisfies the condition in Eq. (8) of Schlather (2002) */
+      poisson += exp_rand();
+      ipoisson = 1 / poisson;
+      thresh = *uBound * ipoisson;
       
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
+      /* We simulate one realisation of a gaussian random field with
+	 the required covariance function */
+      for (j=neffSite;j--;)
+	d[j] = norm_rand();
+      
+      for (j=neffSite;j--;){
+	sum = 0;
+	for (k=neffSite;k--;)
+	  sum += d[k] * covmat[j + k * neffSite];
 	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	for (j=neffSite;j--;)
-	  d[j] = norm_rand();
-	  
-	for (j=neffSite;j--;){
-	  sum = 0;
-	  for (k=neffSite;k--;)
-	    sum += d[k] * covmat[j + k * neffSite];
-	  
-	  gp[j] = sum;
-	}
-	
-	nKO = neffSite;
-	for (j=neffSite;j--;){
-	  if (thresh > ans[j + i * neffSite])
-	    ans[j + i * neffSite] = fmax2(gp[j] * ipoisson, ans[j + i * neffSite]);
-	  
-	  else
-	    nKO--;
-	  
-	}
+	gp[j] = sum;
       }
-    }
-  }
-
-  else{
-    //coord doesn't define a grid
-    for (i=*nObs;i--;){
-      poisson = 0;
-      nKO = *nSite;
       
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
-	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	for (j=neffSite;j--;)
-	  d[j] = norm_rand();
-	  
-	for (j=neffSite;j--;){
-	  sum = 0;
-	  for (k=neffSite;k--;)
-	    sum += d[k] * covmat[j + k * neffSite];
-	  
-	  gp[j] = sum;
-	}
-	
-	nKO = *nSite;
-	for (j=*nSite;j--;){
-	  if (thresh > ans[i + j * *nObs])
-	    ans[i + j * *nObs] = fmax2(gp[j] * ipoisson, ans[i + j * *nObs]);
-	  
-	  else
-	    nKO--;
-	}
+      nKO = neffSite;
+      for (j=neffSite;j--;){
+	ans[j * lagj + i * lagi] = fmax2(gp[j] * ipoisson, ans[j * lagj + i * lagi]);
+	nKO -= (thresh <= ans[j * lagj + i * lagi]);
       }
     }
   }
 
   PutRNGstate();
   //Lastly we multiply by 1 / E[max(0, Y)]
-  for (i=(neffSite * *nObs);i--;){
-    const double imean = M_SQRT2 * M_SQRT_PI;
+  const double imean = M_SQRT2 * M_SQRT_PI;
+  for (i=(neffSite * *nObs);i--;)    
     ans[i] *= imean;
+  
+  return;
+}
+
+void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
+		    int *covmod, double *sill, double *range,
+		    double *smooth, double *uBound, double *ans){
+  /* This function generates random fields from the Schlather model
+
+     nObs: the number of observations to be generated
+    ngrid: the number of locations along one axis
+      dim: the random field is generated in R^dim
+   covmod: the covariance model
+     sill: the sill parameter - (1 - sill) is a nugget effect
+    range: the range parameter
+   smooth: the smooth parameter
+   uBound: the uniform upper bound for the stoch. proc.
+      ans: the generated random field */
+
+  int i, j, k = -1, nbar = R_pow_di(*ngrid, *dim), r, m;
+  double *rho, *irho;
+    //Below is a table of highly composite numbers
+  int HCN[39] = {1, 2, 4, 6, 12, 24, 36, 48, 60, 120, 180, 240,
+		 360, 720, 840, 1260, 1680, 2520, 5040, 7560,
+		 10080, 15120, 20160, 25200, 27720, 45360, 50400,
+		 55440, 83160, 110880, 166320, 221760, 277200,
+		 332640, 498960, 554400, 665280, 720720, 1081080};
+
+    
+  /* Find the smallest size m for the circulant embedding matrix */
+  {
+    int dummy = 2 * (*ngrid - 1);
+    do {
+      k++;
+      m = HCN[k];
+    } while (m < dummy);
   }
+  
+  /* ---------- beginning of the embedding stage ---------- */
+  int mbar = m * m, halfM = m / 2, notPosDef = 0;
+  do {
+    double *dist;
+    dist = (double *)R_alloc(mbar, sizeof(double));
+
+    notPosDef = 0;
+    //Computation of the distance
+    for (r=mbar;r--;){
+      i = r % m;
+      j = r / m;
+      
+      if (i > halfM)
+	i -= m;
+      
+      if (j > halfM)
+	j -= m;
+      
+      dist[r] = pythag(steps[0] * i, steps[1] * j);
+    }
+
+    //Computations of the covariances
+    rho = (double *)R_alloc(mbar, sizeof(double));
+    irho = (double *)R_alloc(mbar, sizeof(double));
+    memset(irho, 0, mbar * sizeof(double));
+
+    switch (*covmod){
+    case 1:
+      whittleMatern(dist, mbar, *sill, *range, *smooth, rho);
+      break;
+    case 2:
+      cauchy(dist, mbar, *sill, *range, *smooth, rho);
+      break;
+    case 3:
+      powerExp(dist, mbar, *sill, *range, *smooth, rho);
+      break;
+    case 4:
+      bessel(dist, mbar, *dim, *sill, *range, *smooth, rho);
+      break;
+    }
+
+    /* Compute the eigen values to check if the circulant embbeding
+       matrix is positive definite */
+
+    /* Note : The next lines is only valid for 2d random fields. I
+       need to change if there are m_1 \neq m_2 as I suppose that m_1
+       = m_2 = m */
+    int maxf, maxp, *iwork;
+    double *work;
+
+    fft_factor(m, &maxf, &maxp);
+    work = (double *)R_alloc(4 * maxf, sizeof(double));
+    iwork = (int *)R_alloc(maxp, sizeof(int));
+    fft_work(rho, irho, m, m, 1, -1, work, iwork);
+
+    fft_factor(m, &maxf, &maxp);
+    work = (double *)R_alloc(4 * maxf, sizeof(double));
+    iwork = (int *)R_alloc(maxp, sizeof(int));
+    fft_work(rho, irho, 1, m, m, -1, work, iwork);
+
+    //Check if the eigenvalues are all positive
+    for (i=mbar;i--;){
+      notPosDef |= (rho[i] <= 0) || (fabs(irho[i]) > 0.001);
+    }
+
+    if (notPosDef){
+      k++;
+      m = HCN[k];
+      halfM = m / 2;
+      mbar = m * m;
+    }
+
+    if (k > 30)
+      error("Impossible to embbed the covariance matrix");
+    
+  } while (notPosDef);
+  /* --------- end of the embedding stage --------- */
+
+  /* Computation of the square root of the eigenvalues */
+  for (i=mbar;i--;){
+    rho[i] = sqrt(rho[i]);
+    irho[i] = 0;//No imaginary part
+  }
+
+  int mdag = m / 2 + 1, mdagbar = mdag * mdag;
+  double *a, *ia, isqrtMbar = 1 / sqrt(mbar);
+
+  a = (double *)R_alloc(mbar, sizeof(double));
+  ia = (double *)R_alloc(mbar, sizeof(double));
+  
+  GetRNGstate();
+  for (i=*nObs;i--;){
+    int nKO = nbar;
+    double poisson = 0;
+    
+    while (nKO) {
+      /* The stopping rule is reached when nKO = 0 i.e. when each site
+	 satisfies the condition in Eq. (8) of Schlather (2002) */
+      int j;
+      double nugget = 1 - *sill, ipoisson, thresh, *gp;
+      
+      gp = (double *)R_alloc(nbar, sizeof(double));
+      
+      poisson += exp_rand();
+      ipoisson = 1 / poisson;
+      thresh = *uBound * ipoisson;
+      
+      /* We simulate one realisation of a gaussian random field with
+	 the required covariance function */
+      circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, nugget, gp);
+      
+      nKO = nbar;
+      for (j=nbar;j--;){
+	ans[j + i * nbar] = fmax2(gp[j] * ipoisson, ans[j + i * nbar]);
+	nKO -= (thresh <= ans[j + i * nbar]);
+	
+      }
+    }
+  }
+  
+  PutRNGstate();
+  
+  //Lastly we multiply by 1 / E[max(0, Y)]
+  const double imean = M_SQRT2 * M_SQRT_PI;
+  for (i=(nbar * *nObs);i--;)    
+    ans[i] *= imean;
   
   return;
 }
@@ -348,8 +407,6 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
     int k, l, m;
     double freq, eucProd, u1, u2, G, phase;
     double cl, lj, cl1, cl2;
-    double halfSmooth = 0.5 * *smooth, ismooth = 1 / *smooth;
-    double u3;
 
     switch (*dim){
     case 2:
@@ -393,14 +450,13 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	for (j=*nlines;j--;){
 	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
-	  u3 = halfSmooth * (u2 - M_PI_2);
-
-	  G = fabs(sin(u3) * R_pow(cos(u2), -ismooth) *
-		   R_pow(cos(u2 - u3) / u1, (2 - *smooth) * ismooth));
+	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -2 / *smooth) *
+		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
+			 (2 - *smooth) / *smooth));
 	  
-	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  freq = sqrt(2 * rchisq(3) * G);
 	  phase = M_2PI * unif_rand();
-	  
+	
 	  lj = lines[2 * *nlines + j];
 	  
 	  for (k=*nsite;k--;){
@@ -415,7 +471,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 4:
 	//Bessel
 	for (j=*nlines;j--;){
-	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  freq = sqrt(beta(1.5, *smooth - 0.5));
 	  phase = M_2PI * unif_rand();
 	  
 	  lj = lines[2 * *nlines + j];
@@ -492,11 +548,11 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	for (j=*nlines;j--;){
 	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
-	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -2 / *smooth) *
 		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
 			 (2 - *smooth) / *smooth));
 	
-	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  freq = sqrt(2 * rchisq(3) * G);
 	  phase = M_2PI * unif_rand();
 	
 	  for (k=*nsite;k--;){
@@ -514,7 +570,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 4:
 	//Bessel
 	for (j=*nlines;j--;){
-	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  freq = sqrt(beta(1.5, *smooth - 0.5));
 	  phase = M_2PI * unif_rand();
 	
 	  for (k=*nsite;k--;){
@@ -586,11 +642,11 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	 for (j=*nlines;j--;){
 	   u1 = rexp(1);
 	   u2 = runif(-M_PI_2, M_PI_2);
-	   G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+	   G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -2 / *smooth) *
 		    R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
 			  (2 - *smooth) / *smooth));
 	
-	   freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	   freq = sqrt(2 * rchisq(3) * G);
 	   phase = M_2PI * unif_rand();
 	
 	   for (k=*nsite;k--;){
@@ -602,7 +658,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
        case 4:
 	 //Bessel
 	 for (j=*nlines;j--;){
-	   freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	   freq = sqrt(beta(1.5, *smooth - 0.5));
 	   phase = M_2PI * unif_rand();
 	
 	   for (k=*nsite;k--;){
@@ -658,11 +714,11 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	for (j=*nlines;j--;){
 	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
-	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -2 / *smooth) *
 		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
 			 (2 - *smooth) / *smooth));
 	  
-	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  freq = sqrt(2 * rchisq(3) * G);
 	  phase = M_2PI * unif_rand();
 	  
 	  for (k=*nsite;k--;){
@@ -675,7 +731,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 4:
 	//Bessel
 	for (j=*nlines;j--;){
-	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  freq = sqrt(beta(1.5, *smooth - 0.5));
 	  phase = M_2PI * unif_rand();
 	  
 	  for (k=*nsite;k--;){
@@ -701,10 +757,9 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
     }
   }  
 
-  for (j=*neffSite;j--;){
-    const double normConst = sqrt(2 * *sill / *nlines);
+  const double normConst = sqrt(2 * *sill / *nlines);
+  for (j=*neffSite;j--;)    
     ans[j] *= normConst;
-  }
 
   if (*nugget != 0){
     const double sdnugget = sqrt(*nugget);
@@ -712,5 +767,113 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       ans[j] += sdnugget * norm_rand();
   }
   
+  return;
+}
+
+void circcore(double *rho, double *a, double *ia, int m, int halfM, int mdag,
+	      int mdagbar, int ngrid, int nbar, double isqrtMbar, double nugget,
+	      double *ans){
+  /* This function is the same as the circemb function except that it
+     generates only one realisation of the random field. This is only
+     useful for the call by rschlathercirc - for CPU reasons. */
+  int r;
+
+  for (r=mdagbar;r--;){
+    /* Below is the procedure 5.2.4 in Wood and Chan */
+
+    //Computation of the cardinality of A(j)
+    int j1, j2, i = r % mdag, j = r / mdag;
+    double u, v;
+
+    int card = (i != 0) * (i != halfM) + 2 * (j != 0) * (j != halfM);
+      
+    switch (card){
+    case 3:
+      //B(1) = {1}, B^c(1) = {2}
+      j1 = (m - i) + m * j;
+      j2 = i + m * (m - j);
+      u = norm_rand();
+      v = norm_rand();
+      a[j1] = ia[j1] = M_SQRT1_2 * rho[j1];
+      a[j1] *= u;
+      ia[j1] *= v;
+      a[j2] = ia[j2] = M_SQRT1_2 * rho[j2];
+      a[j2] *= u;
+      ia[j2] *= -v;
+	
+      //B(2) = {1,2}, B^c(2) = {0}
+      j1 = (m - i) + m * (m - j);
+      j2 = i + m * j;
+      u = norm_rand();
+      v = norm_rand();
+      a[j1] = ia[j1] = M_SQRT1_2 * rho[j1];
+      a[j1]*= u;
+      ia[j1] *= v;
+      a[j2] = ia[j2] = M_SQRT1_2 * rho[j2];
+      a[j2]*= u;
+      ia[j2] *= -v;      
+      break;
+    case 1:
+      //B(1) = 0, B^c(1) = {1}
+      j1 = i + m * j;
+      j2 = m - i + m * j;
+      u = norm_rand();
+      v = norm_rand();
+      a[j1] = ia[j1] = M_SQRT1_2 * rho[j1];
+      a[j1] *= u;
+      ia[j1] *= v;
+      a[j2] = ia[j2] = M_SQRT1_2 * rho[j2];
+      a[j2] *= u;
+      ia[j2] *= -v;
+      break;
+    case 2:
+      //B(1) = 0, B^c(1) = {2}
+      j1 = i + m * j;
+      j2 = i + m * (m - j);
+      u = norm_rand();
+      v = norm_rand();
+      a[j1] = ia[j1] = M_SQRT1_2 * rho[j1];
+      a[j1] *= u;
+      ia[j1] *= v;
+      a[j2] = ia[j2] = M_SQRT1_2 * rho[j2];
+      a[j2] *= u;
+      ia[j2] *= -v;
+      break;
+    case 0:
+      j1 = i + m * j;
+      a[j1] = rho[j1] * norm_rand();
+      ia[j1] = 0;
+      break;      
+    }
+  }
+
+  /* ---------- Computation of Q \Lambda^1/2 Q* Z ------------ */
+  int maxf, maxp, *iwork;
+  double *work;
+    
+  /* The next lines is only valid for 2d random fields. I need to
+     change if m_1 \neq m_2 as here I suppose that m_1 = m_2 = m */
+  fft_factor(m, &maxf, &maxp);
+  work = (double *)R_alloc(4 * maxf, sizeof(double));
+  iwork = (int *)R_alloc(maxp, sizeof(int));
+  fft_work(a, ia, m, m, 1, -1, work, iwork);
+    
+  fft_factor(m, &maxf, &maxp);
+  work = (double *)R_alloc(4 * maxf, sizeof(double));
+  iwork = (int *)R_alloc(maxp, sizeof(int));
+  fft_work(a, ia, 1, m, m, -1, work, iwork);
+      
+  int i;
+  for (i=nbar;i--;)
+    ans[i] = isqrtMbar * a[i % ngrid + m * (i / ngrid)];
+    
+  if (nugget > 0){
+    double sqrtNugget = sqrt(nugget);
+    
+    for (i=nbar;i--;)
+      ans[i] += sqrtNugget * norm_rand();
+
+  }
+
   return;
 }

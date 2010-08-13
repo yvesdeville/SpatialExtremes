@@ -80,3 +80,40 @@ frech2gev <- function(x, loc, scale, shape){
   ##This is a specific function that do the same as frech2gev but
   ##without any checking. x MUST be a vector. Use with caution.
   loc + scale * (pmax(x, 0)^shape - 1) / shape
+
+.isregulargrid <- function(x, y, tol.x = 1e-4, tol.y = 1e-4){
+  ##This function check if the grid defined by x and y is regular
+  ##i.e. the spacings along the axis is constant -- but not
+  ##necessarily the same for the x and y-axis
+
+  x.diff <- diff(x)
+  y.diff <- diff(y)
+
+  eps.x <- diff(range(x.diff))
+  eps.y <- diff(range(y.diff))
+
+  if ((eps.x <= tol.x) && (eps.y <= tol.y)){
+    reg.grid <- TRUE
+    steps <- c(mean(x.diff), mean(y.diff))
+  }
+
+  else{
+    reg.grid <- FALSE
+    steps <- NA
+  }
+
+  return(list(reg.grid = reg.grid, steps = steps))
+}
+
+.useloglink <- function(formula)
+  return(substr(formula[2], 1, 3) == "log")
+
+.getTrendSurfCoeffNames <- function(formula){
+  formula.terms <- terms(formula)
+  names <- attributes(formula.terms)$term.labels
+
+  if (attributes(formula.terms)$intercept)
+    names <- c("Intercept", names)
+
+  return(names)
+}

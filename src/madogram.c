@@ -1,7 +1,6 @@
 #include "header.h"
 
-void madogram(double *data, int *nObs, int *nSite,
-	      double *mado){
+void madogram(double *data, int *nObs, int *nSite, double *mado){
   /* This function computes the madogram */
   int i,j,k, currentPair = -1;
   const double cst = 0.5 / *nObs;
@@ -16,6 +15,25 @@ void madogram(double *data, int *nObs, int *nSite,
       }
 
       mado[currentPair] *= cst;
+    }
+  }
+}
+
+void variogram(double *data, int *nObs, int *nSite, double *vario){
+  /* This function computes the (semi) variogram */
+  int i,j,k, currentPair = -1;
+  const double cst = 0.5 / *nObs;
+
+  for (i=0;i<(*nSite-1);i++){
+    for (j=i+1;j<*nSite;j++){
+      currentPair++;
+
+      for (k=*nObs;k--;){
+	double dummy = data[i * *nObs + k] - data[j * *nObs + k];
+	vario[currentPair] += dummy * dummy;
+      }
+
+      vario[currentPair] *= cst;
     }
   }
 }

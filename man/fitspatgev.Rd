@@ -5,9 +5,10 @@
   This function derives the MLE of a spatial GEV model.
 }
 \usage{
-fitspatgev(data, covariables, loc.form, scale.form, shape.form, ...,
-start, control = list(maxit = 10000), method = "Nelder", std.err.type =
-"score", warn = TRUE, corr = FALSE)
+fitspatgev(data, covariables, loc.form, scale.form, shape.form,
+temp.cov = NULL, temp.form.loc = NULL, temp.form.scale = NULL,
+temp.form.shape = NULL, ..., start, control = list(maxit = 10000),
+method = "Nelder", std.err.type = "score", warn = TRUE, corr = FALSE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -15,7 +16,13 @@ start, control = list(maxit = 10000), method = "Nelder", std.err.type =
   \item{covariables}{Matrix with named columns giving required
     covariates for the GEV parameter models.}
   \item{loc.form, scale.form, shape.form}{R formulas defining the
-    spatial  models for the GEV parameters. See section details.}
+    spatial  models for the GEV parameters. See section Details.}
+   \item{temp.cov}{Matrix with names columns giving additional *temporal*
+    covariates for the GEV parameters. If \code{NULL}, no temporal trend
+    are assume for the GEV parameters --- see section Details.}
+  \item{temp.form.loc, temp.form.scale, temp.form.shape}{R formulas
+    defining the temporal trends for the GEV parameters. May be
+    missing. See section Details.}
   \item{start}{A named list giving the initial values for the
     parameters over which the pairwise likelihood is to be minimized. If
     \code{start} is omitted the routine attempts to find good starting
@@ -59,7 +66,25 @@ start, control = list(maxit = 10000), method = "Nelder", std.err.type =
   it can be seen from the log-likelihood definition that we supposed
   that the stations are mutually independent. Consequently, to get
   reliable standard error estimates, these standard errors are estimated
-  with their sandwich estimates.  
+  with their sandwich estimates.
+
+  There are two different kind of covariates : "spatial" and
+  "temporal".
+
+  A "spatial" covariate may have different values accross station but
+  does not depend on time. For example the coordinates of the stations
+  are obviously "spatial". These "spatial" covariates should be used
+  with the \code{marg.cov} and \code{loc.form, scale.form, shape.form}.
+
+  A "temporal" covariates may have different values accross time but
+  does not depend on space. For example the years where the annual
+  maxima were recorded is "temporal". These "temporal" covariates should
+  be used with the \code{temp.cov} and \code{temp.form.loc,
+    temp.form.scale, temp.form.shape}.
+
+  As a consequence note that \code{marg.cov} must have K rows (K being
+  the number of sites) while \code{temp.cov} must have n rows (n being
+  the number of observations).
 }
 \value{
   An object of class \code{spatgev}. Namely, this is a list with the

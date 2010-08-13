@@ -1,4 +1,5 @@
 \name{swiss}
+\docType{data}
 \alias{swiss}
 \title{
   Map of the Switzerland.

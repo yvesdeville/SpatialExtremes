@@ -1,3 +1,38 @@
+		CHANGES IN SpatialExtremes VERSION 1.6-0
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The extremal t model is now available --- including
+    simulation. Simulations on a grid might be really long though.
+
+    o Model checking for fitted max-stable processes is easier as a
+    method for plotting object of class "maxstab" is implemented.
+
+    o "fitspatgev" and "fitmaxstab" now allow for "temporal"
+    covariates, for example a linear trend can be put for the location
+    parameter.
+
+NEW FEATURES
+
+    o Simulation of Brown-Resnick processes are available but should
+    *NOT* be considered as stable!
+
+    o Computation of the empirical variogram is implemented
+
+    o The fitting and simulation of max-stable processes is now much faster.
+
+    o The circulant embedding method is now implemented.
+
+BUG FIXES
+
+    o Fix a bug when using temporal covariates.
+
+    o Fix a bug in simulating Gaussian random fields having a powered
+    exponential covariance function through the turning bands method.
+
+    o The parametrization of Brown-Resnick processes was not
+    consistent throughout the code. Now fixed.
+
 
 		CHANGES IN SpatialExtremes VERSION 1.5-1
 

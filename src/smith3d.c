@@ -51,9 +51,8 @@ void smithfull3d(double *data, double *distVec, int *nSite, int *nObs,
   }
   
   else {
-    for (i=0;i<(*nSite * *nObs);i++)
-      jac[i] = 0.0;    
-
+    memset(jac, 0, *nSite * *nObs * sizeof(double));
+    
     if (*weighted)
       *dns = wlpliksmith(data, mahalDist, jac, *nObs, *nSite, weights);
 
@@ -69,15 +68,22 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs, int *w
 		    int *npparloc, double *locpenalty, double *scaledsgnmat,
 		    double *scalepenmat, int *nscalecoeff, int *npparscale,
 		    double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
-		    int *nshapecoeff, int *npparshape, double *shapepenalty,
-		    double *loccoeff, double *scalecoeff, double *shapecoeff,
-		    double *cov11, double *cov12, double *cov13, double *cov22,
-		    double *cov23, double *cov33, double *dns){
+		    int *nshapecoeff, int *npparshape, double *shapepenalty, int *usetempcov,
+		    double *tempdsgnmatloc, double *temppenmatloc, int *ntempcoeffloc,
+		    int *nppartempcoeffloc, double *temppenaltyloc, double *tempdsgnmatscale,
+		    double *temppenmatscale, int *ntempcoeffscale, int *nppartempcoeffscale,
+		    double *temppenaltyscale, double *tempdsgnmatshape, double *temppenmatshape,
+		    int *ntempcoeffshape, int *nppartempcoeffshape, double *temppenaltyshape,
+		    double *loccoeff, double *scalecoeff, double *shapecoeff, double *tempcoeffloc,
+		    double *tempcoeffscale, double *tempcoeffshape, double *cov11, double *cov12,
+		    double *cov13, double *cov22, double *cov23, double *cov33, double *dns){
   //This is the Smith's model - 3d case. It's named xxxdsgnmat as
   //either linear models or p-splines are used for the gev parameters.
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  double *jac, *mahalDist, *locs, *scales, *shapes, *frech;
+  int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
+  double *jac, *mahalDist, *locs, *scales, *shapes, *frech, *trendlocs, *trendscales,
+    *trendshapes;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
@@ -99,12 +105,34 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs, int *w
 		       *nloccoeff, *nscalecoeff, *nshapecoeff,
 		       locs, scales, shapes);
 
-  if (*dns != 0.0)
+  if (flag){
+    int i, j;
+    trendlocs = (double *)R_alloc(*nObs, sizeof(double));
+    trendscales = (double *)R_alloc(*nObs, sizeof(double));
+    trendshapes = (double *)R_alloc(*nObs, sizeof(double));
+    
+    dsgnmat2temptrend(tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, tempcoeffloc,
+		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
+		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
+
+    for (i=*nSite;i--;)
+      for (j=*nObs;j--;)
+	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
+	  *dns = MINF;
+	  return;
+	}
+  }
+
+  else if (*dns != 0.0)
     return;
 
   //Stage 3: Transformation to unit Frechet
-  *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		   jac, frech);
+  if (flag)
+    *dns = gev2frechTrend(data, *nObs, *nSite, locs, scales, shapes, trendlocs, trendscales,
+			  trendshapes, jac, frech);
+
+  else
+    *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes, jac, frech);
 
   if (*dns != 0.0)
     return;

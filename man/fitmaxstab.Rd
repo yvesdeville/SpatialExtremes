@@ -6,9 +6,10 @@
   the Smith and Schlather representations.
 }
 \usage{fitmaxstab(data,  coord, cov.mod, loc.form, scale.form,
-shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
-= TRUE, method = "Nelder", start, control = list(), weights = NULL,
-std.err.type = "score", corr = FALSE)}
+shape.form, marg.cov = NULL, temp.cov = NULL, temp.form.loc = NULL,
+temp.form.scale = NULL, temp.form.shape = NULL, iso = FALSE, ...,
+fit.marge = FALSE, warn = TRUE, method = "Nelder", start, control =
+list(), weights = NULL, std.err.type = "score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
@@ -16,16 +17,26 @@ std.err.type = "score", corr = FALSE)}
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
     model in the max-stable representation. Must be one of "gauss" for
-    the Smith's model; or "whitmat", "cauchy", "powexp", "bessel" or
+    the Smith's model; "whitmat", "cauchy", "powexp", "bessel" or
     "caugen" for the Whittle-Matern, the Cauchy, the Powered Exponential, the
     Bessel and the Generalized Cauchy correlation families with the
-    Schlather's model; "brown" for Brown-Resnick processes.} 
+    Schlather's model; "brown" for Brown-Resnick processes. The
+    geometric Gaussian and Extremal-t models with a Whittle-Matern
+    correlation function can be fitted by passing respectively
+    "gwhitmat" or "twhitmat". Other correlation function families are
+    considered in a similar way.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
-    section details.}
+    section Details.}
   \item{marg.cov}{Matrix with named columns giving additional covariates
     for the GEV parameters. If \code{NULL}, no extra covariates are
     used.}
+  \item{temp.cov}{Matrix with names columns giving additional *temporal*
+    covariates for the GEV parameters. If \code{NULL}, no temporal trend
+    are assume for the GEV parameters --- see section Details.}
+  \item{temp.form.loc, temp.form.scale, temp.form.shape}{R formulas
+    defining the temporal trends for the GEV parameters. May be
+    missing. See section Details.}
   \item{iso}{Logical. If \code{TRUE} an isotropic model is fitted to
     data. Otherwise (default), anisotropy is allowed. Currently, this is
     only implemented for the Smith's model.}
@@ -127,6 +138,24 @@ std.err.type = "score", corr = FALSE)}
     \item{\code{score}}{\eqn{J} is estimated directly from the variance of
       the observed score function.}
   }
+
+  There are two different kind of covariates : "spatial" and
+  "temporal".
+
+  A "spatial" covariate may have different values accross station but
+  does not depend on time. For example the coordinates of the stations
+  are obviously "spatial". These "spatial" covariates should be used
+  with the \code{marg.cov} and \code{loc.form, scale.form, shape.form}.
+
+  A "temporal" covariates may have different values accross time but
+  does not depend on space. For example the years where the annual
+  maxima were recorded is "temporal". These "temporal" covariates should
+  be used with the \code{temp.cov} and \code{temp.form.loc,
+    temp.form.scale, temp.form.shape}.
+
+  As a consequence note that \code{marg.cov} must have K rows (K being
+  the number of sites) while \code{temp.cov} must have n rows (n being
+  the number of observations). 
 }
 \section{Warning}{
   When using reponse surfaces to model spatially the GEV parameters, the
@@ -138,20 +167,28 @@ std.err.type = "score", corr = FALSE)}
 }
 \references{
   Cox, D. R. and Reid, N. (2004) A note on pseudo-likelihood constructed
-  from marginal densities. \emph{Biometrika} \bold{91}: 729--737.
+  from marginal densities. \emph{Biometrika} \bold{91}, 729--737.
+
+  Demarta, S. and McNeil, A. (2005) The t copula and Related Copulas
+  \emph{International Statistical Review} \bold{73}, 111-129.
 
   Gholam--Rezaee, M. (2009) Spatial extreme value: A composite
   likelihood. PhD Thesis. Ecole Polytechnique Federale de Lausanne.
-
+  
+  Kabluchko, Z., Schlather, M. and de Haan, L. (2009) Stationary
+  max-stable fields associated to negative definite functions
+  \emph{Annals of Probability} \bold{37}:5, 2042--2065.
+  
   Padoan, S. A. (2008) Computational Methods for Complex Problems in
   Extreme Value Theory. PhD Thesis. University of Padova.
 
-  Padoan, S. A., Ribatet, M. and Sisson, S. A. (2008) Likelihood-based
-  inference for max-stable processes. Under review. \emph{Journal of the
-  American Statistical Association (Theory and Methods)}.
+  Padoan, S. A., Ribatet, M. and Sisson, S. A. (2010) Likelihood-based
+  inference for max-stable processes. \emph{Journal of the American
+  Statistical Association (Theory and Methods)} \bold{105}:489,
+  263-277.
 
   Schlather, M. (2002) Models for Stationary Max-Stable Random
-  Fields. \emph{Extremes} \bold{5}:1,  33--44.
+  Fields. \emph{Extremes} \bold{5}:1, 33--44.
 
   Smith, R. L. (1990) Max-stable processes and spatial
   extremes. Unpublished.

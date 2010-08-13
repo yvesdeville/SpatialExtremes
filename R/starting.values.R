@@ -6,13 +6,13 @@
 
   if (iso && (method == "Nelder"))
     method2 <- "BFGS"
-  
+
   else if (method %in% c("nlm", "nlminb"))
     method2 <- "Nelder"
-  
+
   else
     method2 <- method
-  
+
   if (ncol(coord) == 2)
     param <- c("cov11", "cov12", "cov22")
 
@@ -23,10 +23,10 @@
   idx.cov <- which(names(fixed.param) %in% param)
   fixed.param.cov <- fixed.param[idx.cov]
   fixed.param.gev <- fixed.param[-idx.cov]
-  
+
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
+
   if (length(fixed.param.cov) > 0){
     args <- c(list(data = data, coord = coord, marge = "emp", iso = iso, method = method2),
               fixed.param.cov)
@@ -57,7 +57,7 @@
             fixed.param.cov)
 
   covs <- do.call("smithfull", args)
-    
+
   start <- c(as.list(covs$fitted), as.list(spatgev$param))
 
   if (print.start.values){
@@ -81,16 +81,16 @@
   idx.cov <- which(names(fixed.param) %in% param)
   fixed.param.cov <- fixed.param[idx.cov]
   fixed.param.gev <- fixed.param[-idx.cov]
-  
+
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
+
   if (length(fixed.param.cov) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
                    marge = "emp"), fixed.param.cov)
     cov.param <- do.call("fitcovariance", args)$fitted
   }
-  
+
   else
     cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$fitted
 
@@ -110,7 +110,7 @@
                  std.err.type = "none"), fixed.param.cov)
 
   cov.param <- do.call("schlatherfull", args)
-  
+
   start <- c(as.list(cov.param$param), as.list(spatgev$param))
 
   if (print.start.values){
@@ -118,7 +118,7 @@
     cat("Starting values are:\n")
     print(c(cov.param$fitted, spatgev$fitted))
   }
-  
+
   return(start)
 }
 
@@ -134,16 +134,16 @@
   idx.cov <- which(names(fixed.param) %in% param)
   fixed.param.cov <- fixed.param[idx.cov]
   fixed.param.gev <- fixed.param[-idx.cov]
-  
+
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
+
   if (length(fixed.param.cov) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = paste("i", cov.mod, sep=""),
                    marge = "emp"), fixed.param.cov)
     cov.param <- do.call("fitcovariance", args)$fitted
   }
-  
+
   else
     cov.param <- fitcovariance(data, coord, paste("i", cov.mod, sep=""),
                                marge = "emp")$fitted
@@ -164,15 +164,15 @@
                  std.err.type = "none"), fixed.param.cov)
 
   cov.param <- do.call("schlatherindfull", args)
-    
+
   start <- c(as.list(cov.param$param), as.list(spatgev$param))
-  
+
   if (print.start.values){
     cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(c(cov.param$fitted, spatgev$fitted))
   }
-  
+
   return(start)
 }
 
@@ -187,16 +187,16 @@
   idx.cov <- which(names(fixed.param) %in% param)
   fixed.param.cov <- fixed.param[idx.cov]
   fixed.param.gev <- fixed.param[-idx.cov]
-  
+
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
+
   if (length(fixed.param.cov) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = paste("g", cov.mod, sep=""),
                    marge = "emp"), fixed.param.cov)
     cov.param <- do.call("fitcovariance", args)$fitted
   }
-  
+
   else
     cov.param <- fitcovariance(data, coord, paste("g", cov.mod, sep=""),
                                marge = "emp")$fitted
@@ -217,15 +217,68 @@
                  std.err.type = "none"), fixed.param.cov)
 
   cov.param <- do.call("geomgaussfull", args)
-  
+
   start <- c(as.list(cov.param$param), as.list(spatgev$param))
-  
+
   if (print.start.values){
     cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(c(cov.param$fitted, spatgev$fitted))
   }
-  
+
+  return(start)
+}
+
+.start.extremalt <- function(data, coord, covariables, cov.mod, loc.form,
+                             scale.form, shape.form, print.start.values = TRUE,
+                             method = "Nelder", ...){
+
+  n.site <- ncol(data)
+  param <- c("sill", "range", "smooth", "smooth2", "DoF")
+  fixed.param <- list(...)[names(list(...)) %in% param]
+
+  idx.cov <- which(names(fixed.param) %in% param)
+  fixed.param.cov <- fixed.param[idx.cov]
+  fixed.param.gev <- fixed.param[-idx.cov]
+
+  if (print.start.values)
+    cat("Computing appropriate starting values\n")
+
+  if (length(fixed.param.cov) > 0){
+    args <- c(list(data = data, coord = coord, cov.mod = paste("t", cov.mod, sep=""),
+                   marge = "emp"), fixed.param.cov)
+    cov.param <- do.call("fitcovariance", args)$fitted
+  }
+
+  else
+    cov.param <- fitcovariance(data, coord, paste("t", cov.mod, sep=""),
+                               marge = "emp")$fitted
+
+  args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
+                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
+                 method = method, warn = FALSE), fixed.param.gev)
+
+  spatgev <- do.call("fitspatgev", args)
+
+  frech <- data
+  gev <- predict(spatgev)
+  for (i in 1:n.site)
+    frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
+
+  args <- c(list(data = frech, coord = coord, cov.mod = cov.mod, fit.marge = FALSE,
+                 start = as.list(cov.param), warn = FALSE, method = method,
+                 std.err.type = "none"), fixed.param.cov)
+
+  cov.param <- do.call("extremaltfull", args)
+
+  start <- c(as.list(cov.param$param), as.list(spatgev$param))
+
+  if (print.start.values){
+    cat("Starting values are defined\n")
+    cat("Starting values are:\n")
+    print(c(cov.param$fitted, spatgev$fitted))
+  }
+
   return(start)
 }
 
@@ -256,16 +309,16 @@
   idx.cov <- which(names(fixed.param) %in% param)
   fixed.param.cov <- fixed.param[idx.cov]
   fixed.param.gev <- fixed.param[-idx.cov]
-  
+
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
+
   if (length(fixed.param.cov) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
                    marge = "emp"), fixed.param.cov)
     cov.param <- do.call("fitcovariance", args)$fitted
   }
-  
+
   else
     cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$fitted
 
@@ -289,7 +342,7 @@
             fixed.param.cov)
 
   cov.param <- do.call("nsgeomgaussfull", args)
-  
+
   start <- c(as.list(cov.param$param), as.list(spatgev$param))
 
   if (print.start.values){
@@ -297,7 +350,7 @@
     cat("Starting values are:\n")
     print(c(cov.param$fitted, spatgev$fitted))
   }
-  
+
   return(start)
 }
 
@@ -312,16 +365,16 @@
   idx.cov <- which(names(fixed.param) %in% param)
   fixed.param.cov <- fixed.param[idx.cov]
   fixed.param.gev <- fixed.param[-idx.cov]
-  
+
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
+
   if (length(fixed.param.cov) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = "brown",
                    marge = "emp"), fixed.param.cov)
     cov.param <- do.call("fitcovariance", args)$fitted
   }
-  
+
   else
     cov.param <- fitcovariance(data, coord, "brown", marge = "emp")$fitted
 
@@ -341,14 +394,14 @@
                  std.err.type = "none"), fixed.param.cov)
 
   cov.param <- do.call("brownresnickfull", args)
-  
+
   start <- c(as.list(cov.param$param), as.list(spatgev$param))
-  
+
   if (print.start.values){
     cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(c(cov.param$fitted, spatgev$fitted))
   }
-  
+
   return(start)
 }

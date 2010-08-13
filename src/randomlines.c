@@ -5,7 +5,7 @@ void vandercorput(int *n, double *coord){
   int i, k, r;
   double base, u, v;
   
-  for (i=0;i<*n;i++){
+  for (i=*n;i--;){
     //Binary decomposition
     k = i;
     u = 0;

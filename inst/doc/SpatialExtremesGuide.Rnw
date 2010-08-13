@@ -2,9 +2,9 @@
 \usepackage{layout}
 
 \begin{document}
-% \VignetteIndexEntry{A R Package for Modelling Spatial Extremes} 
-% \VignetteDepends{SpatialExtremes,RandomFields}
-% \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes} 
+% \VignetteIndexEntry{A R Package for Modelling Spatial Extremes}
+% \VignetteDepends{SpatialExtremes}
+% \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes}
 % \VignettePackage{SpatialExtremes}
 
 \pagestyle{empty}
@@ -36,7 +36,7 @@ data <- rmaxstab(40, coord, "whitmat", sill = 1, range = 1, smooth = 2)
 
 ##Compute the lambda-madogram
 lmadogram(data, coord, n.bins = 25, border = "grey", box = FALSE)
-@ 
+@
   \end{center}
 \end{titlepage}
 
@@ -79,7 +79,7 @@ par(mar=c(5.1, 4.1, 1.1, 2.1))))
 The \textbf{SpatialExtremes} package is an add-on package for the R
 \citep{Rsoft} statistical computing system. It provides functions for
 the analysis of spatial extremes using (currently) max-stable
-processes. 
+processes.
 
 All comments, criticisms and queries on the package or associated
 documentation are gratefully received.
@@ -93,7 +93,7 @@ will be in the directory \verb+SpatialExtremes/doc/+ underneath
 wherever the package is installed. You can get it by invoking
 <<eval=FALSE>>=
 vignette("SpatialExtremesGuide")
-@ 
+@
 
 To have a quick overview of what the package does, you might want to
 have a look at its own web page
@@ -141,11 +141,11 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but without any warranty; without even the implied warranty of
-merchantability or fitness for a particular purpose.  
+merchantability or fitness for a particular purpose.
 See the GNU General Public License for more details.
 
 
-A copy of the GNU General Public License can be obtained from 
+A copy of the GNU General Public License can be obtained from
 \url{http://www.gnu.org/copyleft/gpl.html}.
 
 \section*{Acknowledgements}
@@ -229,7 +229,7 @@ for a fixed location $x \in \mathbb{R}^d$ and $z>0$. Then
 \begin{eqnarray*}
   \Pr\left[Z(x) \leq z \right] &=& \Pr \left[\text{no points in } E
   \right] = \exp \left[ -\int_{\mathbb{R}^d} \int_{z/f(y,x)}^{+\infty}
-    \xi^{-2} d\xi \nu(\mbox{dy}) \right]\\ 
+    \xi^{-2} d\xi \nu(\mbox{dy}) \right]\\
   &=& \exp \left[ - \int_{\mathbb{R}^d} z^{-1} f(x,y) \nu(\mbox{dy})
   \right] = \exp \left(- \frac{1}{z} \right)
 \end{eqnarray*}
@@ -271,15 +271,15 @@ additional assumptions, it can be shown that the bivariate CDF is
       \log\frac{z_1}{z_2} \right) \right]
 \end{equation}
 where $\Phi$ is the standard normal cumulative distribution function
-and, for two given locations 1 and 2  
+and, for two given locations 1 and 2
 \begin{equation*}
   a^2 = \Delta x^T \Sigma^{-1} \Delta x, \qquad
-  \Sigma = 
+  \Sigma =
   \begin{bmatrix}
     \sigma_{11} & \sigma_{12}\\
     \sigma_{12} & \sigma_{22}
   \end{bmatrix}
-  \quad \text{or} \quad \Sigma = 
+  \quad \text{or} \quad \Sigma =
   \begin{bmatrix}
     \sigma_{11} & \sigma_{12} & \sigma_{13}\\
     \sigma_{12} & \sigma_{22} & \sigma_{23}\\
@@ -337,7 +337,7 @@ Smith's model with different covariance matrices.
   and
   \begin{eqnarray*}
     \frac{1}{z_2} \mathbb{E}\left[ \mathbb{I} \left( \frac{ f_0(X -
-          x_1 + x_2)}{z_1} \leq \frac{f_0(X)}{z_2} \right)\right] &=& 
+          x_1 + x_2)}{z_1} \leq \frac{f_0(X)}{z_2} \right)\right] &=&
     \frac{1}{z_2} \Phi\left(\frac{a}{2} + \frac{\log z_1/z_2}{a} \right)
   \end{eqnarray*}
   This proves equation~\eqref{eq:smith}.
@@ -354,15 +354,15 @@ data1 <- rmaxstab(1, cbind(x,x), "gauss", cov11 = 9/8, cov12 = 1, cov22 = 9/8,
                   grid = TRUE)
 
 par(mfrow=c(1,2))
-image(x, x, log(data0[,,1]), col = terrain.colors(40))
-image(x, x, log(data1[,,1]), col = terrain.colors(40))
-@ 
+image(x, x, log(data0), col = terrain.colors(40))
+image(x, x, log(data1), col = terrain.colors(40))
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<Smith2Sim>>
-@ 
+@
   \caption{Two simulations of the Smith model with different $\Sigma$
     matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$ and
     $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$
@@ -543,13 +543,13 @@ covariance(sill = 1, range = 1, smooth = 0.25, cov.mod = "bessel",
 legend("topright", c(expression(nu == 2), expression(nu == 1),
                      expression(nu == .5), expression(nu == 0.25)),
        col = 1:4, lty = 1, inset = 0.05)
-@ 
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<covariances>>
-@ 
+@
 \caption{Plots of the Whittle--Matérn, the powered exponential, the
   Cauchy and the Bessel correlation functions - from left to
   right. The sill and the range parameters are $c_1 = c_2 = 1$ while
@@ -581,7 +581,7 @@ and the smooth \index{covariance function!smooth} parameters of the
 correlation function, $\Gamma$ is the gamma function and $J_{\nu}$ and
 $K_{\nu}$ are the Bessel and the modified Bessel function of the third
 kind with order $\nu$ and $d$ is the dimension of the random
-fields. 
+fields.
 
 Accordingly to Gaussian processes, it is possible to add a sill $c_1$
 and a nugget effect $\nu$ to these correlation functions i.e.\
@@ -613,27 +613,25 @@ covariance(sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
 legend("topright", c(expression(nu == 4), expression(nu == 2),
                      expression(nu == 1), expression(nu == 0.5)),
        col = 1:4, lty = 1, inset = 0.05)
-@ 
+@
 
 <<label=Schlather2Sim,echo=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=TRUE, model="wh", param=c(0,1,0,1, 1), maxstable="extr")
-ms0 <- t(ms0)
+ms0 <- rmaxstab(1, cbind(x, y), "whitmat", sill = 1, range = 1, smooth = 1, grid=TRUE)
 set.seed(12)
-ms1 <- MaxStableRF(x, y, grid=TRUE, model="stable", param=c(0,1,0,1.5, 1), maxstable="extr")
-ms1 <- t(ms1)
+ms1 <- rmaxstab(1, cbind(x, y), "powexp", sill = 1, range = 1.5, smooth = 1, grid=TRUE)
 
 par(mfrow=c(1,2))
 image(x, y, log(ms0), col = terrain.colors(30))
 image(x, y, log(ms1), col = terrain.colors(30))
-@ 
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<Schlather2Sim>>
-@ 
+@
 \caption{Two simulations of the Schlather model with different
   correlation functions having approximately the same practical
   range. Left panel: Whittle--Matérn with $c_1 = c_2 = \nu = 1$. Right
@@ -675,13 +673,13 @@ contour(xs, ys, rho1, xlab = expression(paste(Delta, x)),
         ylab = expression(paste(Delta, y)))
 contour(xs, ys, rho2, xlab = expression(paste(Delta, x)),
         ylab = expression(paste(Delta, y)))
-@ 
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<anisoCovFun>>
-@ 
+@
 \caption{Contour plots of an isotropic (left panel) and anisotropic
   (right panel) correlation function. Powered exponential family with
   $c_1 = c_2 = \nu = 1$. The anisotropy parameters are: $\varphi = \pi
@@ -977,16 +975,16 @@ data3 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
              grid = TRUE, control = list(nlines = 625))
 
 par(mfrow=c(1,3))
-image(x, y, data1[,,1], col = terrain.colors(30))
-image(x, y, data2[,,1], col = terrain.colors(30))
-image(x, y, data3[,,1], col = terrain.colors(30))
-@ 
+image(x, y, data1, col = terrain.colors(30))
+image(x, y, data2, col = terrain.colors(30))
+image(x, y, data3, col = terrain.colors(30))
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<tbm>>
-@ 
+@
 \caption{One realisation of a gaussian random field having a
   Whittle-Matern covariance function with sill, range and smooth
   parameters all equal to one using the turning bands methods. The
@@ -1004,7 +1002,7 @@ simulations, from left to right, is $1$, $25$ and $625$
 respectively. The code used for generating this figure is
 <<eval=FALSE>>=
 <<tbm>>
-@ 
+@
 
 \section{Simulation of Max-Stable Random Fields}
 \label{sec:simul-max-stable}
@@ -1063,7 +1061,7 @@ exact simulations on a finite sampling region.
   intensity measure $d\Lambda(y,\xi) = \xi^{-2}
   \mbox{dy}\mbox{d$\xi$}$ and the process $Z_*$ equals $Z$ in
   distribution.
-  
+
   To show the second assertion, we first note that $m$ is necessarily
   finite as the sequence $\sum_{k=1}^m \xi_k$ is non decreasing and
   $Y$ is uniformly bounded by $C$ so that
@@ -1134,15 +1132,15 @@ M1 <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 3/4, cov22 = 9/8,
                grid = TRUE)
 
 par(mfrow = c(1,2))
-image(x, y, log(M0[,,1]), col = terrain.colors(30))
-image(x, y, log(M1[,,1]), col = terrain.colors(30))
-@ 
+image(x, y, log(M0), col = terrain.colors(30))
+image(x, y, log(M1), col = terrain.colors(30))
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<rmaxstabSmith>>
-@ 
+@
 \caption{Two simulations of the Smith model with different covariance
   matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$,
   $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$,
@@ -1159,7 +1157,7 @@ generation of these two random fields takes around $2.5$ seconds
 each. The figures was generated by invoking the following lines
 <<eval=FALSE>>=
 <<rmaxstabSmith>>
-@ 
+@
 
 \subsection{The Schlather Model}
 \label{subsec:sim-schlather-model}
@@ -1187,14 +1185,14 @@ The package allows for simulation of max-stable processes by using the
 <<eval=FALSE>>=
 coord <- matrix(runif(100, 0, 10), ncol = 2)
 data1 <- rmaxstab(100, coord, "whitmat", sill = 1, range = 1, smooth = 1)
-@ 
+@
 while for locations located on a grid, users should invoke
 <<eval=FALSE>>=
 x <- seq(0, 10, length = 100)
 coord <- cbind(x, x)
 data2 <- rmaxstab(1, coord, "powexp", sill = 1, range = 1, smooth = 2,
-                  grid = TRUE) 
-@ 
+                  grid = TRUE)
+@
 
 \chapter{Spatial Dependence of Max-Stable Random Fields}
 \label{cha:spatial-depend-max}
@@ -1294,13 +1292,13 @@ alpha <- 0.1
 plot(smith, from = 0, to = 5, xlab = "h", ylab = expression(theta(h)))
 plot(schlather, add = TRUE, col = 2, from = 0, to = 5)
 legend("bottomright", c("Smith", "Schlather"), col = 1:2, lty = 1, inset = 0.05)
-@ 
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,height=3.5>>=
 <<extCoeffModels>>
-@ 
+@
 \caption{Extremal coefficient functions for different max-stable
   models. $\Sigma$ is the $2\times 2$ identity matrix. Correlation
   function: Whittle--Matérn with $c_1 = c_2 = \nu = 1$.}
@@ -1398,13 +1396,13 @@ ST <- fitextcoeff(data, coord, loess = FALSE, ylim = c(1, 2))
 plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
 Smith <- fitextcoeff(data, coord, estim = "Smith", loess = FALSE, ylim = c(1, 2))
 plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
-@ 
+@
 
 \begin{figure}
   \centering
 <<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
 <<extCoeffST-Smith>>
-@   
+@
 \caption{Pairwise extremal coefficient estimates from the Schlather
   and Tawn (left panel) and Smith (right panel) estimators from a
   simulated max-stable random field having a Whittle--Matérn
@@ -1429,7 +1427,7 @@ data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1,
 par(mfrow=c(1,2))
 fitextcoeff(data, coord, loess = FALSE)
 fitextcoeff(data, coord, estim = "Smith", loess = FALSE)
-@ 
+@
 
 \section{Madogram-based approaches}
 \label{sec:madogram-based}
@@ -1508,7 +1506,7 @@ par(mfrow=c(1,2))
 madogram(data, coord, which = "mado", ylim = c(0, log(2)))
 plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
 madogram(data, coord, which = "mado", ylim = c(0, log(2)),
-         n.bins = 100, xlim = c(0, 12))
+         n.bins = 100)
 plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
 @
 
@@ -1516,7 +1514,7 @@ plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<madogram>>
-@   
+@
 \caption{Madogram (left panel) and binned madogram (right panel) with
   unit Gumbel margins for the Schlather model with the Whittle--Matérn
   correlation functions. The red lines are the theoretical
@@ -1556,7 +1554,7 @@ data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
 par(mfrow=c(1,2))
 madogram(data, coord, which = "mado")
 madogram(data, coord, which = "mado", n.bins = 100)
-@ 
+@
 
 Using a plugin estimate in equation~\eqref{eq:mado2ExtCoeff} leads to
 a simple estimator for $\theta(\cdot)$:
@@ -1586,15 +1584,15 @@ mado <- function(h)
 par(mfrow=c(1,2))
 madogram(data, coord, which = "mado", ylim = c(0, log(2)))
 plot(mado, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
-madogram(data, coord, which = "ext", ylim = c(1, 2))
+madogram(data, coord, which = "ext")
 plot(ext.coeff, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
-@ 
+@
 
 \begin{figure}
   \centering
 <<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
 <<madogramExtCoeff>>
-@   
+@
 \caption{Pairwise madograms (left panel) and extremal coefficients
   (right panel) estimates from a simulated max-stable random field
   having a Whittle--Matérn correlation function - $c_1 = c_2 = \nu =
@@ -1617,7 +1615,7 @@ coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
 data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
 
 madogram(data, coord)
-@ 
+@
 
 \subsection{$F$-Madogram}
 \label{sec:f-madogram}
@@ -1649,7 +1647,7 @@ Fmado <- function(h)
 par(mfrow=c(1,2))
 fmadogram(data, coord, which = "mado", ylim = c(0, 1/5))
 plot(Fmado, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
-fmadogram(data, coord, which = "ext", ylim = c(1, 2.4))
+fmadogram(data, coord, which = "ext")
 plot(ext.coeff, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
 @
 
@@ -1657,7 +1655,7 @@ plot(ext.coeff, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<F-madogram>>
-@   
+@
 \caption{Pairwise $F$-madogram (left panel) and extremal coefficient
   (right panel) estimates for the Smith model with $\Sigma$ equals to
   the identity matrix. The red lines are the theoretical $F$-madogram
@@ -1747,7 +1745,7 @@ data <- rmaxstab(n.obs, coord, "gauss", cov11 = 1, cov12 = 0, cov22 = 1)
 
 par(mfrow=c(1,2))
 fmadogram(data, coord)
-@ 
+@
 
 As with the madogram presented in the previous Section, it is also
 possible to have binned estimates of the $F$-madogram by passing the
@@ -1851,7 +1849,7 @@ Equation~\eqref{eq:lambda-madogram} suggests a simple estimator
 where $z_i(x_1)$ and $z_i(x_2)$ are the $i$-th observations of the
 random field at location $x_1$ and $x_2$, $n$ is the total number of
 observations and $\hat{F}$ is an estimate of the CDF at the specified
-location. 
+location.
 
 There is an issue with the previous estimator. Indeed, the boundary
 conditions for the $\lambda$-madogram when $\lambda = 0$ or $\lambda =
@@ -1890,13 +1888,13 @@ data2 <- rmaxstab(n.obs, coord, "cauchy", sill = 1, range = 1, smooth = 1)
 par(mfrow=c(1,2), pty = "s")
 lmadogram(data1, coord, n.bins = 60)
 lmadogram(data2, coord, n.bins = 60)
-@ 
+@
 
 \begin{figure}
   \centering
 <<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
 <<lambda-madogram>>
-@ 
+@
 \vspace{-1cm}
 \caption{Binned $\lambda$-madogram estimates for two Schlather models
   having a powered exponential (right panel) and a Cauchy covariance
@@ -1919,7 +1917,7 @@ data2 <- rmaxstab(n.obs, coord, "cauchy", sill = 1, range = 1, smooth = 1)
 par(mfrow=c(1,2), pty = "s")
 lmadogram(data1, coord, n.bins = 60)
 lmadogram(data2, coord, n.bins = 60)
-@ 
+@
 
 It might be useful to use the excellent \emph{persp3d} function
 provided by the contributed \emph{rgl} R package to explore
@@ -1979,7 +1977,7 @@ coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 data <- rmaxstab(n.obs, coord, "gauss", cov11 = 9/8, cov12 = 1, cov22 = 9/8)
 
 fitcovmat(data, coord, marge = "emp")
-@ 
+@
 
 This approach suffers from two major drawbacks. First, unless we use
 Monte-Carlo techniques, standard errors are not available and because
@@ -2025,7 +2023,7 @@ A statistical model $\{f(y;\psi), \psi \in \mathbb{R}^p\}$ is said
 drawn from a unknown true density $g$ instead of $f$. We say that the
 model $\{f(y;\psi), \psi \in \mathbb{R}^p\}$ is \emph{correct} if
 there exists $\psi_* \in \mathbb{R}^d$ such that $f(y;\psi_*) = g(y)$,
-for all $y$. 
+for all $y$.
 
 Let $\hat{\psi}$ be the maximum likelihood estimator. Because of the
 law of large numbers, we have
@@ -2121,7 +2119,7 @@ coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 data <- rmaxstab(n.obs, coord, "whitmat", sill = .2, range = 3, smooth = 1.2)
 
 fitmaxstab(data, coord, cov.mod = "whitmat", std.err.type = "none")
-@ 
+@
 
 From this output, we can see that we indeed use the Schlather's
 representation with a Whittle--Matérn correlation function. The
@@ -2145,7 +2143,7 @@ parameters of the model is illustrated by the following lines
 fitmaxstab(data, coord, cov.mod = "whitmat", smooth = 1.2)
 fitmaxstab(data, coord, cov.mod = "whitmat", sill = 1)
 fitmaxstab(data, coord, cov.mod = "whitmat", range = 3)
-@ 
+@
 
 Although the Whittle--Matérn model is flexible, one may want to
 consider other families of covariance functions. This is achieved by
@@ -2153,19 +2151,19 @@ invoking:
 <<eval=FALSE>>=
 fitmaxstab(data, coord, cov.mod = "cauchy")
 fitmaxstab(data, coord, cov.mod = "powexp")
-@ 
+@
 
 One may also consider the Smith model, this could be done as follows
 <<eval=FALSE>>=
 fitmaxstab(data, coord, cov.mod = "gauss")
-@ 
+@
 
 It is also possible to used different optimization routines to fit the
 model to data by passing the \verb|method| argument. For instance, if
 one wants to use the \verb|BFGS| method:
 <<eval=FALSE>>=
 fitmaxstab(data, coord, cov.mod = "gauss", cov12 = 0, method = "BFGS")
-@ 
+@
 
 Instead of using the \verb|optim| function, one may want to use the
 \verb|nlm| or \verb|nlminb| functions. This is done as before using
@@ -2232,7 +2230,7 @@ following two lines:
 <<eval=FALSE>>=
 fitmaxstab(data, coord, cov.mod = "gauss", std.err.type = "score")
 fitmaxstab(data, coord, cov.mod = "gauss", std.err.type = "grad")
-@ 
+@
 
 \chapter{Model Selection}
 \label{cha:model-selection}
@@ -2274,7 +2272,7 @@ The Kullback--Leibler discrepancy is always positive. Indeed, as $x
 \begin{equation*}
   D\left(f_\psi, g\right) = \int \log \left(
     \frac{g(y)}{f(y;\psi)} \right) g(y) \mbox{dy} \geq -\log \left(
-    \int \frac{f(y;\psi)}{g(y)} g(y) \mbox{dy} \right) = 0 
+    \int \frac{f(y;\psi)}{g(y)} g(y) \mbox{dy} \right) = 0
 \end{equation*}
 where we used the fact that $f(y;\psi)$ is a probability density
 function. Furthermore, the lower bound is reached if and only if the
@@ -2313,8 +2311,8 @@ have
 \begin{equation}
   \label{eq:KLAverageOverPsiHat}
   n \mathbb{E}_g \left[D\left(f_{\hat{\psi}},g\right) \right]
-  \stackrel{\cdot}{=} n D\left(f_{\psi_g},g\right) - \frac{1}{2} 
-  \mbox{tr}\left\{J(\psi_g)^{-1} H(\psi_g) \right\}    
+  \stackrel{\cdot}{=} n D\left(f_{\psi_g},g\right) - \frac{1}{2}
+  \mbox{tr}\left\{J(\psi_g)^{-1} H(\psi_g) \right\}
 \end{equation}
 where $H(\psi_g)$ is given by equation~\eqref{eq:Hessian}.
 
@@ -2348,7 +2346,7 @@ In practice, one can have a look at the output of the
 
 <<echo=FALSE>>=
 set.seed(1)
-@ 
+@
 
 <<>>=
 n.obs <- 80
@@ -2359,7 +2357,7 @@ data <- rmaxstab(n.obs, coord, "cauchy", sill = 0.8, range = 3, smooth = 1.2)
 M0 <- fitmaxstab(data, coord, cov.mod = "powexp")
 M1 <- fitmaxstab(data, coord, cov.mod = "cauchy")
 TIC(M0, M1)
-@ 
+@
 
 The TIC for \verb|M1| is lower that the one for \verb|M0| so
 that we might prefer using \verb|M1|.
@@ -2426,7 +2424,7 @@ distribution.
 An application of this approach is given by the following lines:
 <<echo=FALSE>>=
 set.seed(7)
-@ 
+@
 
 <<>>=
 n.obs <- 50
@@ -2437,7 +2435,7 @@ data <- rmaxstab(n.obs, coord, "gauss", cov11 = 100, cov12 = 25, cov22 = 220)
 M0 <- fitmaxstab(data, coord, "gauss", cov11 = 100)
 M1 <- fitmaxstab(data, coord, "gauss")
 anova(M0, M1)
-@ 
+@
 
 From this ouput, we can see that the $p$-value is approximately $0.875$
 which turns out to be in favour of $H_0$ i.e. $\sigma_{11} = 100$ in
@@ -2502,7 +2500,7 @@ modified likelihood ratio statistic
   W_A^*(\kappa_0) = 2 c \left\{\ell_A(\hat{\kappa}, \hat{\phi}) -
     \ell_A(\kappa_0, \hat{\phi}_A) \right\} \longrightarrow \chi_p^2
 \end{equation}
-where 
+where
 \begin{equation*}
   c = \frac{(\hat{\kappa} - \kappa_0)^T \{-(\hat{H}^{-1} \hat{J}
     \hat{H}^{-1})_{\kappa_0}\}^{-1} (\hat{\kappa} -
@@ -2516,7 +2514,7 @@ The next lines performs the same hypothesis test as that in
 Section~\ref{sec:adjust-chi2-distr}.
 <<>>=
 anova(M0, M1, method = "CB")
-@ 
+@
 
 By using the Chandler and Bate methodology, we draw the same
 conclusion as in the previous section, i.e.\ the observations are
@@ -2566,7 +2564,7 @@ $\mu \in \mathbb{R}$, $\sigma \in \mathbb{R}_*^+$ and $\xi \in
 \mathbb{R}$ respectively.
 <<>>=
 frech2gev(z, 1, 2, .2)
-@ 
+@
 
 The drawback of this approach is that standard errors are incorrect as
 the margins are fitted separately from the spatial dependence
@@ -2624,7 +2622,7 @@ equation~\eqref{eq:lplikGEV} is possible by passing the option
 \verb|fit.marge = TRUE| in the \verb|fitmaxstab| function i.e.
 <<eval=FALSE>>=
 fitmaxstab(data, coord, "gauss", fit.marge = TRUE)
-@ 
+@
 
 However, this will be really time consuming as such models will have
 $3 n.site + p$ parameters to estimate, where $p$ is the number of
@@ -2698,7 +2696,7 @@ or equivalently in a matrix notation
   \begin{bmatrix}
     1 & x_{1,1} & x_{1,1}^2\\
     \vdots  & \vdots & \vdots\\
-    1 & x_{1,n} & x_{1,n}^2  
+    1 & x_{1,n} & x_{1,n}^2
   \end{bmatrix}
   &
   \begin{bmatrix}
@@ -2710,7 +2708,7 @@ or equivalently in a matrix notation
   \begin{bmatrix}
     \epsilon_0\\
     \epsilon_1\\
-    \epsilon_2    
+    \epsilon_2
   \end{bmatrix}\\
    \begin{bmatrix}
     y_1\\
@@ -2733,7 +2731,7 @@ or equivalently in a matrix notation
   \begin{bmatrix}
     \epsilon_0\\
     \epsilon_1\\
-    \epsilon_2    
+    \epsilon_2
   \end{bmatrix}
 \end{eqnarray*}
 
@@ -2853,13 +2851,13 @@ lines(M1, col = 2)
 plot(x, y, col = "lightgrey")
 rug(knots3)
 lines(M2, col = 3)
-@ 
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<knotsEffect>>
-@ 
+@
   \caption{Impact of the number of knots in the fitted
     $p$-spline. Left panel: $q$ = 2, middle panel: $q = 10$, right
     panel: $q=50$. The small vertical lines corresponds to the
@@ -2876,7 +2874,7 @@ knots. The second one seems plausible while the last one clearly
 overfits. This figure was generated with the following lines
 <<eval=FALSE>>=
 <<knotsEffect>>
-@ 
+@
 
 Consequently, there is a pressing need for a kind of ``automatic knot
 selection''. One common strategy to overcome this issue is to resort
@@ -2896,13 +2894,13 @@ plot(x, y, col = "lightgrey")
 lines(M1, col = 2)
 plot(x, y, col = "lightgrey")
 lines(M2, col = 3)
-@ 
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<smoothingParamEffect>>
-@ 
+@
   \caption{Impact of the smoothing parameter $\lambda$ on the
     fit. Left panel: $\lambda = 0$, middle panel: $\lambda = 0.1$ and
     right panel: $\lambda = 10$.}
@@ -2923,7 +2921,7 @@ choosing $\mathbf{\beta}$ to minimize
 \begin{equation}
   \label{eq:constraintLeastSquare}
   ||\mathbf{y} - \mathbf{X \beta}||^2 + \lambda \mathbf{\beta}^T
-  \mathbf{K \beta}  
+  \mathbf{K \beta}
 \end{equation}
 for some $\lambda\geq 0$ called the \emph{smoothing
   parameter}\index{smoothing parameter} as it controls the amount of
@@ -2935,14 +2933,14 @@ the impact of the smoothing parameter on the smoothness of the fitted
 curve. It was generated using the following code
 <<eval=FALSE>>=
 <<smoothingParamEffect>>
-@ 
+@
 
 It can be shown that problem~\eqref{eq:constraintLeastSquare}
 has the solution
 \begin{equation}
   \label{eq:beta.hatPspline}
   \hat{\mathbf{\beta}}_\lambda = (\mathbf{X}^T \mathbf{X} + \lambda
-  \mathbf{K})^{-1} \mathbf{X}^T \mathbf{y} 
+  \mathbf{K})^{-1} \mathbf{X}^T \mathbf{y}
 \end{equation}
 and the corresponding fitted values for a penalized spline are given by
 \begin{equation}
@@ -3021,13 +3019,13 @@ gcv.fit <- rbpspline(y, x, knots3, degree = 3, penalty = "gcv")
 plot(x, y, col = "lightgrey")
 lines(cv.fit, col = 2)
 lines(gcv.fit, col = 3)
-@ 
+@
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<CVandGCV>>
-@ 
+@
   \caption{Cross-validation and generalized cross validation curves
     and corresponding fitted curves.}
   \label{fig:CVandGCV}
@@ -3043,7 +3041,7 @@ CV or GCV lead to indistinguishable curves. The code used to generate
 Figure~\ref{fig:CVandGCV} was
 <<eval=FALSE>>=
 <<CVandGCV>>
-@ 
+@
 
 \section{Building Response Surfaces for the GEV Parameters}
 \label{sec:build-resp-surf}
@@ -3120,7 +3118,7 @@ margins and transform it to have a spatially structured GEV margins.
 
 <<echo=FALSE>>=
 set.seed(15)
-@ 
+@
 
 <<>>=
 n.site <- 20
@@ -3136,7 +3134,7 @@ param.shape <- rep(0.2, n.site)
 
 for (i in 1:n.site)
   data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i], param.shape[i])
-@ 
+@
 
 Now we define appropriate response surfaces for our spatial GEV model
 and fit two different models.
@@ -3148,7 +3146,7 @@ shape.form2 <- y ~ lon
 M1 <- fitspatgev(data, coord, loc.form, scale.form, shape.form)
 M2 <- fitspatgev(data, coord, loc.form, scale.form, shape.form2)
 M1
-@ 
+@
 
 The output of model \verb|M1| is very similar to the one of a fitted
 max-stable process except the spatial dependence parameters are not
@@ -3157,7 +3155,7 @@ to perform model selection by inspecting the following output:
 <<>>=
 anova(M1, M2)
 TIC(M1, M2)
-@ 
+@
 
 From these two outputs, we can see that the $p$-value for the
 likelihood ratio test is around $0.72$ which advocates the use of

@@ -1,12 +1,12 @@
 #include "header.h"
 
-double whittleMatern(double *dist, int nPairs, double sill, double range,
+double whittleMatern(double *dist, int n, double sill, double range,
 		     double smooth, double *rho){
 
   //This function computes the whittle-matern covariance function
   //between each pair of locations.
   //When ans != 0.0, the whittle-matern parameters are ill-defined.
-  
+
   int i;
   const double cst = sill * R_pow(2, 1 - smooth) / gammafn(smooth),
     irange = 1 / range;
@@ -25,20 +25,21 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
 
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
-  
-  else if (sill > 1)
-    return sill *sill * MINF;
-  
-  for (i=nPairs;i--;){
-    double cst2;
-    cst2 = dist[i] * irange;
-    rho[i] = cst * R_pow(cst2, smooth) * bessel_k(cst2, smooth, 1);
+
+  for (i=n;i--;){
+    double cst2 = dist[i] * irange;
+
+    if (cst2 == 0)
+      rho[i] = sill;
+
+    else
+      rho[i] = cst * R_pow(cst2, smooth) * bessel_k(cst2, smooth, 1);
   }
 
   return 0.0;
 }
 
-double cauchy(double *dist, int nPairs, double sill, double range,
+double cauchy(double *dist, int n, double sill, double range,
 	      double smooth, double *rho){
 
   //This function computes the cauchy covariance function between each
@@ -47,11 +48,11 @@ double cauchy(double *dist, int nPairs, double sill, double range,
 
   int i;
   const double irange2 = 1 / (range * range);
-  
+
   //Some preliminary steps: Valid points?
   if (smooth < 0)
     return (1 - smooth) * (1 - smooth) * MINF;
-  
+
   else if (smooth > 100)
     return (smooth - 99) * (smooth - 99) * MINF;
 
@@ -60,17 +61,14 @@ double cauchy(double *dist, int nPairs, double sill, double range,
 
   if (sill <= 0.0)
     return (1 - sill) * (1 - sill) * MINF;
-  
-  else if (sill > 1)
-    return sill * sill * MINF;
 
-  for (i=nPairs;i--;)
+  for (i=n;i--;)
     rho[i] = sill * R_pow(1 + dist[i] * dist[i] * irange2, -smooth);
-    
+
   return 0.0;
 }
 
-double caugen(double *dist, int nPairs, double sill, double range,
+double caugen(double *dist, int n, double sill, double range,
 	      double smooth, double smooth2, double *rho){
 
   /*This function computes the generalized cauchy covariance function
@@ -79,7 +77,7 @@ double caugen(double *dist, int nPairs, double sill, double range,
 
   int i;
   const double irange = 1 / range, ratioSmooth = -smooth / smooth2;
-  
+
   //Some preliminary steps: Valid points?
   if (smooth < 0)
     return (1 - smooth) * (1 - smooth) * MINF;
@@ -89,24 +87,21 @@ double caugen(double *dist, int nPairs, double sill, double range,
 
   if ((smooth2 > 2) || (smooth2 <= 0))
     return (1 - smooth2) * (1 - smooth2) * MINF;
-  
+
   if (range <= 0)
     return (1 - range) * (1 - range)* MINF;
 
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
-  
-  else if (sill > 1)
-    return sill * sill * MINF;
 
-  for (i=nPairs;i--;)
+  for (i=n;i--;)
     rho[i] = sill * R_pow(1 + R_pow(dist[i] * irange, smooth2),
 			  ratioSmooth);
-    
+
   return 0.0;
 }
 
-double powerExp(double *dist, int nPairs, double sill, double range,
+double powerExp(double *dist, int n, double sill, double range,
 		double smooth, double *rho){
 
   //This function computes the powered exponential covariance function
@@ -115,7 +110,7 @@ double powerExp(double *dist, int nPairs, double sill, double range,
 
   int i;
   const double irange = 1 / range;
-    
+
   //Some preliminary steps: Valid points?
   if ((smooth < 0) || (smooth > 2))
     return (1 - smooth) * (1 - smooth) * MINF;
@@ -125,17 +120,14 @@ double powerExp(double *dist, int nPairs, double sill, double range,
 
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
-  
-  else if (sill > 1)
-    return sill * sill * MINF;
-  
-  for (i=nPairs;i--;)
+
+  for (i=n;i--;)
     rho[i] = sill * exp(-R_pow(dist[i] * irange, smooth));
-    
+
   return 0.0;
 }
 
-double bessel(double *dist, int nPairs, int dim, double sill,
+double bessel(double *dist, int n, int dim, double sill,
 	      double range, double smooth, double *rho){
   //This function computes the bessel covariance function
   //between each pair of locations.
@@ -158,32 +150,35 @@ double bessel(double *dist, int nPairs, int dim, double sill,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
 
-  else if (sill > 1)
-    return sill * sill * MINF;
-
-  for (i=nPairs;i--;){
+  for (i=n;i--;){
     double cst2;
     cst2 = dist[i] * irange;
 
-    if (cst2 <= 1e5)
+    if (cst2 == 0)
+      rho[i] = sill;
+
+    else if (cst2 <= 1e5)
       rho[i] = cst * R_pow(cst2, -smooth) * bessel_j(cst2, smooth);
 
     else
       // approximation of the besselJ function for large x
       rho[i] = cst * R_pow(cst2, -smooth) * M_SQRT_2dPI *
 	cos(cst2 - smooth * M_PI_2 - M_PI_4);
+
+    if (!R_FINITE(rho[i]))
+      return MINF;
   }
 
   return 0.0;
 }
-  
-double mahalDistFct(double *distVec, int nPairs, double *cov11,
+
+double mahalDistFct(double *distVec, int n, double *cov11,
 		    double *cov12, double *cov22, double *mahal){
   //This function computes the mahalanobis distance between each pair
   //of locations. Currently this function is only valid in 2D
   //When ans != 0.0, the covariance matrix and/or the mahalanobis
   //distance is ill-defined.
-  
+
   int i;
   const double det = *cov11 * *cov22 - *cov12 * *cov12,
     idet = 1 / det;
@@ -195,29 +190,26 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
 
   if (*cov22 <= 0)
     return (1 - *cov22) * (1 - *cov22) * MINF;
-  
-  if (det <= 1e-10)
-    return (1 - det + 1e-10) * (1 - det + 1e-10) * MINF;
-  
-  for (i=nPairs;i--;){
-    mahal[i] = (*cov11 * distVec[nPairs + i] * distVec[nPairs + i] -
-		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
-		*cov22 * distVec[i] * distVec[i]) * idet;
-    
-    mahal[i] = sqrt(mahal[i]);
-  }
-  
+
+  if (det <= 0)
+    return (1 - det) * (1 - det) * MINF;
+
+  for (i=n;i--;)
+    mahal[i] = sqrt((*cov11 * distVec[n + i] * distVec[n + i] -
+		     2 * *cov12 * distVec[i] * distVec[n + i] +
+		     *cov22 * distVec[i] * distVec[i]) * idet);
+
   return 0.0;
 }
 
-double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
-		      double *cov12, double *cov13, double *cov22, 
+double mahalDistFct3d(double *distVec, int n, double *cov11,
+		      double *cov12, double *cov13, double *cov22,
 		      double *cov23, double *cov33, double *mahal){
   //This function computes the mahalanobis distance between each pair
   //of locations. Currently this function is only valid in 3D
   //When ans != 0.0, the covariance matrix and/or the mahalanobis
   //distance is ill-defined.
-  
+
   int i;
   const double det = *cov11 * *cov22 * *cov33 - *cov12 * *cov12 * *cov33 -
     *cov11 * *cov23 * *cov23 + 2 * *cov12 * *cov13 * *cov23 -
@@ -235,24 +227,24 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 
   if (detMin <= 0)
     return (1 - detMin) * (1 - detMin) * MINF;
-  
-  for (i=nPairs;i--;){
+
+  for (i=n;i--;){
 
     mahal[i] = ((*cov22 * *cov33 - *cov23 * *cov23) * distVec[i] * distVec[i] +
-		2 * (*cov13 * *cov23 - *cov12 * *cov33) * distVec[i] * distVec[nPairs + i] +
-		2 * (*cov12 * *cov23 - *cov13 * *cov22) * distVec[i] * distVec[2 *nPairs + i] +
-		(*cov11 * *cov33 - *cov13 * *cov13) * distVec[nPairs + i] * distVec[nPairs + i] +
-		2 * (*cov12 * *cov13 - *cov11 * *cov23) * distVec[nPairs + i] * distVec[2 * nPairs + i] +
-		(*cov11 * *cov22 - *cov12 * *cov12) * distVec[2 * nPairs + i] * distVec[2 * nPairs + i]) *
+		2 * (*cov13 * *cov23 - *cov12 * *cov33) * distVec[i] * distVec[n + i] +
+		2 * (*cov12 * *cov23 - *cov13 * *cov22) * distVec[i] * distVec[2 *n + i] +
+		(*cov11 * *cov33 - *cov13 * *cov13) * distVec[n + i] * distVec[n + i] +
+		2 * (*cov12 * *cov13 - *cov11 * *cov23) * distVec[n + i] * distVec[2 * n + i] +
+		(*cov11 * *cov22 - *cov12 * *cov12) * distVec[2 * n + i] * distVec[2 * n + i]) *
       idet;
 
     mahal[i] = sqrt(mahal[i]);
   }
-  
+
   return 0.0;
 }
 
-double geomCovariance(double *dist, int nPairs, int dim, int covmod,
+double geomCovariance(double *dist, int n, int dim, int covmod,
 		      double sigma2, double sigma2Bound, double sill,
 		      double range, double smooth, double smooth2,
 		      double *rho){
@@ -272,34 +264,34 @@ double geomCovariance(double *dist, int nPairs, int dim, int covmod,
 
   switch (covmod){
   case 1:
-    ans = whittleMatern(dist, nPairs, sill, range, smooth, rho);
+    ans = whittleMatern(dist, n, sill, range, smooth, rho);
     break;
   case 2:
-    ans = cauchy(dist, nPairs, sill, range, smooth, rho);
+    ans = cauchy(dist, n, sill, range, smooth, rho);
     break;
   case 3:
-    ans = powerExp(dist, nPairs, sill, range, smooth, rho);
+    ans = powerExp(dist, n, sill, range, smooth, rho);
     break;
   case 4:
-    ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
+    ans = bessel(dist, n, dim, sill, range, smooth, rho);
     break;
   case 5:
-    ans = caugen(dist, nPairs, sill, range, smooth, smooth2, rho);
+    ans = caugen(dist, n, sill, range, smooth, smooth2, rho);
   }
 
   if (ans != 0.0)
     return ans;
 
-  for (i=nPairs;i--;)    
+  for (i=n;i--;)
     rho[i] = sqrt(twiceSigma2 * (1 - rho[i]));
-  
+
   return ans;
 }
 
 double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double *sigma2, double sill, double range,
 			double smooth, double smooth2, double *rho){
-  
+
   int i, j, currentPair = 0;
   const int nPairs = nSite * (nSite - 1) / 2;
   double ans = 0.0;
@@ -316,7 +308,7 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
     break;
   case 4:
     ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
-    break; 
+    break;
   case 5:
     ans = caugen(dist, nPairs, sill, range, smooth, smooth2, rho);
   }
@@ -326,7 +318,7 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
-      rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * 
+      rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) *
 			      rho[currentPair] + sigma2[j]);
       currentPair++;
     }
@@ -334,9 +326,9 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 
   return ans;
 }
-      
 
-double brownResnick(double *dist, int nPairs, double range, double smooth,
+
+double brownResnick(double *dist, int n, double range, double smooth,
 		    double *rho){
 
   int i;
@@ -345,11 +337,52 @@ double brownResnick(double *dist, int nPairs, double range, double smooth,
   if ((smooth <= 0) || (smooth > 2))
     return (smooth - 1) * (smooth - 1) * MINF;
 
-  for (i=nPairs;i--;)
-    rho[i] = R_pow(dist[i] * irange, halfSmooth);
+  for (i=n;i--;)
+    rho[i] = M_SQRT2 * R_pow(dist[i] * irange, halfSmooth);
 
   return 0;
 }
 
-  
-  
+double fbm(double *coord, double *dist, int dim, int nSite, double sill, double range,
+	   double smooth, double *rho){
+
+  /* This function computes the covariance function related to a
+  fractional Brownian motion.  When ans != 0.0, the parameters are
+  ill-defined. */
+
+  int i, j, currentPair = -1;
+  const double irange = 1 / range;
+  double *distOrig;
+
+  distOrig = (double *)R_alloc(nSite, sizeof(double));
+
+  //Some preliminary steps: Valid points?
+  if (smooth < EPS)
+    return (1 - smooth + EPS) * (1 - smooth + EPS) * MINF;
+
+  else if (smooth > 2)
+    return (smooth - 1) * (smooth - 1) * MINF;
+
+  if (range <= 0)
+    return (1 - range) * (1 - range) * MINF;
+
+  if (sill <= 0)
+    return (1 - sill) * (1 - sill) * MINF;
+
+  distance2orig(coord, nSite, dim, distOrig, 0);
+
+  /* Rmk: 0.5 Var[Z(x)] = \gamma(||x||) as Z(o) = 0, where \gamma is
+     the semi-variogram */
+  for (i=nSite;i--;)
+    distOrig[i] = R_pow(distOrig[i] * irange, smooth);
+
+  for (i=0;i<(nSite-1);i++){
+    for (j=i+1;j<nSite;j++){
+      currentPair++;
+      rho[currentPair] = sill * (distOrig[i] + distOrig[j] -
+				 R_pow(dist[currentPair] * irange, smooth));
+    }
+  }
+
+  return 0;
+}
