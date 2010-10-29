@@ -21,8 +21,6 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     model <- "Schlather"
 
   else {
-    cov.mod <- substr(cov.mod, 2, 10)
-
     if (substr(cov.mod, 1, 1) == "i")
       model <- "iSchlather"
 
@@ -31,6 +29,8 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
     else
       model <- "Extremal-t"
+
+    cov.mod <- substr(cov.mod, 2, 10)
   }
 
   dist.dim <- ncol(coord)

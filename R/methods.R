@@ -276,3 +276,89 @@ print.pspline <- function(x, ...){
 TIC <- function(object, ..., k = 2){
   UseMethod("TIC")
 }
+
+print.latent <- function(x, digits = max(3, getOption("digits") - 3), ...,
+                         level = 0.95){
+
+  if ((level > 1) || (level < 0))
+    stop("'level' must lie in [0, 1]")
+
+  alpha <- 0.5 * (1 - level)
+  
+  cat("Effective length:", nrow(x$chain.loc), "\n")
+  cat("         Burn-in:", x$burn.in, "\n")
+  cat("        Thinning:", x$thin, "\n")
+  cat("   Effective NoP:", x$eNoP, "\n")
+  cat("             DIC:", x$DIC, "\n\n")
+  
+  
+  cat("  Regression Parameters:\n")
+  cat("      Location Parameters:\n")
+  chain <- x$chain.loc
+  loc.idx <- which(substr(colnames(chain), 1, 2) == "lm")
+  post.mean <- colMeans(chain[,loc.idx, drop=FALSE])
+  ci.lower <- apply(chain[,loc.idx, drop=FALSE], 2, quantile, alpha)
+  ci.upper <- apply(chain[,loc.idx, drop=FALSE], 2, quantile, 1-alpha)
+  dummy <- rbind(ci.lower = ci.lower, post.mean = post.mean,
+                 ci.upper = ci.upper)
+  print.default(format(dummy, digits = digits), print.gap = 2, quote = FALSE)
+
+  cat("\n")
+  cat("         Scale Parameters:\n")
+  chain <- x$chain.scale
+  scale.idx <- which(substr(colnames(chain), 1, 2) == "lm")
+  post.mean <- colMeans(chain[,scale.idx, drop=FALSE])
+  ci.lower <- apply(chain[,scale.idx, drop=FALSE], 2, quantile, alpha)
+  ci.upper <- apply(chain[,scale.idx, drop=FALSE], 2, quantile, 1-alpha)
+  dummy <- rbind(ci.lower = ci.lower, post.mean = post.mean,
+                 ci.upper = ci.upper)
+  print.default(format(dummy, digits = digits), print.gap = 2, quote = FALSE)
+
+  cat("\n")
+  cat("         Shape Parameters:\n")
+  chain <- x$chain.shape
+  shape.idx <- which(substr(colnames(chain), 1, 2) == "lm")
+  post.mean <- colMeans(chain[,shape.idx, drop=FALSE])
+  ci.lower <- apply(chain[,shape.idx, drop=FALSE], 2, quantile, alpha)
+  ci.upper <- apply(chain[,shape.idx, drop=FALSE], 2, quantile, 1-alpha)
+  dummy <- rbind(ci.lower = ci.lower, post.mean = post.mean,
+                 ci.upper = ci.upper)
+  print.default(format(dummy, digits = digits), print.gap = 2, quote = FALSE)
+
+  cat("\n\n")
+  cat("  Latent Parameters:\n")
+  cat("      Location Parameters:\n")
+  cat("        Covariance family:", x$cov.mod[1],"\n")
+  chain <- x$chain.loc
+  loc.idx <- which(colnames(chain) %in% c("sill", "range", "smooth"))
+  post.mean <- colMeans(chain[,loc.idx, drop=FALSE])
+  ci.lower <- apply(chain[,loc.idx, drop=FALSE], 2, quantile, alpha)
+  ci.upper <- apply(chain[,loc.idx, drop=FALSE], 2, quantile, 1-alpha)
+  dummy <- rbind(ci.lower = ci.lower, post.mean = post.mean,
+                 ci.upper = ci.upper)
+  print.default(format(dummy, digits = digits), print.gap = 2, quote = FALSE)
+
+  cat("\n")
+  cat("      Scale Parameters:\n")
+  cat("     Covariance family:", x$cov.mod[2],"\n")
+  chain <- x$chain.scale
+  scale.idx <- which(colnames(chain) %in% c("sill", "range", "smooth"))
+  post.mean <- colMeans(chain[,scale.idx, drop=FALSE])
+  ci.lower <- apply(chain[,scale.idx, drop=FALSE], 2, quantile, alpha)
+  ci.upper <- apply(chain[,scale.idx, drop=FALSE], 2, quantile, 1-alpha)
+  dummy <- rbind(ci.lower = ci.lower, post.mean = post.mean,
+                 ci.upper = ci.upper)
+  print.default(format(dummy, digits = digits), print.gap = 2, quote = FALSE)
+
+  cat("\n")
+  cat("      Shape Parameters:\n")
+  cat("     Covariance family:", x$cov.mod[3],"\n")
+  chain <- x$chain.shape
+  shape.idx <- which(colnames(chain) %in% c("sill", "range", "smooth"))
+  post.mean <- colMeans(chain[,shape.idx, drop=FALSE])
+  ci.lower <- apply(chain[,shape.idx, drop=FALSE], 2, quantile, alpha)
+  ci.upper <- apply(chain[,shape.idx, drop=FALSE], 2, quantile, 1-alpha)
+  dummy <- rbind(ci.lower = ci.lower, post.mean = post.mean,
+                 ci.upper = ci.upper)
+  print.default(format(dummy, digits = digits), print.gap = 2, quote = FALSE)
+}

@@ -5,31 +5,35 @@ void gevlik(double *data, int *n, double *loc, double *scale,
 
   //It computes the log-likelihood for the GEV
   int i;
+  double iscale = 1 / *scale,
+    ishape = 1 / *shape;
   
   if( (*scale <= 0) || (*shape < -1)) {
     *dns = -1e6;
     return;
   }
 
+  double dummy;
+
   if (fabs(*shape) <= 1e-16){
-    for (i=0;i<*n;i++){
-      data[i] = (data[i] - *loc) / *scale;
-      *dns += -log(*scale) - data[i] - exp(-data[i]);
+    for (i=*n;i--;){
+      dummy = (data[i] - *loc) * iscale;
+      *dns += log(iscale) - dummy - exp(-dummy);
     }
   }
 
   else{
-    for(i=0;i<*n;i++){
+    for(i=*n;i--;){
       
-      data[i] = 1 + *shape * (data[i] - *loc) / *scale;
+      dummy = 1 + *shape * (data[i] - *loc) * iscale;
       
-      if (data[i] <= 0) {
+      if (dummy <= 0) {
 	*dns = -1e6;
 	return;
       }
       
-      *dns += -log(*scale) - R_pow(data[i], -1 / *shape) -
-	(1 / *shape + 1) * log(data[i]);
+      *dns += log(iscale) - R_pow(dummy, -ishape) -
+	(ishape + 1) * log(dummy);
     }
   }
 
@@ -40,42 +44,46 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
 	    double *shape, double *dns){
   //It computes the log-likelihood for the GPD
   int i;
+  double iscale = 1 / *scale,
+    ishape = 1 / *shape;
   
   if ((*scale <= 0) || (*shape < -1)) {
     *dns = -1e6;
     return;
   }
 
-  if (fabs(*shape) <= 1e-16){
-    for (i=0;i<*n;i++){
-      exceed[i] = (exceed[i] - *thresh) / *scale;
+  double dummy;
 
-      if (exceed[i] <= 0){
+  if (fabs(*shape) <= 1e-16){
+    for (i=*n;i--;){
+      dummy = (exceed[i] - *thresh) * iscale;
+
+      if (dummy <= 0){
 	*dns = -1e6;
 	return;
       }
       
-      *dns += -log(*scale) - exceed[i];
+      *dns += log(iscale) - dummy;
     }
   }
 
   else{
-    for (i=0;i<*n;i++) {
-      exceed[i] = (exceed[i] - *thresh) / *scale;
+    for (i=*n;i--;) {
+      dummy = (exceed[i] - *thresh) * iscale;
       
-      if (exceed[i] <= 0) {
+      if (dummy <= 0) {
 	*dns = -1e6;
 	return;
       }
       
-      exceed[i] = 1 + *shape * exceed[i];
+      dummy = 1 + *shape * dummy;
       
-      if (exceed[i] <= 0) {
+      if (dummy <= 0) {
 	*dns = -1e6;
 	return;
       }
       
-      *dns += -log(*scale) - (1 / *shape + 1) * log(exceed[i]);
+      *dns += log(iscale) - (ishape + 1) * log(dummy);
     }
   }
   

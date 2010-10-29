@@ -25,7 +25,7 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
   }
 
   if (*grid){
-    neffSite = R_pow_di(neffSite, *dim);
+    neffSite = R_pow_di(*nSite, *dim);
     lagi = neffSite;
   }
 
@@ -138,7 +138,6 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 	  nKO -= (thresh <= ans[j * lagj +  i * lagi]);
 	}
       }
-      printf("nKO = %i\n\n", nKO);
     }
   }
 

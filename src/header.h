@@ -570,3 +570,19 @@ void marginalPartExtremalt(int *start, int *nObs, int *nSite, double *data, doub
 void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
 	     double *nugget, double *sill, double *range, double *smooth,
 	     double *ans);
+
+///////////////////////////////////
+//  From latentVariable.c
+//
+void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod, 
+	       int *dim, double *distMat, double *dsgnMat, int *nBeta, double *beta,
+	       double *sills, double *ranges, double *smooths, double *gevParams,
+	       double *hyperSill, double *hyperRange, double *hyperSmooth,
+	       double *hyperBetaMean, double *hyperBetaIcov, double *propGev,
+	       double *propRanges, double *propSmooths, double *mcLoc,
+	       double *mcScale, double *mcShape, double *accRates,
+	       double *extRates, int *thin, int *burnin);
+void DIC(int *n, int *nSite, int *nObs, double *data, double *chainLoc,
+	 double *chainScale, double *chainShape, double *postLoc,
+	 double *postScale, double *postShape, double *dic, double *effNpar,
+	 double *dbar);

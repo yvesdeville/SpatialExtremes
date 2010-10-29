@@ -57,7 +57,7 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
     for (l=*blockSize;l--;){
       int j;	
       double scaleStudent = sqrt(*DoF / rchisq(*DoF));
-      printf("iter = %i/%i\n", l, *blockSize);
+
       /* ------- Random rotation of the lines ----------*/
       double u = unif_rand() - 0.5,
 	v = unif_rand() - 0.5,
@@ -344,7 +344,6 @@ blockSize: see rextremalttbm
       int j;
       double scaleStudent = sqrt(*DoF / rchisq(*DoF));
       
-      printf("iter = %i/%i\n", l, *blockSize);
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
       circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, nugget, gp);

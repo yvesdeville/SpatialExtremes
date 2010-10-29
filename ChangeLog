@@ -1,3 +1,51 @@
+2010-10-29 08:50  mathieu_ribatet
+
+	* man/DIC.Rd, man/fitmaxstab.Rd, man/gev2frech.Rd,
+	  man/latentVariable.Rd: Fix some typos in the documentation
+
+2010-10-29 08:25  mathieu_ribatet
+
+	* R/latentVariable.R, R/methods.R, man/DIC.Rd,
+	  man/SpatialExtremes-package.Rd, man/latentVariable.Rd,
+	  man/print.latent.Rd, src/latentVariable.c: Refine code and
+	  documentation for the latent variable approach
+
+2010-10-27 16:12  mathieu_ribatet
+
+	* R/latentVariable.R, R/methods.R, man/DIC.Rd,
+	  man/latentVariable.Rd, src/header.h, src/univllik.c: Add function
+	  related to the latent variable approach
+
+2010-10-27 16:11  mathieu_ribatet
+
+	* src/latentVariable.c: Add function related to the latent variable
+	  approach
+
+2010-09-21 11:26  mathieu_ribatet
+
+	* DESCRIPTION, NEWS: Update contact info as I'm now in Montpellier!
+
+2010-09-21 11:08  mathieu_ribatet
+
+	* src/simextremalt.c: Small optimization for the simulation of
+	  extremal t processes
+
+2010-09-21 11:08  mathieu_ribatet
+
+	* src/simBrownResnick.c: Fix a bug in the simulation of
+	  Brown-Resnick processes
+
+2010-08-29 13:38  mathieu_ribatet
+
+	* R/simmaxstab.R: Fix a bug: simulation from the brown-resnick,
+	  geometric and extremal t
+	  were not possible.
+
+2010-08-13 07:45  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION, NEWS: Update news, changelog and
+	  description for release 1.6-0!
+
 2010-08-12 14:59  mathieu_ribatet
 
 	* man/SpatialExtremes-package.Rd, man/SpatialExtremes.Rd: Rename

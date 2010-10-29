@@ -26,17 +26,20 @@
     \item \code{\link{rgp}}: simulates gaussian random fields,
     \item \code{\link{rmaxstab}}: simulates max-stable random fields,
     \item \code{\link{fitspatgev}}: fits a spatial GEV model to data,
-    \item \code{\link{fitmaxstab}}: fits max-stable processes to data,
+    \item \code{\link{fitmaxstab}}, \code{\link{lsmaxstab}}: fits
+    max-stable processes to data,
+    \item \code{\link{latent}}: draws a Markov chain from a Bayesian
+    hierarchical model for spatial extremes,
     \item \code{\link[=predict.maxstab]{predict}}: allows predictions
     for fitted max-stable processes,
     \item \code{\link{map}}, \code{\link{condmap}}: plot a map for GEV
     parameter as well as return levels - or conditional return levels
-    \item \code{\link[=anova.maxstab]{anova}}, \code{\link{TIC}}: help
-    users in model selection,
-    \item \code{\link{madogram}}: are (kind of) variograms devoted to
-    extremes,
-    \item \code{\link{fitextcoeff}}: estimates semi-parametrically the
-    extremal coefficient,
+    \item \code{\link[=anova.maxstab]{anova}}, \code{\link{TIC}},
+  \code{\link{DIC}}: help users in model selection,
+    \item \code{\link{madogram}}, \code{\link{fmadogram}},
+  \code{\link{lmadogram}}: are (kind of) variograms devoted to extremes,
+  \item \code{\link{fitextcoeff}}: estimates semi-parametrically the
+  extremal coefficient,
     \item \code{\link{extcoeff}}: plots the evolution of the extremal
     coefficient from a fitted max-stable process,
     \item \code{\link{rbpspline}}: fits a penalized spline with radial
@@ -50,7 +53,8 @@
     \item \code{\link[=profile.maxstab]{profile}},
     \code{\link[=profile2d.maxstab]{profile2d}}: computes the profile
     composite likelihood,
-    \item \code{\link{covariance}}: computes the covariance function.
+    \item \code{\link{covariance}}, \code{\link{variogram}}: computes
+  the covariance/semivariogram function. 
   }
 }
 \section{Acknowledgement}{

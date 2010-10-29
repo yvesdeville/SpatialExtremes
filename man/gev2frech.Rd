@@ -27,8 +27,8 @@ frech2gev(x, loc, scale, shape)
 
   \deqn{Z = \left[1 + \xi \frac{Y - \mu}{\sigma} \right]_+^{1/\xi}}{Z =
   [1 + \xi (Y - \mu) / \sigma]_+^(1/\xi)}
-  is unit Frechet distributed - where \eqn{x_+ = max(0, x)}{x_+ =
-    \max(0, x)}.
+  is unit Frechet distributed - where \eqn{x_+ = \max(0, x)}{x_+ =
+    max(0, x)}.
 
   If Z is a unit Frechet random variable. Then,
 

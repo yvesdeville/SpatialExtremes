@@ -15,7 +15,7 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE)}
     one location.}
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
-  \item{cov.mod}{A character string corresponding the the covariance
+  \item{cov.mod}{A character string corresponding to the covariance
     model in the max-stable representation. Must be one of "gauss" for
     the Smith's model; "whitmat", "cauchy", "powexp", "bessel" or
     "caugen" for the Whittle-Matern, the Cauchy, the Powered Exponential, the
