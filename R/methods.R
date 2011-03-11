@@ -257,6 +257,13 @@ logLik.maxstab <- function(object, ...){
   return(llk)
 }
 
+logLik.copula <- function(object, ...){
+  llk <- object$logLik
+  attr(llk, "df") <- length(fitted(object))
+  class(llk) <- "logLik"
+  return(llk)
+}
+
 profile2d <- function(fitted, ...){
   UseMethod("profile2d")
 }
@@ -362,3 +369,102 @@ print.latent <- function(x, digits = max(3, getOption("digits") - 3), ...,
                  ci.upper = ci.upper)
   print.default(format(dummy, digits = digits), print.gap = 2, quote = FALSE)
 }
+
+print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
+  
+  cat("           Copula:", x$copula, "\n")
+  cat("         Deviance:", x$deviance, "\n")
+  cat("              AIC:", AIC(x), "\n")
+
+  if (x$cov.mod == "whitmat")
+    cov.mod <- "Whittle-Matern"
+
+  if (x$cov.mod == "powexp")
+    cov.mod <- "Powered Exponential"
+  
+  if (x$cov.mod == "cauchy")
+    cov.mod <- "Cauchy"
+  
+  if (x$cov.mod == "caugen")
+    cov.mod <- "Generalized Cauchy"
+  
+  if (x$cov.mod == "bessel")
+    cov.mod <- "Bessel"
+  
+  cat("Covariance Family:", cov.mod, "\n")
+
+  cat("\nEstimates\n")
+  cat("  Marginal Parameters:\n")
+
+  idx <- which(names(x$fitted.values) == "sill")
+  idx <- c(idx, which(names(x$fitted.values) == "range"))
+  idx <- c(idx, which(names(x$fitted.values) == "smooth"))
+  idx <- c(idx, which(names(x$fitted.values) == "smooth2"))
+  idx <- c(idx, which(names(x$fitted.values) == "DoF"))
+
+  margin.param <- x$fitted.values[-idx]
+  loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")
+  scale.idx <- which(substr(names(margin.param), 1, 5) == "scale")
+  shape.idx <- which(substr(names(margin.param), 1, 5) == "shape")
+
+  cat("    Location Parameters:\n")
+  print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
+                quote = FALSE)
+  cat("       Scale Parameters:\n")
+  print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
+                quote = FALSE)
+  cat("       Shape Parameters:\n")
+  print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
+                quote = FALSE)
+
+  loc.idx <- which(substr(names(margin.param), 1, 12) == "tempCoeffLoc")
+  scale.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffScale")
+  shape.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffShape")
+
+  if (length(loc.idx) > 0){
+    cat("Temporal Location Parameters:\n")
+    print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
+                  quote = FALSE)
+  }
+  
+  if (length(scale.idx)> 0){
+    cat("Temporal Scale Parameters:\n")
+    print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
+                  quote = FALSE)
+  }
+  
+  if (length(shape.idx)>0){
+    cat("Temporal Shape Parameters:\n")
+    
+    print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
+                  quote = FALSE)
+  }
+  
+  cat("  Dependence Parameters:\n")
+  print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2,
+                quote = FALSE)
+
+  if(!is.null(x$std.err)) {
+    cat("\nStandard Errors\n")
+    print.default(format(x$std.err, digits = digits), print.gap = 2,
+                  quote = FALSE)
+  }
+  if(!is.null(x$var.cov)) {
+    cat("\nAsymptotic Variance Covariance\n")
+    print.default(format(x$var.cov, digits = digits), print.gap = 2,
+                  quote = FALSE)
+  }
+  if(!is.null(x$corr)) {
+    cat("\nCorrelation\n")
+    print.default(format(x$corr, digits = digits), print.gap = 2,
+                  quote = FALSE)
+  }
+  cat("\nOptimization Information\n")
+  cat("  Convergence:", x$convergence, "\n")
+  cat("  Function Evaluations:", x$counts["function"], "\n")
+  if(!is.na(x$counts["gradient"]))
+    cat("  Gradient Evaluations:", x$counts["gradient"], "\n")
+  if(!is.null(x$message)) cat("\nMessage:", x$message, "\n")
+  cat("\n")
+}
+

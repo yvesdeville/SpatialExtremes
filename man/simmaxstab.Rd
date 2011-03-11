@@ -2,7 +2,7 @@
 \alias{rmaxstab}
 
 \title{Simulation of Max-Stable Random Fields}
-\description{This functions generates realisation from a max-stable
+\description{This function generates realisation from a max-stable
   random field.}
 
 \usage{
@@ -15,9 +15,11 @@ list(), \dots)
   \item{coord}{A vector or matrix that gives the coordinates of each
     location. Each row corresponds to one location - if any.}
   \item{cov.mod}{A character string that gives the max-stable
-    model. This must be one of "gauss" for the Smith model or "whitmat",
-    "cauchy", "powexp" and "bessel" for the Schlather model with the given
-    correlation family.}
+    model. This must be one of "gauss" for the Smith model, "brown" for
+  the Brown--Resnick model,  or "whitmat", "cauchy", "powexp" and
+  "bessel" for the Schlather model with the given  correlation
+  family. If the latters are prefix by a "t", e.g., "twhitmat", this
+  would corresponds to the extremal-t model.}
   \item{grid}{Logical. Does the coordinates represent grid points?}
   \item{control}{A named list with arguments 'nlines' (number of lines
     of the TBM simulation), 'method' the name of the simulation
@@ -31,7 +33,10 @@ list(), \dots)
   parameter values. For the Smith model, if \code{coord} is univariate
   you must specify \code{var}, otherwise users should supply the
   covariance parameters i.e. parameters with names such as \code{cov11},
-  \code{cov12}, \ldots
+  \code{cov12}, \ldots For the extremal-t model, users should supply the
+  "DoF", "sill", "range" and "smooth" parameters. Finally for the
+  Brown--Resnick model, users should supply the "range" and the "smooth"
+  parameters.
 
   Here are the details for each allowed components of 'control'. If
   'method' is \code{NULL} (default), the function tries to find the 
@@ -70,5 +75,14 @@ filled.contour(x, y, log(data), color.palette = terrain.colors)
 data <- rmaxstab(1, coord, cov.mod = "powexp", sill = 1, range = 3,
 smooth = 1, grid = TRUE)
 filled.contour(x, y, log(data), color.palette = terrain.colors)
+
+## 3. Brown--Resnick's model **** Only available in 1d currently ****
+data <- rmaxstab(1, x, cov.mod = "brown", range = 3, smooth = 0.5)
+plot(x, log(data), type = "l")
+
+## 4. Extremal-t model *** Very time consuming for 2d grids ***
+data <- rmaxstab(1, x, "twhitmat", DoF = 4, sill = 1, range = 3,
+smooth = 0.7)
+plot(x, log(data), type = "l")
 }
 \keyword{distribution}

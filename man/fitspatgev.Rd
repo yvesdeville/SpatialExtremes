@@ -57,9 +57,9 @@ method = "Nelder", std.err.type = "score", warn = TRUE, corr = FALSE)
   as follows:
 
   \deqn{\ell(\beta) = \sum_{i=1}^{n.site} \sum_{j=1}^{n.obs} \log
-    f(y_{i,j}; \theta_i)}{llik(\beta) = sum_(i=1)^(n.site)
-    \sum_(j=1)^(n.obs) log f(y_(i,j);theta_i)}
-  where \eqn{\theta_i}{theta_i} is the vector of the GEV parameters for
+    f(y_{i,j}; \theta_i)}{llik(\beta) = \sum_(i=1)^(n.site)
+    \sum_(j=1)^(n.obs) log f(y_(i,j);\theta_i)}
+  where \eqn{\theta_i}{\theta_i} is the vector of the GEV parameters for
   the \eqn{i}-th site.
 
   Most often, there will be some dependence between stations. However,

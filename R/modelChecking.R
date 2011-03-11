@@ -4,19 +4,18 @@ qqextcoeff <- function(fitted, estim = "ST", marge = "emp",
   if (!any("maxstab" %in% class(fitted)))
     stop("This functin is only available for 'maxstab' objects")
 
-  model <- fitted$model
   data <- fitted$data
   coord <- fitted$coord
   ext.coeff <- fitted$ext.coeff
 
-  if (model == "Smith"){
-    dist <- distance(coord, vec = TRUE)
-    exco.mod <- apply(dist, 1, ext.coeff)
-  }
-
-  else{
+  if (fitted$iso){
     dist <- distance(coord)
     exco.mod <- ext.coeff(dist)
+  }
+
+  else {
+    dist <- distance(coord, vec = TRUE)
+    exco.mod <- apply(dist, 1, ext.coeff)
   }
 
   exco.emp <- fitextcoeff(data, coord, plot = FALSE, estim = estim,

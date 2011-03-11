@@ -275,7 +275,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                  var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, est = "MPLE", data = data,
-                 logLik = -opt$value, opt.value = opt$value, model = "Schlather",
+                 logLik = -opt$value, opt.value = opt$value, model = "Schlather", iso = TRUE,
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
                  var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted)
@@ -681,7 +681,7 @@ dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
     1 + sqrt(0.5 - 0.5 * cov.fun(h))
 
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
-                 var.cov = var.cov, fixed = unlist(fixed.param), param = param,
+                 var.cov = var.cov, fixed = unlist(fixed.param), param = param, iso = TRUE,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data, est = "MPLE",
                  logLik = -opt$value, opt.value = opt$value, model = "Schlather", coord = coord,

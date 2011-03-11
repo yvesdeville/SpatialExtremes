@@ -1,21 +1,25 @@
 \name{logLik}
 \alias{logLik}
 \alias{logLik.maxstab}
+\alias{logLik.copula}
 \title{Extracts Log-Likelihood}
 \description{Extract the pairwise log-likelihood for objects of class
-  ``maxstab''}
+  ``maxstab'' and ``copula''}
 \usage{
-\method{logLik}{maxstab}(object, \dots)
+\method{logLik}{maxstab}(object, ...)
+\method{logLik}{copula}(object, ...)
 }
 \arguments{
-  \item{object}{An object of class ``maxstab''. Most often this will be
-    the output of the \code{\link{fitmaxstab}} function.}
+  \item{object}{An object of class ``maxstab'' or ``copula''. Most often
+    this will be the output of the \code{\link{fitmaxstab}} of
+    \code{\link{fitcopula}} functions.}
   \item{\dots}{Other arguments to be passed to the \code{\link{logLik}}
     function.}
 }
 \value{
   Standard \code{logLik} object (see \code{\link{logLik}}) except that
-  this is the pairwise log-likelihood! 
+  it might actually correspond to the pairwise log-likelihood, e.g., for
+  the class ``maxstab''! 
 }
 \seealso{
   \code{\link{logLik}}

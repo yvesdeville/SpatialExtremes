@@ -38,7 +38,7 @@ ret.per2 = ret.per1, col = terrain.colors(64), plot.contour = TRUE,
 
   \deqn{\Pr\left[Z(x_2) > z_2 | Z(x_1) > z_1 \right] =
     \frac{1}{T_2}}{Pr[Z(x_2) > z_2 | Z(x_1) > z_1] = 1 / T_2}
-  where \eqn{z_1 = -1 / \log(1 - 1/T_1)}{z_1 = -1 / \log(1 -
+  where \eqn{z_1 = -1 / \log(1 - 1/T_1)}{z_1 = -1 / log(1 -
     1/T_1)}.
 
   In other words, it computes, given that at location \eqn{x_1}{x_1} we

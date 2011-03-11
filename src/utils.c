@@ -277,3 +277,84 @@ void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff,
 
   return;
 }
+
+double gev2unif(double *data, int nObs, int nSite, double *locs,
+		double *scales, double *shapes, double *unif,
+		double *logdens){
+
+  /* This function transforms the GEV observations to U(0,1) ones.
+
+     When ans > 0.0, the GEV parameters are invalid. */
+
+  int i, j;
+  
+  for (i=nSite;i--;){
+    double iscale = 1 / scales[i], logIscale = log(iscale);
+
+    if (shapes[i] == 0.0)
+      for (j=nObs;j--;){
+	unif[i * nObs + j] = (data[i * nObs + j] - locs[i]) * iscale;
+	logdens[i * nObs + j] = logIscale - unif[i * nObs + j] -
+	  exp(-unif[i * nObs + j]);
+	unif[i * nObs + j] = exp(-exp(-unif[i * nObs + j]));
+      }
+
+    else {
+      double ishape = 1 / shapes[i];
+      for (j=nObs;j--;){
+	unif[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) *
+	  iscale;
+
+	if (unif[i * nObs + j] <= 0)
+	  return MINF;
+
+	logdens[i * nObs + j] = logIscale - (1 + ishape) * log(unif[i * nObs + j]) - 
+	  R_pow(unif[i * nObs + j], -ishape);
+	unif[i * nObs + j] = exp(-R_pow(unif[i * nObs + j], -ishape));
+      }
+    }
+  }
+  
+  return 0.0;
+}
+
+double gev2unifTrend(double *data, int nObs, int nSite, double *locs,
+		     double *scales, double *shapes, double *trendlocs,
+		     double *trendscales, double *trendshapes, double *unif,
+		     double *logdens){
+
+  /* This function transforms the GEV observations to U(0,1) ones with
+     a temporal trend.
+
+     When ans > 0.0, the GEV parameters are invalid. */
+
+  int i, j;
+
+  for (i=nSite;i--;){
+    for (j=nObs;j--;){
+      double loc = locs[i] + trendlocs[j], scale = scales[i] + trendscales[j],
+	shape = shapes[i] + trendshapes[j], iscale = 1 / scale,
+	logIscale = log(iscale), ishape = 1 / shape;
+
+      if (shape == 0.0){
+	unif[i * nObs + j] = (data[i * nObs + j] - loc) * iscale;
+	logdens[i * nObs + j] = logIscale - unif[i * nObs + j] -
+	  exp(-unif[i * nObs + j]);
+	unif[i * nObs + j] = exp(-exp(-unif[i * nObs + j]));
+      }
+
+      else {
+	unif[i * nObs + j] = 1 + shape * (data[i * nObs + j] - loc) * iscale;
+
+	if (unif[i * nObs + j] <= 0)
+	  return MINF;
+
+	logdens[i * nObs + j] = logIscale - (1 + ishape) * log(unif[i * nObs + j]) -
+	  R_pow(unif[i * nObs + j], -ishape);
+	unif[i * nObs + j] = exp(-R_pow(unif[i * nObs + j], -ishape));
+      }
+    }
+  }
+
+  return 0.0;
+}

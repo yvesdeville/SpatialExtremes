@@ -6,6 +6,7 @@
 % \VignetteDepends{SpatialExtremes}
 % \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes}
 % \VignettePackage{SpatialExtremes}
+\SweaveOpts{eps=FALSE,pdf=TRUE}
 
 \pagestyle{empty}
 \frontmatter
@@ -353,16 +354,16 @@ set.seed(seed)
 data1 <- rmaxstab(1, cbind(x,x), "gauss", cov11 = 9/8, cov12 = 1, cov22 = 9/8,
                   grid = TRUE)
 
+png("Figures/Smith2Sim.png", width = 1400, height = 700)
 par(mfrow=c(1,2))
-image(x, x, log(data0), col = terrain.colors(40))
-image(x, x, log(data1), col = terrain.colors(40))
+image(x, x, log(data0), col = terrain.colors(64))
+image(x, x, log(data1), col = terrain.colors(64))
+dev.off()
 @
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
-<<Smith2Sim>>
-@
+  \includegraphics[width=0.75\textwidth]{Figures/Smith2Sim}
   \caption{Two simulations of the Smith model with different $\Sigma$
     matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$ and
     $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$
@@ -622,16 +623,16 @@ ms0 <- rmaxstab(1, cbind(x, y), "whitmat", sill = 1, range = 1, smooth = 1, grid
 set.seed(12)
 ms1 <- rmaxstab(1, cbind(x, y), "powexp", sill = 1, range = 1.5, smooth = 1, grid=TRUE)
 
+png("Figures/Schlather2Sim.png", width = 1400, height = 700)
 par(mfrow=c(1,2))
-image(x, y, log(ms0), col = terrain.colors(30))
-image(x, y, log(ms1), col = terrain.colors(30))
+image(x, y, log(ms0), col = terrain.colors(64))
+image(x, y, log(ms1), col = terrain.colors(64))
+dev.off()
 @
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
-<<Schlather2Sim>>
-@
+  \includegraphics[width=0.75\textwidth]{Figures/Schlather2Sim}
 \caption{Two simulations of the Schlather model with different
   correlation functions having approximately the same practical
   range. Left panel: Whittle--Matérn with $c_1 = c_2 = \nu = 1$. Right
@@ -974,17 +975,17 @@ set.seed(seed)
 data3 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
              grid = TRUE, control = list(nlines = 625))
 
+png("Figures/tbm.png", width = 1400, height = 700)
 par(mfrow=c(1,3))
-image(x, y, data1, col = terrain.colors(30))
-image(x, y, data2, col = terrain.colors(30))
-image(x, y, data3, col = terrain.colors(30))
+image(x, y, data1, col = terrain.colors(64))
+image(x, y, data2, col = terrain.colors(64))
+image(x, y, data3, col = terrain.colors(64))
+dev.off()
 @
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
-<<tbm>>
-@
+  \includegraphics[width = \textwidth]{Figures/tbm}
 \caption{One realisation of a gaussian random field having a
   Whittle-Matern covariance function with sill, range and smooth
   parameters all equal to one using the turning bands methods. The
@@ -1131,21 +1132,21 @@ set.seed(8)
 M1 <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 3/4, cov22 = 9/8,
                grid = TRUE)
 
+png("Figures/rmaxstabSmith.png", width = 1400, height = 700)
 par(mfrow = c(1,2))
-image(x, y, log(M0), col = terrain.colors(30))
-image(x, y, log(M1), col = terrain.colors(30))
+image(x, y, log(M0), col = terrain.colors(64))
+image(x, y, log(M1), col = terrain.colors(64))
+dev.off()
 @
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
-<<rmaxstabSmith>>
-@
-\caption{Two simulations of the Smith model with different covariance
-  matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$,
-  $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$,
-  $\sigma_{12} = 3/4$. The observations are transformed to unit Gumbel
-  margins for viewing purposes.}
+  \includegraphics[width=0.75\textwidth]{Figures/rmaxstabSmith}
+  \caption{Two simulations of the Smith model with different covariance
+    matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$,
+    $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$,
+    $\sigma_{12} = 3/4$. The observations are transformed to unit Gumbel
+    margins for viewing purposes.}
   \label{fig:rmaxstabSmith}
 \end{figure}
 

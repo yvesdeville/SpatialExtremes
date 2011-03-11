@@ -123,7 +123,7 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
              as.double(unlist(hyper$betaMeans)), as.double(unlist(hyper$betaIcov)),
              as.double(prop$gev), as.double(prop$ranges), as.double(prop$smooths),
              chain.loc = chain.loc, chain.scale = chain.scale,  chain.shape = chain.shape,
-             acc.rates = double(7), ext.rates = double(7), as.integer(thin),
+             acc.rates = double(9), ext.rates = double(9), as.integer(thin),
              burn.in = as.integer(burn.in), PACKAGE = "SpatialExtremes")
 
   chain.loc <- matrix(temp$chain.loc, n, byrow = TRUE)
@@ -132,11 +132,11 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
   acc.rates <- temp$acc.rates
   ext.rates <- temp$ext.rates
   names(acc.rates) <- names(ext.rates) <-
-    c("gev", "range:loc", "range:scale", "range:shape", "smooth:loc", "smooth:scale",
-      "smooth:shape")
+    c("gev:loc", "gev:scale", "gev:shape", "range:loc", "range:scale", "range:shape",
+      "smooth:loc", "smooth:scale", "smooth:shape")
   
-  acc.rates["gev"] <- acc.rates["gev"] / n.site
-  ext.rates["gev"] <- ext.rates["gev"] / n.site
+  acc.rates[1:3] <- acc.rates[1:3] / n.site
+  ext.rates[1:3] <- ext.rates[1:3] / n.site
   
   colnames(chain.loc) <- c(paste("lm", 1:n.loccoeff,sep=""),
                            "sill", "range", "smooth",
@@ -153,7 +153,8 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
                scale.dsgn.mat = scale.dsgn.mat, shape.dsgn.mat = shape.dsgn.mat,
                acc.rates = rbind(acc.rates = acc.rates, ext.rates = ext.rates),
                hyper = hyper, cov.mod = cov.mod, burn.in = burn.in, thin = thin,
-               data = data)
+               data = data, coord = coord, marg.cov = marg.cov, loc.form = loc.form,
+               scale.form = scale.form, shape.form = shape.form)
   class(mcmc) <- "latent"
   dummy <- DIC(mcmc)
   mcmc <- c(mcmc, list(eNoP = dummy["eNoP"], DIC = dummy["DIC"],

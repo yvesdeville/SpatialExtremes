@@ -31,15 +31,15 @@ gcv(y, x, knots, degree, plot = TRUE, n.points = 150, \dots)
 }
 \details{
   For every linear smoother e.g. \eqn{\hat{y} = S_\lambda y}{y.hat =
-    S_lambda y}, the cross-validation criterion consists in minimizing
+    S_\lambda y}, the cross-validation criterion consists in minimizing
   the following quantity:
   
   \deqn{GCV(\lambda) = \frac{n ||y - \hat{y}||^2}{(n -
-      tr(S_\lambda))^2}}{GCV(lambda) = (n ||y - y.hat||^2) / (n -
-    tr(S_lambda))^2}
-  where \eqn{\lambda}{lambda} is the penalty coefficient, \eqn{n}{n} the
-  number of observations and \eqn{tr(S_\lambda)}{tr(S_lambda)} is the
-  trace of the matrix \eqn{S_\lambda}{S_lambda}.
+      tr(S_\lambda))^2}}{GCV(\lambda) = (n ||y - y.hat||^2) / (n -
+    tr(S_\lambda))^2}
+  where \eqn{\lambda}{\lambda} is the penalty coefficient, \eqn{n}{n} the
+  number of observations and \eqn{tr(S_\lambda)}{tr(S_\lambda)} is the
+  trace of the matrix \eqn{S_\lambda}{S_\lambda}.
 }
 \references{
   Ruppert, D. Wand, M.P. and Carrol, R.J. (2003) \emph{Semiparametric

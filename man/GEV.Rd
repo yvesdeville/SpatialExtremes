@@ -32,15 +32,15 @@ dgev(x, loc = 0, scale = 1, shape = 0, log = FALSE)
   values of '0', '1' and '0', respectively.
   
   The GEV distribution function for loc = \eqn{u}{u}, scale =
-  \eqn{\sigma}{sigma} and shape = \eqn{\xi}{xi} is
+  \eqn{\sigma}{\sigma} and shape = \eqn{\xi}{\xi} is
   
   \deqn{G(x) = \exp\left[-\left\{1 + \xi \frac{x - u}{\sigma}
     \right\}^{-1 / \xi} \right]}{%
-    G(z) = exp[-{1 + xi (x - u) / sigma}^(-1/xi)]}  
-  for \eqn{1 + \xi ( x - u ) / \sigma > 0}{1 + xi (x - u) / sigma > 0} and \eqn{x >
-    u}{x > u}, where \eqn{\sigma > 0}{sigma > 0}. If \eqn{\xi = 0}{xi =
-    0}, the distribution is defined by continuity corresponding to the
-  Gumbel distribution.
+    G(z) = exp[-{1 + \xi (x - u) / \sigma}^(-1/\xi)]}  
+  for \eqn{1 + \xi ( x - u ) / \sigma > 0}{1 + \xi (x - u) / \sigma > 0}
+    and \eqn{x > u}{x > u}, where \eqn{\sigma > 0}{\sigma > 0}. If
+    \eqn{\xi = 0}{\xi =  0}, the distribution is defined by continuity
+    corresponding to the Gumbel distribution.
 }
 \examples{
 dgev(0.1)

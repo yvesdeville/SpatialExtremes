@@ -26,20 +26,20 @@ cv(y, x, knots, degree, plot = TRUE, n.points = 150, \dots)
 \value{
   A list with components 'penalty', 'cv' and 'nlm.code' which give the
   location of the minimum, the value of the cross-validation
-  criterion at that point and the code returned by the \code{link{nlm}}
+  criterion at that point and the code returned by the \code{\link{nlm}}
   function - useful to assess for convergence issues.
 }
 \details{
   For every linear smoother e.g. \eqn{\hat{y} = S_\lambda y}{y.hat =
-    S_lambda y}, the cross-validation criterion consists in minimizing
+    S_\lambda y}, the cross-validation criterion consists in minimizing
   the following quantity:
 
   \deqn{CV(\lambda) = \sum_{i=1}^n \left(\frac{y_i - \hat{y}_i}{1 -
-      S_{\lambda,ii}} \right)^2}{CV(lambda) = \sum_{i=1}^n [(y_i - y.hat_i)
-    / (1 - S_{lambda,ii}) ]^2}
-  where \eqn{\lambda}{lambda} is the penalty coefficient, \eqn{n}{n} the
-      number of observations and \eqn{S_{\lambda,ii}}{S_{lambda,ii}} the
-      i-th diagonal element of the matrix \eqn{S_\lambda}{S_lambda}.
+      S_{\lambda,ii}} \right)^2}{CV(\lambda) = \sum_{i=1}^n [(y_i - y.hat_i)
+    / (1 - S_{\lambda,ii}) ]^2}
+  where \eqn{\lambda}{\lambda} is the penalty coefficient, \eqn{n}{n} the
+      number of observations and \eqn{S_{\lambda,ii}}{S_{\lambda,ii}} the
+      i-th diagonal element of the matrix \eqn{S_\lambda}{S_\lambda}.
 }
 \references{
   Ruppert, D. Wand, M.P. and Carrol, R.J. (2003) \emph{Semiparametric

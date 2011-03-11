@@ -32,17 +32,17 @@ dgpd(x, loc = 0, scale = 1, shape = 0, log = FALSE)
   If 'loc', 'scale' and 'shape' are not specified they assume the default
   values of '0', '1' and '0', respectively.
   
-  The GP distribution function for loc = \eqn{u}{u}, scale = \eqn{\sigma}{sigma}
-  and shape = \eqn{\xi}{xi} is
+  The GP distribution function for loc = \eqn{u}{u}, scale =
+  \eqn{\sigma}{\sigma} and shape = \eqn{\xi}{\xi} is
   
   \deqn{G(x) = 1 - \left[ 1 + \frac{\xi (x - u )}{ \sigma } \right] ^ { - 1 /
       \xi}}{%
-    G(z) = 1 - [ 1 + xi ( x - u ) / sigma ]^(-1/xi)}
+    G(z) = 1 - [ 1 + \xi ( x - u ) / \sigma ]^(-1/\xi)}
   
-  for \eqn{1 + \xi ( x - u ) / \sigma > 0}{1 + xi (x - u) / sigma > 0} and \eqn{x >
-    u}{x > u}, where \eqn{\sigma > 0}{sigma > 0}. If \eqn{\xi = 0}{xi =
-    0}, the distribution is defined by continuity corresponding to the
-  exponential distribution.
+  for \eqn{1 + \xi ( x - u ) / \sigma > 0}{1 + \xi (x - u) / \sigma > 0}
+    and \eqn{x > u}{x > u}, where \eqn{\sigma > 0}{\sigma > 0}. If
+    \eqn{\xi = 0}{\xi = 0}, the distribution is defined by continuity
+    corresponding to the exponential distribution.
 
   By definition, the GP distribution models exceedances above a
   threshold. In particular, the \eqn{G}{G} function is a suited
@@ -57,11 +57,11 @@ dgpd(x, loc = 0, scale = 1, shape = 0, log = FALSE)
   the conditional probability definition, one have :
 
   \deqn{\Pr\left[ X \geq x \right] = \left(1 - \lambda\right) \left( 1 +
-    \xi \frac{x - u}{\sigma}\right)^{-1/\xi}}{(1 - lambda) ( 1 + xi (x -
-    u) /sigma)_+^(-1/xi)}
-  where \eqn{\lambda = \Pr[ X \leq u]}{lambda = Pr[X <= u]}.
+    \xi \frac{x - u}{\sigma}\right)^{-1/\xi}}{(1 - \lambda) ( 1 + \xi (x
+    - u) /\sigma)_+^(-1/\xi)}
+  where \eqn{\lambda = \Pr[ X \leq u]}{\lambda = Pr[X <= u]}.
 
-  When \eqn{\lambda = 0}{lambda = 0}, the "conditional" distribution
+  When \eqn{\lambda = 0}{\lambda = 0}, the "conditional" distribution
   is equivalent to the "non conditional" distribution. 
 }
 \examples{

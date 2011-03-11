@@ -280,7 +280,7 @@ void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
       if (j > halfM)
 	j -= m;
       
-      dist[r] = pythag(steps[0] * i, steps[1] * j);
+      dist[r] = hypot(steps[0] * i, steps[1] * j);
     }
 
     //Computations of the covariances

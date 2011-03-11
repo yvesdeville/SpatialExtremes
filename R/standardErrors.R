@@ -94,8 +94,7 @@
 
   grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
   hess <- matrix(std.err$hess, nrow = n.obs * n.pairs, ncol = n.param)
-  colnames(grad) <- colnames(hess) <- param.names
-  
+    
   if (iso){
     if (dist.dim == 2){
       grad[,1] <- rowSums(grad[,c(1,3)])
@@ -114,6 +113,8 @@
     }
   }
 
+  colnames(grad) <- colnames(hess) <- param.names
+  
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
     idx <- which(param.names %in% fixed.param)

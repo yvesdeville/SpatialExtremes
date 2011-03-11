@@ -279,7 +279,7 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, est = "MPLE", data = data,
                  logLik = -opt$value, opt.value = opt$value, model = "Schlather",
-                 cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
+                 cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff, iso = TRUE,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
                  var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted)
   
@@ -691,7 +691,7 @@ as.double(temp.penalty.shape),",
                  logLik = -opt$value, opt.value = opt$value, model = "Schlather", coord = coord,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
-                 lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
+                 lik.fun = nllh, loc.type = loc.type, scale.type = scale.type, iso = TRUE,
                  shape.type = shape.type, ihessian = ihessian, var.score = var.score,
                  marg.cov = marg.cov, nllh = nllh, weighted = weighted)
   

@@ -65,7 +65,24 @@ anova.maxstab <- function(object, object2, method = "RJ",
 
   ihessian <- M1$ihessian
   var.cov <- M1$var.cov
-  
+
+  ## Beware a isotropic Smith model has a param named "cov" and not
+  ## "covXX", need to fix it in such cases
+  if (M0$iso != M1$iso){
+    if (M0$iso){
+      idx <- which(names(M0$fitted.values) == "cov")
+      names(M0$fitted.values)[idx] <- "cov11"
+
+      M0$fixed <- c(M0$fixed, cov12 = 0, M0$par["cov22"])
+    }
+
+    if (M1$iso){
+      idx <- which(names(M1$fitted.values) == "cov")
+      names(M1$fitted.values)[idx] <- "cov11"
+
+      M1$fixed <- c(M1$fixed, cov12 = 0, M1$par["cov22"])
+    }
+  }
   removed.param <- which(!(names(M1$fitted.values) %in%
                              names(M0$fitted.values)))
   removed.param <- names(M1$fitted.values)[removed.param]

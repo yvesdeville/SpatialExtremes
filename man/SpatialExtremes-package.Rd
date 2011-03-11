@@ -25,6 +25,11 @@
   \enumerate{
     \item \code{\link{rgp}}: simulates gaussian random fields,
     \item \code{\link{rmaxstab}}: simulates max-stable random fields,
+    \item \code{\link{rmaxlin}}: simulates max-linear processes,
+    \item \code{\link{condrmaxlin}}: conditional simulations for
+    max-linear processes,
+    \item \code{\link{condrgp}}: conditional simulations for Gaussian
+    processes,
     \item \code{\link{fitspatgev}}: fits a spatial GEV model to data,
     \item \code{\link{fitmaxstab}}, \code{\link{lsmaxstab}}: fits
     max-stable processes to data,

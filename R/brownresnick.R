@@ -244,7 +244,7 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, est = "MPLE", data = data,
                  logLik = -opt$value, opt.value = opt$value, model = "Brown-Resnick",
-                 cov.mod = "brown", fit.marge = fit.marge, ext.coeff = ext.coeff,
+                 cov.mod = "brown", fit.marge = fit.marge, ext.coeff = ext.coeff, iso = TRUE,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
                  var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted)
   
@@ -621,7 +621,7 @@ PACKAGE = 'SpatialExtremes')$dns"))
                  logLik = -opt$value, opt.value = opt$value, model = "Brown-Resnick", coord = coord,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "brown", cov.fun = NA,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
-                 lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
+                 lik.fun = nllh, loc.type = loc.type, scale.type = scale.type, iso = TRUE,
                  shape.type = shape.type, ihessian = ihessian, var.score = var.score,
                  marg.cov = marg.cov, nllh = nllh, weighted = weighted)
   

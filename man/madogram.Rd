@@ -59,14 +59,14 @@ c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
     \neq 0\\
     \exp\left(\frac{\nu(h)}{\sigma}\right), &\xi = 0
     \end{array}
-    \right.}{u_beta (mu + nu(h) / Gamma(1 - xi)), if xi < 1, exp(nu(h)/sigma),
-    otherwise}
-  where \eqn{\Gamma(\cdot)}{Gamma(.)} is the gamma function and
-  \eqn{u_\beta}{u_beta} is defined as follows:
+    \right.}{u_\beta (\mu + \nu(h) / \Gamma(1 - \xi)), if \xi < 1,
+  exp(\nu(h)/\sigma), otherwise}
+  where \eqn{\Gamma}{\Gamma} is the gamma function and
+  \eqn{u_\beta}{u_\beta} is defined as follows: 
 
   \deqn{u_\beta(u) = \left(1 + \xi \frac{u - \mu}{\sigma}
-    \right)_+^{1/\xi}}{(1 + xi (u - mu) / sigma )_+^{1/xi}} 
-  and \eqn{\beta = (\mu, \sigma, \xi)}{beta= (mu, sigma, xi)} i.e
+    \right)_+^{1/\xi}}{(1 + \xi (u - \mu) / \sigma )_+^{1/\xi}} and
+    \eqn{\beta = (\mu, \sigma, \xi)}{\beta= (\mu, \sigma, \xi)}, i.e,
     the vector of the GEV parameters.
 }
 \references{

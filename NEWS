@@ -1,3 +1,25 @@
+		CHANGES IN SpatialExtremes VERSION 1.8-0
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Improvement of the simulation technique for Brown-Resnick
+    processes.
+
+NEW FEATURES
+
+    o (Approximate) conditional simulations of unit Frechet max-stable
+    random fields is implemented.
+
+    o The copula approach is now available --- use with caution!
+
+    o Max-linear models are now available.
+
+BUG FIXES
+
+    o Fix a bug with model selection.
+
+
+
 		CHANGES IN SpatialExtremes VERSION 1.7-0
 
 SIGNIFICANT USER-VISIBLE CHANGES

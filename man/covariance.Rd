@@ -40,29 +40,31 @@ covariance(fitted, sill, range, smooth, smooth2 = NULL, cov.mod =
   models. These covariance functions are defined as follows:
 
   \describe{
-    \item{Whittle-Matern}{\eqn{\rho(h) = sill
-	\frac{2^{1-smooth}}{\Gamma(smooth)} \left(\frac{h}{range}
-	\right)^{smooth} K_{smooth}\left(\frac{h}{range} \right)}{rho(h) =
-	sill  2^(1-smooth) / Gamma(smooth)  (h/range)^smooth  K_smooth(h
-    / range)}}
-    \item{Powered Exponential}{\eqn{\rho(h) = sill \exp \left[-
-	\left(\frac{h}{range} \right)^{smooth} \right]}{rho(h) = sill
-    exp[-(h/range)^smooth]}}
-    \item{Cauchy}{\eqn{\rho(h) = sill \left[1 + \left(\frac{h}{range}
-	\right)^2 \right]^{-smooth}}{rho(h) = sill [1 +
-    (h/range)^2]^(-smooth)}}
-    \item{Bessel}{\eqn{\rho(h) = sill \left(\frac{2
-	  range}{h}\right)^{smooth} \Gamma(smooth + 1)
-	J_{smooth}\left(\frac{h}{range} \right)}{rho(h) = sill (2 range /
-	h)^(smooth) Gamma(smooth + 1) J_smooth(h / range)}}
-    \item{Generalized Cauchy}{\eqn{\rho(h) = sill \left\{1 +
-    \left(\frac{h}{range} \right)^{smooth2} \right\}^{-smooth /
-    smooth2}}{rho(h) = sill [1 + (h /
-    range)^smooth2]^(-smooth / smooth2)}}
+    \item{Whittle-Matern}{\eqn{\rho(h) = \sigma
+	\frac{2^{1-\kappa}}{\Gamma(\kappa)} \left(\frac{h}{\lambda}
+	\right)^{\kappa} K_{\kappa}\left(\frac{h}{\lambda} \right)}{\rho(h) =
+	\sigma  2^(1-\kappa) / \Gamma(\kappa)  (h/\lambda)^\kappa  K_\kappa(h
+    / \lambda)}}
+    \item{Powered Exponential}{\eqn{\rho(h) = \sigma \exp \left[-
+	\left(\frac{h}{\lambda} \right)^{\kappa} \right]}{\rho(h) = \sigma
+    exp[-(h/\lambda)^\kappa]}}
+    \item{Cauchy}{\eqn{\rho(h) = \sigma \left[1 + \left(\frac{h}{\lambda}
+	\right)^2 \right]^{-\kappa}}{\rho(h) = \sigma [1 +
+    (h/\lambda)^2]^(-\kappa)}}
+    \item{Bessel}{\eqn{\rho(h) = \sigma \left(\frac{2
+	  \lambda}{h}\right)^{\kappa} \Gamma(\kappa + 1)
+	J_{\kappa}\left(\frac{h}{\lambda} \right)}{\rho(h) = \sigma (2 \lambda /
+	h)^(\kappa) Gamma(\kappa + 1) J_\kappa(h / \lambda)}}
+    \item{Generalized Cauchy}{\eqn{\rho(h) = \sigma \left\{1 +
+    \left(\frac{h}{\lambda} \right)^{\kappa_2} \right\}^{-\kappa /
+    \kappa_2}}{\rho(h) = \sigma [1 + (h /
+    \lambda)^\kappa_2]^(-\kappa / \kappa_2)}}
   }
-  where \eqn{\Gamma}{Gamma} is the gamma function,
-    \eqn{K_{smooth}}{K_smooth} and  \eqn{J_{smooth}}{J_smooth} are both
-    modified Bessel functions of order \eqn{smooth}{smooth}.
+  where \eqn{\sigma}{\sigma}, \eqn{\lambda}{\lambda} and
+    \eqn{\kappa}{\kappa} are the sill, the range and shape parameters,
+    \eqn{\Gamma}{\Gamma} is the gamma function,
+    \eqn{K_{\kappa}}{K_\kappa} and  \eqn{J_\kappa}{J_\kappa} are both
+    modified Bessel functions of order \eqn{\kappa}{\kappa}.
 }
 \examples{
 ## 1- Calling covariance using fixed covariance parameters

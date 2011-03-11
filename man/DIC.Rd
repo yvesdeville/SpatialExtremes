@@ -20,17 +20,17 @@ DIC(object, ..., fun = "mean")
 }
 \details{
   The deviance is
-  \deqn{D(\theta) = -2 \log \pi(y \mid \theta),}{D(theta) = -2 log p(y |
-    theta),}
-  where \eqn{y}{y} are the data, \eqn{\theta}{theta} are the unknown
-  parameters of the models and \eqn{\pi(y \mid \theta)}{p(y | theta)} is
+  \deqn{D(\theta) = -2 \log \pi(y \mid \theta),}{D(\theta) = -2 log p(y
+    | \theta),}
+  where \eqn{y}{y} are the data, \eqn{\theta}{\theta} are the unknown
+  parameters of the models and \eqn{\pi(y \mid \theta)}{p(y | \theta)} is
   the likelihood function. Thus the expected deviance, a measure of how
   well the model fits the data, is given by
   \deqn{\overline{D} = {\rm E}_{\theta}[D(\theta)],}{Dbar =
-    E_theta[D(\theta)],}
+    E_\theta[D(\theta)],}
   while the effective number of parameters is
-  \deqn{p_D = \overline{D} - D(\theta^*),}{p_D = Dbar - D(theta^*),}
-  where \eqn{\theta^*}{theta^*} is point estimate of the posterior
+  \deqn{p_D = \overline{D} - D(\theta^*),}{p_D = Dbar - D(\theta^*),}
+  where \eqn{\theta^*}{\theta^*} is point estimate of the posterior
   distribution, e.g., the posterior mean. Finally the DIC is given by
   \deqn{{\rm DIC} = p_D + \overline{D}.}{DIC = p_D + Dbar.}
 

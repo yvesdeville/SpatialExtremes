@@ -215,6 +215,13 @@ void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff,
 		    int nSite, int nsigma2coeff, double *sigma2);
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 	 double *quant);
+double gev2unif(double *data, int nObs, int nSite, double *locs,
+		double *scales, double *shapes, double *unif,
+		double *logdens);
+double gev2unifTrend(double *data, int nObs, int nSite, double *locs,
+		     double *scales, double *shapes, double *trendlocs,
+		     double *trendscales, double *trendshapes, double *unif,
+		     double *logdens);
 
 ///////////////////////////////////
 //  From univllik.c
@@ -586,3 +593,42 @@ void DIC(int *n, int *nSite, int *nObs, double *data, double *chainLoc,
 	 double *chainScale, double *chainShape, double *postLoc,
 	 double *postScale, double *postShape, double *dic, double *effNpar,
 	 double *dbar);
+
+///////////////////////////////////
+//  From kriging.c
+//
+void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
+	      double *icovMat, double *coord, double *coordKrig, double *obs,
+	      double *sill, double *range, double *smooth, double *smooth2,
+	      double *weights);
+
+///////////////////////////////////
+//  From copula.c
+//
+void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, int *nObs,
+	    int *dim, double *locdsgnmat,  double *locpenmat, int *nloccoeff,
+	    int *npparloc, double *locpenalty, double *scaledsgnmat, double *scalepenmat,
+	    int *nscalecoeff, int *npparscale, double *scalepenalty,
+	    double *shapedsgnmat, double *shapepenmat, int *nshapecoeff, int *npparshape,
+	    double *shapepenalty, int *usetempcov, double *tempdsgnmatloc,
+	    double *temppenmatloc, int *ntempcoeffloc, int *nppartempcoeffloc,
+	    double *temppenaltyloc, double *tempdsgnmatscale, double *temppenmatscale,
+	    int *ntempcoeffscale, int *nppartempcoeffscale, double *temppenaltyscale,
+	    double *tempdsgnmatshape, double *temppenmatshape, int *ntempcoeffshape,
+	    int *nppartempcoeffshape, double *temppenaltyshape, double *loccoeff,
+	    double *scalecoeff, double *shapecoeff, double *tempcoeffloc,
+	    double *tempcoeffscale, double *tempcoeffshape, double *DoF, double *sill, double *range,
+	    double *smooth, double *smooth2, double *dns);
+double gaussianCopula(double *unif, double sd, double *covMat, int nObs, int nSite);
+double studentCopula(double *data, double DoF, double *covMat, int nObs,
+		     int nSite);
+
+///////////////////////////////////
+//  From maxLinear.c
+//
+void rcondMaxLin(double *data, double *dsgnMat, int *p, int *nSite, int *nSim,
+		 double *Z);
+void maxLinear(int *nSim, double *dsgnMat, double *Z, int *nSite, int *p,
+	       int *grid, double *sim);
+void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *p,
+		   double *areaPixel, int *dim, double *param, double *dsgnMat);

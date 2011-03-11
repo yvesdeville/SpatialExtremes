@@ -102,17 +102,17 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE)}
   the fitting procedure substitutes the "full likelihood" for the
   pairwise likelihood.
 
-  Let define \eqn{L_{i,j}(x_{i,j}, \theta)}{L_{i,j}(x_{i,j}, theta)} the
+  Let define \eqn{L_{i,j}(x_{i,j}, \theta)}{L_{i,j}(x_{i,j}, \theta)} the
   likelihood for site \eqn{i}{i} and \eqn{j}{j}, where \eqn{i = 1,
   \dots, N-1}{i = 1, \dots, N-1}, \eqn{j = i+1, \dots, N}{j=i+1, \dots, 
   N}, \eqn{N}{N} is the number of site within the region and
   \eqn{x_{i,j}}{x_{i,j}} are the joint observations for site \eqn{i}{i}
   and \eqn{j}{j}. Then the pairwise likelihood
-  \eqn{PL(\theta)}{PL(theta)} is defined by:
+  \eqn{PL(\theta)}{PL(\theta)} is defined by:
 
   \deqn{\ell_P = \log PL(\theta) = \sum_{i = 1}^{N-1} \sum_{j=i+1}^{N} \log
-  L_{i,j} (x_{i,j}, \theta)}{llik_P = log PL(theta) = sum_{i = 1}^{N-1}
-  sum_{j=i+1}^{N} log L_{i,j} (x_{i,j}, theta)}
+  L_{i,j} (x_{i,j}, \theta)}{llik_P = log PL(\theta) = \sum_{i = 1}^{N-1}
+  \sum_{j=i+1}^{N} log L_{i,j} (x_{i,j}, \theta)}
 
   As pairwise likelihood is an approximation of the ``full likelihood'',
   standard errors cannot be computed directly by the inverse of the
@@ -133,8 +133,8 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE)}
   \describe{
     \item{\code{grad}}{\eqn{J} is estimated from the gradient e.g. \eqn{J
 	= \sum_{i=1}^n \left\{ \nabla \ell_P(\hat{\theta}; y_i) \nabla
-    \ell_P(\hat{\theta},y_i)^T \right\}}{J = sum_{i=1}^n
-    [grad(llik_P(hat(theta); y_i)) grad(llik_P(hat(theta);y_i))^T]}.}
+    \ell_P(\hat{\theta},y_i)^T \right\}}{J = \sum_{i=1}^n
+    {\nabla llik_P(hat(\theta); y_i) \nabla llik_P(hat(\theta);y_i)^T}}.}
     \item{\code{score}}{\eqn{J} is estimated directly from the variance of
       the observed score function.}
   }

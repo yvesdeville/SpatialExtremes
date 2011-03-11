@@ -48,8 +48,8 @@ c(0, max(dist)), ...)
 
   The extremal coefficient \eqn{\theta(h)}{\theta(h)} satisfies:
 
-  \deqn{\theta(h) = \frac{1 + 2 \nu(h)}{1 - 2 \nu(h)}}{(1 + 2 nu(h)) /
-    (1 - 2 nu(h)}
+  \deqn{\theta(h) = \frac{1 + 2 \nu(h)}{1 - 2 \nu(h)}}{{1 + 2 \nu(h)} /
+    {1 - 2 \nu(h)}} 
 }
 \references{
   Cooley, D., Naveau, P. and Poncet, P. (2006) Variograms for

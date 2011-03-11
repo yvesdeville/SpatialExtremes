@@ -26,7 +26,7 @@ map(fitted, x, y, covariates = NULL, param = "quant", ret.per = 100, col
     functions.}
   \item{plot.contour}{Logical. If \code{TRUE} (default), contour lines
     are added to the plot.}
-  \item{\dots}{Several arguments to be passed to the \code{link{image}}
+  \item{\dots}{Several arguments to be passed to the \code{\link{image}}
     function.}
 }
 \value{
