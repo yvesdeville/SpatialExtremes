@@ -8,8 +8,8 @@ This function generates conditional simulation of Gaussian random fields
 from the simple kriging predictor.
 }
 \usage{
-condrgp(n, coord, data.coord, data, cov.mod = "powexp", mean = 0, nugget
-= 0, sill = 1, range = 1, smooth = 1, grid = FALSE, control = list())
+condrgp(n, coord, data.coord, data, cov.mod = "powexp", mean = 0, sill =
+1, range = 1, smooth = 1, grid = FALSE, control = list())
 }
 \arguments{
   \item{n}{Integer. The number of conditional simulations.}
@@ -23,7 +23,7 @@ condrgp(n, coord, data.coord, data, cov.mod = "powexp", mean = 0, nugget
     family. Must be one of "whitmat", "powexp", "cauchy" or "bessel" for
     the Whittle-Mater, the powered exponential, the Cauchy or Bessel
     covariance families.}
-  \item{mean,nugget,sill,range,smooth}{The mean, nugget, sill, range and
+  \item{mean,sill,range,smooth}{The mean, sill, range and
     smooth of the Gaussian process.}
   \item{grid}{Logical. Does \code{coord} specifies a grid?}
   \item{control}{A named list passing options to the simulation method

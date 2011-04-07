@@ -45,7 +45,7 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   if (cov.mod == "caugen")
     cov.mod.num <- 5
 
-  param <- c("sigma2", "sill", "range", "smooth")
+  param <- c("sigma2", "nugget", "range", "smooth")
 
   if (cov.mod == "caugen")
     param <- c(param, "smooth2")
@@ -74,7 +74,7 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                         paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                        "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                        "as.double(sigma2), as.double(sigma2Bound), as.double(nugget), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
@@ -270,12 +270,12 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   }
 
   if (cov.mod == "caugen")
-    cov.fun <-  covariance(sill = param["sill"], range = param["range"],
+    cov.fun <-  covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                            smooth = param["smooth"], smooth2 = param["smooth2"],
                            cov.mod = cov.mod, plot = FALSE)
 
   else
-    cov.fun <-  covariance(sill = param["sill"], range = param["range"],
+    cov.fun <-  covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                            smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
 
   ext.coeff <- function(h)
@@ -448,7 +448,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     n.tempcoeff.shape <- n.ppartemp.shape <- temp.penalty.shape <- 0
   }
 
-  param <- c("sigma2", "sill", "range", "smooth")
+  param <- c("sigma2", "nugget", "range", "smooth")
 
   if (cov.mod == "caugen")
     param <- c(param, "smooth2")
@@ -484,7 +484,7 @@ as.double(temp.penalty.shape),",
                         paste("as.double(c(", paste(temp.names.loc, collapse = ","), ")), "),
                         paste("as.double(c(", paste(temp.names.scale, collapse = ","), ")), "),
                         paste("as.double(c(", paste(temp.names.shape, collapse = ","), ")), "),
-                        "as.double(sigma2), as.double(sigma2Bound), as.double(sill),
+                        "as.double(sigma2), as.double(sigma2Bound), as.double(nugget),
  as.double(range), as.double(smooth), as.double(smooth2), dns = double(1),
  PACKAGE = 'SpatialExtremes')$dns"))
 
@@ -685,12 +685,12 @@ as.double(temp.penalty.shape),",
   }
 
   if (cov.mod == "caugen")
-    cov.fun <- covariance(sill = param["sill"], range = param["range"],
+    cov.fun <- covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                           smooth = param["smooth"], smooth2 = param["smooth2"],
                           cov.mod = cov.mod, plot = FALSE)
 
   else
-    cov.fun <- covariance(sill = param["sill"], range = param["range"],
+    cov.fun <- covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                           smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
 
   ext.coeff <- function(h)

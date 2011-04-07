@@ -75,7 +75,7 @@
                              method = "Nelder", ...){
 
   n.site <- ncol(data)
-  param <- c("sill", "range", "smooth", "smooth2")
+  param <- c("nugget", "range", "smooth", "smooth2")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)
@@ -128,7 +128,7 @@
                                 method = "Nelder", ...){
 
   n.site <- ncol(data)
-  param <- c("alpha", "sill", "range", "smooth", "smooth2")
+  param <- c("alpha", "nugget", "range", "smooth", "smooth2")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)
@@ -181,7 +181,7 @@
                              method = "Nelder", ...){
 
   n.site <- ncol(data)
-  param <- c("sigma2", "sill", "range", "smooth", "smooth2")
+  param <- c("sigma2", "nugget", "range", "smooth", "smooth2")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)
@@ -234,7 +234,7 @@
                              method = "Nelder", ...){
 
   n.site <- ncol(data)
-  param <- c("sill", "range", "smooth", "smooth2", "DoF")
+  param <- c("nugget", "range", "smooth", "smooth2", "DoF")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)
@@ -303,7 +303,7 @@
   else
     sigma2.names <- paste("sigma2Coeff", 1:n.sigma2coeff, sep="")
 
-  param <- c(sigma2.names, "sill", "range", "smooth", "smooth2")
+  param <- c(sigma2.names, "nugget", "range", "smooth", "smooth2")
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   idx.cov <- which(names(fixed.param) %in% param)

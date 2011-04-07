@@ -13,7 +13,9 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
     *dist = (double *) R_alloc(*nSite * *nSiteKrig, sizeof(double)),
     *covariances = (double *) R_alloc(*nSite * *nSiteKrig, sizeof(double));    
 
-   memset(dist, 0, *nSite * *nSiteKrig * sizeof(double));
+  for (i=(*nSite * *nSiteKrig);i--;)
+    dist[i] = 0;
+
   /* 1. Compute the distances between the kriging locations and the
      locations where we got data */
   for (i=*nSiteKrig;i--;){       
@@ -30,23 +32,23 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
   // 2. Compute the covariance from these distances
   switch(*covmod){
   case 1:
-    whittleMatern(dist, *nSite * *nSiteKrig, *sill, *range, *smooth,
+    whittleMatern(dist, *nSite * *nSiteKrig, zero, *sill, *range, *smooth,
 		  covariances);
     break;
   case 2:
-    cauchy(dist, *nSite * *nSiteKrig, *sill, *range, *smooth,
+    cauchy(dist, *nSite * *nSiteKrig, zero, *sill, *range, *smooth,
 	   covariances);
     break;
   case 3:
-    powerExp(dist, *nSite * *nSiteKrig, *sill, *range, *smooth,
+    powerExp(dist, *nSite * *nSiteKrig, zero, *sill, *range, *smooth,
 	     covariances);
     break;
   case 4:
-    bessel(dist, *nSite * *nSiteKrig, *dim, *sill, *range, *smooth,
+    bessel(dist, *nSite * *nSiteKrig, *dim, zero, *sill, *range, *smooth,
 	   covariances);
     break;
   case 5:
-    caugen(dist, *nSite * *nSiteKrig, *sill, *range, *smooth, *smooth2,
+    caugen(dist, *nSite * *nSiteKrig, zero, *sill, *range, *smooth, *smooth2,
 	   covariances);
     break;
   }

@@ -201,7 +201,7 @@ locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-data <- rmaxstab(40, locations, cov.mod = "whitmat", sill = 1, range = 30,
+data <- rmaxstab(40, locations, cov.mod = "whitmat", nugget = 0, range = 30,
 smooth = 0.5)
 
 ##Now define the spatial model for the GEV parameters

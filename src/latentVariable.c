@@ -41,11 +41,17 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     *proposalGEV = (double *) R_alloc(3, sizeof(double)),
     *covMatPropChol = (double *) R_alloc(nSite2, sizeof(double));
 
-  
-  memset(logDet, 0, 3 * sizeof(double));
-  memset(covMatChol, 0, 3 * nSite2 * sizeof(double));
-  memset(GPmean, 0, 3 * *nSite * sizeof(double));
-  memset(covMatPropChol, 0, nSite2 * sizeof(double));
+  for (int i=3;i--;)
+    logDet[i] = 0;
+
+  for (int i=(3 * nSite2);i--;)
+    covMatChol[i] = 0;
+
+  for (int i=(3 * *nSite);i--;)
+    GPmean[i] = 0;
+
+  for (int i=nSite2;i--;)
+    covMatPropChol[i] = 0;
 
   /*----------------------------------------------------*/
   //                                                    \\
@@ -58,19 +64,19 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
     switch(covmod[idxMarge]){
     case 1:
-      flag = whittleMatern(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+      flag = whittleMatern(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 			   smooths[idxMarge], covariances);
       break;
     case 2:
-      flag = cauchy(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+      flag = cauchy(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 		    smooths[idxMarge], covariances);
       break;
     case 3:
-      flag = powerExp(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+      flag = powerExp(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 		      smooths[idxMarge], covariances);
       break;
     case 4:
-      flag = bessel(distMat, nPairs, *dim, sills[idxMarge], ranges[idxMarge],
+      flag = bessel(distMat, nPairs, *dim, zero, sills[idxMarge], ranges[idxMarge],
 		    smooths[idxMarge], covariances);
       break;
     }
@@ -115,7 +121,9 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
   // c. Some constant related to the conjugate distributions
   double *conjMeanCst = (double *)R_alloc(cumBeta[3], sizeof(double));
-  memset(conjMeanCst, 0, cumBeta[3] * sizeof(double));
+  for(int i=cumBeta[3];i--;)
+    conjMeanCst[i]=0;
+
   for (idxMarge=0;idxMarge<3;idxMarge++)
     F77_CALL(dsymv)("U", nBeta + idxMarge, &one, hyperBetaIcov +
 		    cumBeta2[idxMarge], nBeta + idxMarge, hyperBetaMean +
@@ -337,19 +345,19 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       // Now we need to update the covariance matrix and its inverse
       switch(covmod[idxMarge]){
       case 1:
-	flag = whittleMatern(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+	flag = whittleMatern(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 			     smooths[idxMarge], covariances);
 	break;
       case 2:
-	flag = cauchy(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+	flag = cauchy(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 		      smooths[idxMarge], covariances);
 	break;
       case 3:
-	flag = powerExp(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+	flag = powerExp(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 			smooths[idxMarge], covariances);
 	break;
       case 4:
-	flag = bessel(distMat, nPairs, *dim, sills[idxMarge], ranges[idxMarge],
+	flag = bessel(distMat, nPairs, *dim, zero, sills[idxMarge], ranges[idxMarge],
 		      smooths[idxMarge], covariances);
 	break;
       }
@@ -394,19 +402,19 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
       switch(covmod[idxMarge]){
       case 1:
-	flag = whittleMatern(distMat, nPairs, sills[idxMarge], rangeProp,
+	flag = whittleMatern(distMat, nPairs, zero, sills[idxMarge], rangeProp,
 			     smooths[idxMarge], covariances);
 	break;
       case 2:
-	flag = cauchy(distMat, nPairs, sills[idxMarge], rangeProp,
+	flag = cauchy(distMat, nPairs, zero, sills[idxMarge], rangeProp,
 		      smooths[idxMarge], covariances);
 	break;
       case 3:
-	flag = powerExp(distMat, nPairs, sills[idxMarge], rangeProp,
+	flag = powerExp(distMat, nPairs, zero, sills[idxMarge], rangeProp,
 			smooths[idxMarge], covariances);
 	break;
       case 4:
-	flag = bessel(distMat, nPairs, *dim, sills[idxMarge], rangeProp,
+	flag = bessel(distMat, nPairs, *dim, zero, sills[idxMarge], rangeProp,
 		      smooths[idxMarge], covariances);
 	break;
       }
@@ -490,19 +498,19 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     
       switch(covmod[idxMarge]){
       case 1:
-	flag = whittleMatern(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+	flag = whittleMatern(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 			     smoothProp, covariances);
 	break;
       case 2:
-	flag = cauchy(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+	flag = cauchy(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 		      smoothProp, covariances);
 	break;
       case 3:
-	flag = powerExp(distMat, nPairs, sills[idxMarge], ranges[idxMarge],
+	flag = powerExp(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
 			smoothProp, covariances);
 	break;
       case 4:
-	flag = bessel(distMat, nPairs, *dim, sills[idxMarge], ranges[idxMarge],
+	flag = bessel(distMat, nPairs, *dim, zero, sills[idxMarge], ranges[idxMarge],
 		      smoothProp, covariances);
 	break;
       }

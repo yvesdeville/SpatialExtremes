@@ -21,10 +21,9 @@ void distance(double *coord, int *nDim, int *nSite,
   }
 
   else{
-    memset(dist, 0, nPair * sizeof(double));
-
     for (i=0;i<(*nSite-1);i++){
       for (j=i+1;j<*nSite;j++){
+	dist[currentPair] = 0;
 	for (k=0;k<*nDim;k++)
 	  dist[currentPair] += (coord[i + k * *nSite] -	coord[j + k * *nSite]) *
 	    (coord[i + k * *nSite] - coord[j + k * *nSite]);
@@ -44,7 +43,6 @@ void distance2orig(double *coord, int n, int dim, double *dist, int grid){
     //Only works with two dimensional grids!!!
     int current = -1;
     double dummy;
-    memset(dist, 0, R_pow_di(n, dim) * sizeof(double));
 
     for (i=0;i<n;i++){
       dummy = coord[i] * coord[i];
@@ -57,9 +55,8 @@ void distance2orig(double *coord, int n, int dim, double *dist, int grid){
   }
 
   else {
-    memset(dist, 0, n * sizeof(double));
-
     for (i=n;i--;){
+      dist[i] = 0;
       for (j=dim;j--;)
 	dist[i] += coord[i + j * n] * coord[i + j * n];
 
@@ -153,11 +150,9 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat, double *shapedsgn
   //when ans > 0.0, the GEV parameters are invalid
   int i, j;
 
-  memset(locs, 0, nSite * sizeof(double));
-  memset(scales, 0, nSite * sizeof(double));
-  memset(shapes, 0, nSite * sizeof(double));
-
   for (i=nSite;i--;){
+
+    locs[i] = scales[i] = shapes[i] = 0;
 
     for (j=nloccoeff;j--;)
       locs[i] += loccoeff[j] * locdsgnmat[i + nSite * j];
@@ -188,24 +183,29 @@ void dsgnmat2temptrend(double *dsgnmatloc, double *dsgnmatscale, double *dsgnmat
   //from the design matrix.
   int i, j;
 
-  memset(trendlocs, 0, nObs * sizeof(double));
-  memset(trendscales, 0, nObs * sizeof(double));
-  memset(trendshapes, 0, nObs * sizeof(double));
-
   if (usetempcov[0])
-    for (i=nObs;i--;)
+    for (i=nObs;i--;){
+      trendlocs[i] = 0;
+
       for (j=nloccoeff;j--;)
 	trendlocs[i] += loccoeff[j] * dsgnmatloc[i + nObs * j];
+    }
 
   if (usetempcov[1])
-    for (i=nObs;i--;)
+    for (i=nObs;i--;){
+      trendscales[i] = 0;
+
       for (j=nscalecoeff;j--;)
 	trendscales[i] += scalecoeff[j] * dsgnmatscale[i + nObs * j];
+    }
 
   if (usetempcov[2])
-    for (i=nObs;i--;)
+    for (i=nObs;i--;){
+      trendshapes[i] = 0;
+
       for (j=nshapecoeff;j--;)
 	trendshapes[i] += shapecoeff[j] * dsgnmatshape[i + nObs * j];
+    }
 
   return;
 }
@@ -244,9 +244,8 @@ void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff,
   //(0,1)
   int i, j;
 
-  memset(alphas, 0, nSite * sizeof(double));
-
   for (i=nSite;i--;){
+    alphas[i] = 0;
     for (j=nalphacoeff;j--;)
       alphas[i] += alphacoeff[j] * alphadsgnmat[i + nSite * j];
 
@@ -265,8 +264,8 @@ void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff,
   //the 'sigma2' are used in the non-stationary geometric gaussian model
   int i, j;
 
-  memset(sigma2, 0, nSite * sizeof(double));
   for (i=nSite;i--;){
+    sigma2[i] = 0;
     for (j=nsigma2coeff;j--;)
       sigma2[i] += sigma2coeff[j] * sigma2dsgnmat[i + nSite * j];
 
@@ -357,4 +356,28 @@ double gev2unifTrend(double *data, int nObs, int nSite, double *locs,
   }
 
   return 0.0;
+}
+
+int getCurrentPair(int site1, int site2, int nSite){
+  //site1 has to be smaller than site2
+  int ans = site1 * nSite - site1 * (site1 + 1) / 2 + site2 -
+    site1 - 1;
+  return ans;
+}
+
+void getSiteIndex(int currentPair, int nSite, int *site1, int *site2){
+  int nFree = nSite - 2,
+      cum = nSite - 2;
+
+  *site1 = 0;
+  
+  while (currentPair > cum){
+    *site1 = *site1 + 1;
+    cum += nFree;
+    nFree--;
+  }
+
+  *site2 = *site1 + currentPair - cum + nFree + 1;
+
+  return;
 }

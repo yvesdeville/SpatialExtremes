@@ -5,7 +5,7 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 		 double *smooth, double *covMat){
 
   int i, j, currentPair, nPairs, effnSite = *nSite, zero = 0;
-  const double one = 1;
+  const double one = 1, dzero = 0;
   double *dist, *rho, flag = 0, *coordGrid;
 
   if (*grid)
@@ -34,16 +34,16 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 
   switch (*covmod){
   case 1:
-    flag = whittleMatern(dist, nPairs, one, *range, *smooth, rho);
+    flag = whittleMatern(dist, nPairs, dzero, one, *range, *smooth, rho);
     break;
   case 2:
-    flag = cauchy(dist, nPairs, one, *range, *smooth, rho);
+    flag = cauchy(dist, nPairs, dzero, one, *range, *smooth, rho);
     break;
   case 3:
-    flag = powerExp(dist, nPairs, one, *range, *smooth, rho);
+    flag = powerExp(dist, nPairs, dzero, one, *range, *smooth, rho);
     break;
   case 4:
-    flag = bessel(dist, nPairs, *dim, one, *range, *smooth, rho);
+    flag = bessel(dist, nPairs, *dim, dzero, one, *range, *smooth, rho);
     break;
   case 6:
     if (*grid)

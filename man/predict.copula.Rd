@@ -1,16 +1,16 @@
-\name{predict.maxstab}
-\alias{predict.maxstab}
-\title{Prediction of the max-stable marginal parameters}
+\name{predict.copula}
+\alias{predict.copula}
+\title{Prediction of the copula marginal parameters}
 \description{This function predicts the marginal GEV parameters from a
-  fitted max-stable process. 
+  fitted copula based model. 
 }
 \usage{
-\method{predict}{maxstab}(object, newdata, ret.per = NULL, std.err =
+\method{predict}{copula}(object, newdata, ret.per = NULL, std.err =
 TRUE, \dots)
 }
 \arguments{
-  \item{object}{An object of class ``maxstab''. Most often, it will be
-    the output of the function \code{\link{fitmaxstab}}.}
+  \item{object}{An object of class ``copula''. Most often, it will be
+    the output of the function \code{\link{fitcopula}}.}
   \item{newdata}{An optional data frame in which to look for variables
     with which to predict. If omitted, the fitted values are used.}
   \item{ret.per}{Numeric vector giving the return periods for which
@@ -20,7 +20,7 @@ TRUE, \dots)
     be computed if possible.}
   \item{\dots}{further arguments passed to or from other methods.}
 }
-\value{'predict.maxstab' produces a vector of predictions or a matrix of
+\value{'predict.copula' produces a vector of predictions or a matrix of
   predictions.
 }
 \seealso{
@@ -44,20 +44,20 @@ for (i in 1:n.site)
   data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
 param.shape[i])
 
-## 3- Fit a max-stable process with the following model for
+## 3- Fit a copula based model with the following model for
 ##    the GEV parameters
 form.loc <- loc ~ lat
 form.scale <- scale ~ lon
 form.shape <- shape ~ 1
 
-schlather <- fitmaxstab(data, locations, "whitmat", loc.form = form.loc,
+M0 <- fitcopula(data, locations, "student", "whitmat", loc.form = form.loc,
                         scale.form = form.scale, shape.form =
-                        form.shape)
+                        form.shape, nugget = 0)
 
 ## 4- GEV parameters estimates at each locations or at ungauged locations
-predict(schlather)
+predict(M0)
 ungauged <- data.frame(lon = runif(10, 0, 10), lat = runif(10, 0, 10))
-predict(schlather, ungauged)
+predict(M0, ungauged)
 }
 \author{Mathieu Ribatet}
 \keyword{htest}

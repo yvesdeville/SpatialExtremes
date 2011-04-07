@@ -3,7 +3,7 @@
 void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, int *dim, int *weighted, double *weights,
 		   double *locs, double *scales, double *shapes,
-		   double *sigma2, double *sigma2Bound, double *sill,
+		   double *sigma2, double *sigma2Bound, double *nugget,
 		   double *range, double *smooth, double *smooth2,
 		   int *fitmarge, double *dns){
   //This is the geometric gaussian model. It computes the pairwise
@@ -27,14 +27,14 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
     }
   }
 
-  if (*sill > 1){
-    *dns = *sill * *sill * MINF;
+  if (*nugget >= 1){
+    *dns = *nugget * *nugget * MINF;
     return;
   }
    
   //Stage 0: Compute the covariance at each location
   *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
-			*sill, *range, *smooth, *smooth2, rho);
+			*nugget, *range, *smooth, *smooth2, rho);
 
   if (*dns != 0.0)
     return;
@@ -55,7 +55,8 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   }
     
   else {
-    memset(jac, 0, *nSite * *nObs * sizeof(double));
+    for (i=(*nSite * *nObs);i--;)
+      jac[i] = 0;
    
     if (*weighted)
       *dns = wlpliksmith(data, rho, jac, *nObs, *nSite, weights);
@@ -84,7 +85,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      int *ntempcoeffshape, int *nppartempcoeffshape, double *temppenaltyshape,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff,
 		      double *tempcoeffloc, double *tempcoeffscale, double *tempcoeffshape,
-		      double *sigma2, double *sigma2Bound, double *sill, double *range,
+		      double *sigma2, double *sigma2Bound, double *nugget, double *range,
 		      double *smooth, double *smooth2, double *dns){
   //This is the geometric gaussian model
   //The GEV parameters are defined using a polynomial response surface
@@ -100,13 +101,13 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
-  if (*sill > 1){
-    *dns = *sill * *sill * MINF;
+  if (*nugget >= 1){
+    *dns = *nugget * *nugget * MINF;
     return;
   }
 
   //Stage 1: Compute the covariance at each location
-  *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sigma2Bound, *sill, *range,
+  *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sigma2Bound, *nugget, *range,
 			*smooth, *smooth2, rho);
 
   if (*dns != 0.0)

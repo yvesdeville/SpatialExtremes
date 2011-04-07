@@ -30,9 +30,8 @@ void smithstderr(double *data, double *distVec, int *nSite, int *nObs, double *l
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
-  memset(trendlocs, 0, *nObs * sizeof(double));
-  memset(trendscales, 0, *nObs * sizeof(double));
-  memset(trendshapes, 0, *nObs * sizeof(double));
+  for (i=*nObs;i--;)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
 
   //Computing the Mahalanobis distance
   mahalDistFct(distVec, nPairs, cov11, cov12, cov22, mahalDist);
@@ -162,10 +161,9 @@ void smithstderr3d(double *data, double *distVec, int *nSite, int *nObs, double 
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
-  memset(trendlocs, 0, *nObs * sizeof(double));
-  memset(trendscales, 0, *nObs * sizeof(double));
-  memset(trendshapes, 0, *nObs * sizeof(double));
-
+  for (i=*nObs;i--;)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
+  
   //Computing the Mahalanobis distance
   mahalDistFct3d(distVec, nPairs, cov11, cov12, cov13, cov22, cov23, cov33, mahalDist);
 
@@ -308,7 +306,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     int *ntemploccoeff, double *tempdsgnmatscale, int *ntempscalecoeff,
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
-		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
+		     double *tempscalecoeff, double *tempshapecoeff, double *nugget, double *range,
 		     double *smooth, double *smooth2, int *fitmarge, int *usetempcov, double *weights,
 		     double *hess, double *grad){
 
@@ -319,7 +317,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 3;
   double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech;
-  const double eps = 0.001;
+  const double eps = 0.001, sill = 1 - *nugget;
 
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
@@ -333,28 +331,27 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
-  memset(trendlocs, 0, *nObs * sizeof(double));
-  memset(trendscales, 0, *nObs * sizeof(double));
-  memset(trendshapes, 0, *nObs * sizeof(double));
-
+  for (i=*nObs;i--;)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
+  
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    whittleMatern(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 2:
-    cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    cauchy(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 3:
-    powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    powerExp(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 4:
     //Here we use 0 for dim as we don't care for the computation of
     //the hessian
-    bessel(dist, nPairs, 0, *sill, *range, *smooth, rho);
+    bessel(dist, nPairs, 0, *nugget, sill, *range, *smooth, rho);
     break;
   case 5:
-    caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
+    caugen(dist, nPairs, *nugget, sill, *range, *smooth, *smooth2, rho);
   }
 
   //Compute the GEV parameters using the design matrix
@@ -408,7 +405,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  dDrho = (-frech[k + j * *nObs] + frech[k + i * *nObs] * rho[currentPair]) / (2 * c1 * c1 * c1),
 	  jacCommonRho = weights[currentPair] * (dArho + (dBrho + dCrho * D + C * dDrho) / (B + C * D));
 
-	hess[k * nPairs + currentPair] = rho[currentPair] / *sill * jacCommonRho;
+	hess[k * nPairs + currentPair] = rho[currentPair] / sill * jacCommonRho;
 	grad[k] += hess[k * nPairs + currentPair];
 
 	switch (*covmod){
@@ -431,7 +428,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	case 2:
 	  //i.e. cauchy
 	  hess[(*nObs + k) * nPairs + currentPair] = 2 * dist[currentPair] * dist[currentPair] *
-	    *sill * *smooth / (*range * *range * *range) *
+	    sill * *smooth / (*range * *range * *range) *
 	    R_pow(1 + dist[currentPair] * dist[currentPair] / (*range * *range),
 		  - *smooth - 1) * jacCommonRho;
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = -rho[currentPair] *
@@ -448,7 +445,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  break;
 	case 4:
 	  //i.e. Bessel
-	  hess[(*nObs + k) * nPairs + currentPair] = *sill *
+	  hess[(*nObs + k) * nPairs + currentPair] = sill *
 	    R_pow(2 * *range / dist[currentPair], *smooth) *
 	    dist[currentPair] / (*range * *range) * gammafn(*smooth + 1) *
 	    bessel_j(dist[currentPair] / *range, *smooth + 1) * jacCommonRho;
@@ -502,7 +499,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 			int *ntempscalecoeff, double *tempdsgnmatshape, int *ntempshapecoeff,
 			double *loccoeff, double *scalecoeff, double *shapecoeff,
 			double *temploccoeff, double *tempscalecoeff, double *tempshapecoeff,
-			double *alpha, double *sill, double *range, double *smooth,
+			double *alpha, double *nugget, double *range, double *smooth,
 			double *smooth2, int *fitmarge, int *usetempcov, double *weights, double *hess,
 			double *grad){
 
@@ -513,7 +510,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 4;
   double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech;
-  const double eps = 0.001;
+  const double eps = 0.001, sill = 1 - *nugget;
 
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
@@ -527,28 +524,27 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
-  memset(trendlocs, 0, *nObs * sizeof(double));
-  memset(trendscales, 0, *nObs * sizeof(double));
-  memset(trendshapes, 0, *nObs * sizeof(double));
+  for (i=*nObs;i--;)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
 
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    whittleMatern(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 2:
-    cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    cauchy(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 3:
-    powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    powerExp(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 4:
     //Here we use 0 for dim as we don't care for the computation of
     //the hessian
-    bessel(dist, nPairs, 0, *sill, *range, *smooth, rho);
+    bessel(dist, nPairs, 0, *nugget, sill, *range, *smooth, rho);
     break;
   case 5:
-    caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
+    caugen(dist, nPairs, *nugget, sill, *range, *smooth, *smooth2, rho);
     break;
   }
 
@@ -620,7 +616,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 
 	hess[k * nPairs + currentPair] = weights[currentPair] * 
 	  (dAalpha + (dBalpha + dCalpha * D + dDalpha * C) / (B + C * D));
-	hess[(*nObs + k) * nPairs + currentPair] = rho[currentPair] / *sill * jacCommonRho;
+	hess[(*nObs + k) * nPairs + currentPair] = rho[currentPair] / sill * jacCommonRho;
 
 	grad[k] += hess[k * nPairs + currentPair];
 	grad[*nObs + k] += hess[(*nObs + k) * nPairs + currentPair];
@@ -645,7 +641,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 	case 2:
 	  //i.e. cauchy
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = 2 * dist[currentPair] * dist[currentPair] *
-	    *sill * *smooth / (*range * *range * *range) *
+	    sill * *smooth / (*range * *range * *range) *
 	    R_pow(1 + dist[currentPair] * dist[currentPair] / (*range * *range),
 		  - *smooth - 1) * jacCommonRho;
 	  hess[(3 * *nObs + k) * nPairs + currentPair] = -rho[currentPair] *
@@ -662,7 +658,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 	  break;
 	case 4:
 	  //i.e. Bessel
-	  hess[(2 * *nObs + k) * nPairs + currentPair] = *sill *
+	  hess[(2 * *nObs + k) * nPairs + currentPair] = sill *
 	    R_pow(2 * *range / dist[currentPair], *smooth) *
 	    dist[currentPair] / (*range * *range) * gammafn(*smooth + 1) *
 	    bessel_j(dist[currentPair] / *range, *smooth + 1) * jacCommonRho;
@@ -715,7 +711,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
 		     double *tempscalecoeff, double *tempshapecoeff, double *sigma2,
-		     double *sill, double *range, double *smooth, double *smooth2,
+		     double *nugget, double *range, double *smooth, double *smooth2,
 		     int *fitmarge, int *usetempcov, double *weights, double *hess, double *grad){
   /* This function computes the hessian of the log-pairwise
      likelihood for the geometric gaussian model.
@@ -728,7 +724,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
   int i, currentPair = -1, nCorPar = 4;
   double *mahalDist, *locs, *scales, *shapes, *jac, *frech, *trendlocs,
     *trendscales, *trendshapes;
-  const double eps = 0.001;
+  const double eps = 0.001, sill = 1 - *nugget;
 
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
@@ -742,12 +738,11 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
-  memset(trendlocs, 0, *nObs * sizeof(double));
-  memset(trendscales, 0, *nObs * sizeof(double));
-  memset(trendshapes, 0, *nObs * sizeof(double));
+  for (i=*nObs;i--;)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
 
   //Stage 0: Compute the covariance at each location
-  geomCovariance(dist, nPairs, 0, *covmod, *sigma2, 1.0e6, *sill, *range, *smooth, *smooth2,
+  geomCovariance(dist, nPairs, 0, *covmod, *sigma2, 1.0e6, *nugget, *range, *smooth, *smooth2,
 		 mahalDist);
 
   //Compute the GEV parameters using the design matrix
@@ -812,7 +807,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  jacCommon = weights[currentPair] * (dAa + (dBa * C + B * dCa + dDa) / (B*C + D));
 
 	hess[k * nPairs + currentPair] = mahalDist[currentPair] / (2 * *sigma2) * jacCommon;
-	hess[(*nObs + k) * nPairs + currentPair] = -*sigma2 * rho / (mahalDist[currentPair] * *sill) *
+	hess[(*nObs + k) * nPairs + currentPair] = -*sigma2 * rho / (mahalDist[currentPair] * sill) *
 	  jacCommon;
 
 	grad[k] += hess[k * nPairs + currentPair];
@@ -838,7 +833,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	case 2:
 	  //i.e. cauchy
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = -2 * *sigma2 * dist[currentPair] * dist[currentPair] *
-	    *sill * *smooth * R_pow(1 + dist[currentPair] * dist[currentPair] /
+	    sill * *smooth * R_pow(1 + dist[currentPair] * dist[currentPair] /
 				    (*range * *range), - *smooth - 1) /
 	    (*range * *range * *range * mahalDist[currentPair]) * jacCommon;
 	  hess[(3 * *nObs + k) * nPairs + currentPair] = *sigma2 * rho *
@@ -855,7 +850,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  break;
 	case 4:
 	  //i.e. Bessel
-	  hess[(2 * *nObs + k) * nPairs + currentPair] = -*sigma2 * *sill *
+	  hess[(2 * *nObs + k) * nPairs + currentPair] = -*sigma2 * sill *
 	    R_pow(2 * *range / dist[currentPair], *smooth) * gammafn(*smooth + 1) *
 	    dist[currentPair] / (*range * *range * mahalDist[currentPair]) *
 	    bessel_j(dist[currentPair] / *range, *smooth + 1) * jacCommon;
@@ -934,9 +929,8 @@ void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs, doubl
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
-  memset(trendlocs, 0, *nObs * sizeof(double));
-  memset(trendscales, 0, *nObs * sizeof(double));
-  memset(trendshapes, 0, *nObs * sizeof(double));
+  for (i=*nObs;i--;)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
 
   //Stage 0: Compute the covariance at each location
   brownResnick(dist, nPairs, *range, *smooth, mahalDist);
@@ -1047,9 +1041,8 @@ void spatgevstderr(double *data, int *nSite, int *nObs, double *locdsgnmat,
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
-  memset(trendlocs, 0, *nObs * sizeof(double));
-  memset(trendscales, 0, *nObs * sizeof(double));
-  memset(trendshapes, 0, *nObs * sizeof(double));
+  for (i=*nObs;i--;)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
 
   //Stage 0. Compute the GEV parameters using the design matrix
   dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat, loccoeff, scalecoeff, shapecoeff,
@@ -1129,7 +1122,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     int *ntemploccoeff, double *tempdsgnmatscale, int *ntempscalecoeff,
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
-		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
+		     double *tempscalecoeff, double *tempshapecoeff, double *nugget, double *range,
 		     double *smooth, double *smooth2, double *df, int *fitmarge, int *usetempcov,
 		     double *weights, double *hess, double *grad){
   /* This function computes the hessian of the log-pairwise
@@ -1139,7 +1132,8 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 3;
   const double idf = 1 / *df, dfPlus1 = *df + 1, eps = 0.001,
-    didfidfdfPlus1_df = - (*df + 2) * idf * idf * idf;
+    didfidfdfPlus1_df = - (*df + 2) * idf * idf * idf,
+    sill = 1 - *nugget;
 
   double *jac = (double *)R_alloc(*nObs * *nSite, sizeof(double)),
     *rho = (double *)R_alloc(nPairs, sizeof(double)),
@@ -1153,28 +1147,27 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
-  memset(trendlocs, 0, *nObs * sizeof(double));
-  memset(trendscales, 0, *nObs * sizeof(double));
-  memset(trendshapes, 0, *nObs * sizeof(double));
+  for (i=*nObs;i--;)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
 
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    whittleMatern(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 2:
-    cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    cauchy(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 3:
-    powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    powerExp(dist, nPairs, *nugget, sill, *range, *smooth, rho);
     break;
   case 4:
     //Here we use 0 for dim as we don't care for the computation of
     //the hessian
-    bessel(dist, nPairs, 0, *sill, *range, *smooth, rho);
+    bessel(dist, nPairs, 0, *nugget, sill, *range, *smooth, rho);
     break;
   case 5:
-    caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
+    caugen(dist, nPairs, *nugget, sill, *range, *smooth, *smooth2, rho);
   }
 
   //Compute the GEV parameters using the design matrix
@@ -1276,7 +1269,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  iBCplusD = 1 / (B * C + D),
 	  jacCommonRho = weights[currentPair] * (dA_rho + (dB_rho * C + B * dC_rho + dD_rho) * iBCplusD);
 
-	hess[k * nPairs + currentPair] = rho[currentPair] / *sill * jacCommonRho;
+	hess[k * nPairs + currentPair] = rho[currentPair] / sill * jacCommonRho;
 	grad[k] += hess[k * nPairs + currentPair];
 
 	switch (*covmod){
@@ -1299,7 +1292,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	case 2:
 	  //i.e. cauchy
 	  hess[(*nObs + k) * nPairs + currentPair] = 2 * dist[currentPair] * dist[currentPair] *
-	    *sill * *smooth / (*range * *range * *range) *
+	    sill * *smooth / (*range * *range * *range) *
 	    R_pow(1 + dist[currentPair] * dist[currentPair] / (*range * *range),
 		  - *smooth - 1) * jacCommonRho;
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = -rho[currentPair] *
@@ -1316,7 +1309,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  break;
 	case 4:
 	  //i.e. Bessel
-	  hess[(*nObs + k) * nPairs + currentPair] = *sill *
+	  hess[(*nObs + k) * nPairs + currentPair] = sill *
 	    R_pow(2 * *range / dist[currentPair], *smooth) *
 	    dist[currentPair] / (*range * *range) * gammafn(*smooth + 1) *
 	    bessel_j(dist[currentPair] / *range, *smooth + 1) * jacCommonRho;

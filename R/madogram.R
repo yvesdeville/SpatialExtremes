@@ -159,7 +159,7 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
     
     if (any(which == "ext")){
       plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col[1],
-           xlim = xlim, ylim = c(1, max(2, ext.coeff)), ...)
+           xlim = xlim, ylim = c(1, max(2, ext.coeff, na.rm = TRUE)), ...)
       
       if (fit.curves)
         curve(ext.coeff.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
@@ -312,7 +312,7 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
     
     if (any(which == "ext")){
       plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col[1],
-           xlim = xlim, ylim = c(1, max(2, ext.coeff)), ...)
+           xlim = xlim, ylim = c(1, max(2, ext.coeff, na.rm = TRUE)), ...)
 
       if (fit.curves)
         curve(ext.coeff.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)

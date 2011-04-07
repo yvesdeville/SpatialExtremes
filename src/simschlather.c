@@ -1,7 +1,7 @@
 #include "header.h"
 
 void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
-		   int *covmod, int *grid, double *sill, double *range,
+		   int *covmod, int *grid, double *nugget, double *range,
 		   double *smooth, double *uBound, int *nlines,
 		   double *ans){
   /* This function generates random fields from the Schlather model
@@ -12,7 +12,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
        dim: the random field is generated in R^dim
     covmod: the covariance model
       grid: Does coord specifies a grid?
-      sill: the sill parameter - (1 - sill) is a nugget effect
+      nugget: the nugget parameter
      range: the range parameter
     smooth: the smooth parameter
     uBound: the uniform upper bound for the stoch. proc.
@@ -22,7 +22,8 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
   /* lagi, lagj are integers useful to fill in the output depending on
      if locations are on a grid or not */
   int i, neffSite, lagi = 1, lagj = 1;
-  double nugget = 1 - *sill;
+  const double zero = 0;
+  double sill = 1 - *nugget;
   
   //rescale the coordinates
   for (i=(*nSite * *dim);i--;){
@@ -81,9 +82,10 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
-      memset(gp, 0, neffSite * sizeof(double));
-      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-	      sill, range, smooth, nlines, lines, gp);
+      for (j=neffSite;j--;)
+	gp[j] = 0;
+      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, nugget,
+	      &sill, range, smooth, nlines, lines, gp);
       
       nKO = neffSite;
       for (j=neffSite;j--;){
@@ -105,7 +107,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 }
 
 void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
-		      int *covmod, int *grid, double *sill, double *range,
+		      int *covmod, int *grid, double *nugget, double *range,
 		      double *smooth, double *uBound, double *ans){
   /* This function generates random fields for the Schlather model
 
@@ -115,13 +117,13 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
        dim: the random field is generated in R^dim
     covmod: the covariance model
       grid: Does coord specifies a grid?
-      sill: the sill parameter - (1 - sill) is a nugget effect
+      nugget: the nugget parameter
      range: the range parameter
     smooth: the smooth parameter
        ans: the generated random field */
 
   int i, j, k, lwork, nKO, info = 0, neffSite, lagi = 1, lagj = 1;
-  double poisson, ipoisson, thresh, nugget = 1 - *sill,
+  double poisson, ipoisson, thresh, sill = 1 - *nugget,
     one = 1, zero = 0, *work, tmp, sum, dummy;
 
   if (*grid){
@@ -141,7 +143,7 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
     *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
     *gp = (double *)R_alloc(neffSite, sizeof(double));
 
-  buildcovmat(nSite, grid, covmod, coord, dim, &nugget, sill, range,
+  buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
 	      smooth, covmat);
   
   /* Compute the singular value decomposition of the covariance
@@ -229,7 +231,7 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
 }
 
 void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
-		    int *covmod, double *sill, double *range,
+		    int *covmod, double *nugget, double *range,
 		    double *smooth, double *uBound, double *ans){
   /* This function generates random fields from the Schlather model
 
@@ -237,13 +239,14 @@ void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
     ngrid: the number of locations along one axis
       dim: the random field is generated in R^dim
    covmod: the covariance model
-     sill: the sill parameter - (1 - sill) is a nugget effect
+     nugget: the nugget parameter
     range: the range parameter
    smooth: the smooth parameter
    uBound: the uniform upper bound for the stoch. proc.
       ans: the generated random field */
 
   int i, j, k = -1, nbar = R_pow_di(*ngrid, *dim), r, m;
+  const double sill = 1 - *nugget, zero = 0;
   double *rho, *irho;
     //Below is a table of highly composite numbers
   int HCN[39] = {1, 2, 4, 6, 12, 24, 36, 48, 60, 120, 180, 240,
@@ -286,20 +289,21 @@ void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
     //Computations of the covariances
     rho = (double *)R_alloc(mbar, sizeof(double));
     irho = (double *)R_alloc(mbar, sizeof(double));
-    memset(irho, 0, mbar * sizeof(double));
+    for (i=mbar;i--;)
+      irho[i] = 0;
 
     switch (*covmod){
     case 1:
-      whittleMatern(dist, mbar, *sill, *range, *smooth, rho);
+      whittleMatern(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 2:
-      cauchy(dist, mbar, *sill, *range, *smooth, rho);
+      cauchy(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 3:
-      powerExp(dist, mbar, *sill, *range, *smooth, rho);
+      powerExp(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 4:
-      bessel(dist, mbar, *dim, *sill, *range, *smooth, rho);
+      bessel(dist, mbar, *dim, zero, sill, *range, *smooth, rho);
       break;
     }
 
@@ -361,7 +365,7 @@ void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
       /* The stopping rule is reached when nKO = 0 i.e. when each site
 	 satisfies the condition in Eq. (8) of Schlather (2002) */
       int j;
-      double nugget = 1 - *sill, ipoisson, thresh, *gp;
+      double ipoisson, thresh, *gp;
       
       gp = (double *)R_alloc(nbar, sizeof(double));
       
@@ -371,7 +375,7 @@ void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
-      circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, nugget, gp);
+      circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, *nugget, gp);
       
       nKO = nbar;
       for (j=nbar;j--;){
@@ -776,9 +780,7 @@ void circcore(double *rho, double *a, double *ia, int m, int halfM, int mdag,
   /* This function is the same as the circemb function except that it
      generates only one realisation of the random field. This is only
      useful for the call by rschlathercirc - for CPU reasons. */
-  int r;
-
-  for (r=mdagbar;r--;){
+  for (int r=0;r<mdagbar;r++){
     /* Below is the procedure 5.2.4 in Wood and Chan */
 
     //Computation of the cardinality of A(j)
@@ -872,7 +874,7 @@ void circcore(double *rho, double *a, double *ia, int m, int halfM, int mdag,
     
     for (i=nbar;i--;)
       ans[i] += sqrtNugget * norm_rand();
-
+  
   }
 
   return;

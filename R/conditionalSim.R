@@ -1,5 +1,5 @@
 condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
-                    mean = 0, nugget = 0, sill = 1, range = 1,
+                    mean = 0, sill = 1, range = 1,
                     smooth = 1, grid = FALSE, control = list()){
 
   if (cov.mod == "caugen")
@@ -42,7 +42,7 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
     new.coord <- rbind(data.coord, new.coord)
   }
     
-  uncond <- rgp(n, new.coord, cov.mod = cov.mod, mean = mean, nugget = nugget,
+  uncond <- rgp(n, new.coord, cov.mod = cov.mod, mean = mean, nugget = 0,
                 sill = sill, range = range, smooth = smooth, control = control)
 
   weights <- kriging(data, data.coord, coord, cov.mod = cov.mod, sill = sill,

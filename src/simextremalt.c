@@ -1,7 +1,7 @@
 #include "header.h"
 
 void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
-		   int *covmod, int *grid, double *sill, double *range,
+		   int *covmod, int *grid, double *nugget, double *range,
 		   double *smooth, double *DoF, int *blockSize, int *nlines,
 		   double *ans){
   /* This function generates random fields from the Extremal-t model
@@ -12,7 +12,7 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
        dim: the random field is generated in R^dim
     covmod: the covariance model
       grid: Does coord specifies a grid?
-      sill: the sill parameter - (1 - sill) is a nugget effect
+      nugget: the nugget parameter
      range: the range parameter
     smooth: the smooth parameter
        DoF: the degree of freedom
@@ -21,7 +21,7 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
        ans: the generated random field */
 
   int i, neffSite, lagi = 1, lagj = 1;
-  double nugget = 1 - *sill;
+  double sill = 1 - *nugget;
 
   //rescale the coordinates
   for (i=(*nSite * *dim);i--;){
@@ -74,9 +74,10 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
-      memset(gp, 0, neffSite * sizeof(double));
-      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-	      sill, range, smooth, nlines, lines, gp);
+      for (j=neffSite;j--;)
+	gp[j] = 0;
+      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, nugget,
+	      &sill, range, smooth, nlines, lines, gp);
       
       for (j=neffSite;j--;)
 	ans[j * lagj + i * lagi] = fmax2(gp[j] * scaleStudent, ans[j * lagj + i * lagi]);
@@ -95,7 +96,7 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
 }
 
 void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
-		      int *covmod, int *grid, double *sill, double *range,
+		      int *covmod, int *grid, double *nugget, double *range,
 		      double *smooth, double *DoF, int *blockSize, double *ans){
   /* This function generates random fields for the Extremal-t model
 
@@ -105,7 +106,7 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
        dim: the random field is generated in R^dim
     covmod: the covariance model
       grid: Does coord specifies a grid?
-      sill: the sill parameter - (1 - sill) is a nugget effect
+      nugget: the nugget parameter
      range: the range parameter
     smooth: the smooth parameter
        DoF: the degree of freedom
@@ -113,7 +114,7 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
        ans: the generated random field */
 
   int i, j, k, lwork, info = 0, neffSite, lagi = 1, lagj = 1;
-  double nugget = 1 - *sill, one = 1, zero = 0, *work, tmp, sum, dummy;
+  double sill = 1 - *nugget, one = 1, zero = 0, *work, tmp, sum, dummy;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
@@ -132,7 +133,7 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
     *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
     *gp = (double *)R_alloc(neffSite, sizeof(double));
 
-  buildcovmat(nSite, grid, covmod, coord, dim, &nugget, sill, range,
+  buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
 	      smooth, covmat);
   
   /* Compute the singular value decomposition of the covariance
@@ -211,7 +212,7 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
 }
 
 void rextremaltcirc(int *nObs, int *ngrid, double *steps, int *dim,
-		    int *covmod, double *sill, double *range,
+		    int *covmod, double *nugget, double *range,
 		    double *smooth, double *DoF, int *blockSize, double *ans){
   /* This function generates random fields from the Schlather model
 
@@ -219,7 +220,7 @@ void rextremaltcirc(int *nObs, int *ngrid, double *steps, int *dim,
     ngrid: the number of locations along one axis
       dim: the random field is generated in R^dim
    covmod: the covariance model
-     sill: the sill parameter - (1 - sill) is a nugget effect
+     nugget: the nugget parameter
     range: the range parameter
    smooth: the smooth parameter
       DoF: the degree of freedom
@@ -227,7 +228,8 @@ blockSize: see rextremalttbm
       ans: the generated random field */
 
   int i, j, k = -1, nbar = R_pow_di(*ngrid, *dim), r, m;
-  double *rho, *irho, nugget = 1 - *sill;
+  const double zero = 0;
+  double *rho, *irho, sill = 1 - *nugget;
     //Below is a table of highly composite numbers
   int HCN[39] = {1, 2, 4, 6, 12, 24, 36, 48, 60, 120, 180, 240,
 		 360, 720, 840, 1260, 1680, 2520, 5040, 7560,
@@ -269,20 +271,21 @@ blockSize: see rextremalttbm
     //Computations of the covariances
     rho = (double *)R_alloc(mbar, sizeof(double));
     irho = (double *)R_alloc(mbar, sizeof(double));
-    memset(irho, 0, mbar * sizeof(double));
+    for (i=mbar;i--;)
+      irho[i] = 0;
 
     switch (*covmod){
     case 1:
-      whittleMatern(dist, mbar, *sill, *range, *smooth, rho);
+      whittleMatern(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 2:
-      cauchy(dist, mbar, *sill, *range, *smooth, rho);
+      cauchy(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 3:
-      powerExp(dist, mbar, *sill, *range, *smooth, rho);
+      powerExp(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 4:
-      bessel(dist, mbar, *dim, *sill, *range, *smooth, rho);
+      bessel(dist, mbar, *dim, zero, sill, *range, *smooth, rho);
       break;
     }
 
@@ -346,7 +349,7 @@ blockSize: see rextremalttbm
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
-      circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, nugget, gp);
+      circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, *nugget, gp);
       
       for (j=nbar;j--;)
 	ans[j + i * nbar] = fmax2(gp[j] * scaleStudent, ans[j + i * nbar]);

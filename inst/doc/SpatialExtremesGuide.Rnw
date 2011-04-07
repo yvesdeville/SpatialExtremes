@@ -1,5 +1,6 @@
 \documentclass[a4paper,11pt]{book}
 \usepackage{layout}
+\usepackage[utf8]{inputenc}
 
 \begin{document}
 % \VignetteIndexEntry{A R Package for Modelling Spatial Extremes}
@@ -33,7 +34,7 @@ n.site <- 50
 coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 
 ##Simulate a max-stable process - with unit Frechet margins
-data <- rmaxstab(40, coord, "whitmat", sill = 1, range = 1, smooth = 2)
+data <- rmaxstab(40, coord, "whitmat", nugget = 0, range = 1, smooth = 2)
 
 ##Compute the lambda-madogram
 lmadogram(data, coord, n.bins = 25, border = "grey", box = FALSE)
@@ -344,7 +345,7 @@ Smith's model with different covariance matrices.
   This proves equation~\eqref{eq:smith}.
 \end{proof}
 
-<<label=Smith2Sim,echo=FALSE>>=
+<<label=Smith2Sim,echo=FALSE,eval=FALSE>>=
 x <- seq(0, 10, length = 100)
 seed <- 19
 set.seed(seed)
@@ -497,49 +498,49 @@ families, such as
 
 <<label=covariances,echo=FALSE>>=
 par(mfrow=c(1,4), mar = c(4, 4, 0.2, 0.2))
-covariance(sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
            xlim = c(0,9), ylim = c(0, 1))
-covariance(sill = 1, range = 1, smooth = 2, cov.mod = "whitmat",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 2, cov.mod = "whitmat",
            add = TRUE, col = 2, xlim = c(0,9))
-covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
            add = TRUE, col = 3, xlim = c(0,9))
-covariance(sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
            col = 4, add = TRUE, xlim = c(0,9))
 legend("topright", c(expression(nu == 4), expression(nu == 2),
                      expression(nu == 1), expression(nu == 0.5)),
        col = 1:4, lty = 1, inset = 0.05)
 
-covariance(sill = 1, range = 1, smooth = 2, cov.mod = "powexp",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 2, cov.mod = "powexp",
            xlim = c(0, 4), ylim = c(0, 1))
-covariance(sill = 1, range = 1, smooth = 1.5, cov.mod = "powexp",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 1.5, cov.mod = "powexp",
            add = TRUE, col = 2, xlim = c(0, 4))
-covariance(sill = 1, range = 1, smooth = 1, cov.mod = "powexp",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "powexp",
            add = TRUE, col = 3, xlim = c(0, 4))
-covariance(sill = 1, range = 1, smooth = 0.75, cov.mod = "powexp",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 0.75, cov.mod = "powexp",
            add = TRUE, col = 4, xlim = c(0, 4))
 legend("topright", c(expression(nu == 2), expression(nu == 1.5),
                      expression(nu == 1), expression(nu == 0.75)),
        col = 1:4, lty = 1, inset = 0.05)
 
-covariance(sill = 1, range = 1, smooth = 4, cov.mod = "cauchy",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 4, cov.mod = "cauchy",
            xlim = c(0, 5), ylim = c(0, 1))
-covariance(sill = 1, range = 1, smooth = 2, cov.mod = "cauchy",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 2, cov.mod = "cauchy",
            add = TRUE, col = 2, xlim = c(0, 5))
-covariance(sill = 1, range = 1, smooth = 1, cov.mod = "cauchy",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "cauchy",
            add = TRUE, col = 3, xlim = c(0, 5))
-covariance(sill = 1, range = 1, smooth = 0.75, cov.mod = "cauchy",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 0.75, cov.mod = "cauchy",
            add = TRUE, col = 4, xlim = c(0, 5))
 legend("topright", c(expression(nu == 4), expression(nu == 2),
                      expression(nu == 1), expression(nu == 0.75)),
        col = 1:4, lty = 1, inset = 0.05)
 
-covariance(sill = 1, range = 1, smooth = 2, cov.mod = "bessel",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 2, cov.mod = "bessel",
            xlim = c(0, 20), ylim = c(-0.3, 1))
-covariance(sill = 1, range = 1, smooth = 1, cov.mod = "bessel",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "bessel",
            add = TRUE, col = 2, xlim = c(0, 20))
-covariance(sill = 1, range = 1, smooth = .5, cov.mod = "bessel",
+covariance(nugget = 0, sill = 1, range = 1, smooth = .5, cov.mod = "bessel",
            add = TRUE, col = 3, xlim = c(0, 20))
-covariance(sill = 1, range = 1, smooth = 0.25, cov.mod = "bessel",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 0.25, cov.mod = "bessel",
            add = TRUE, col = 4, xlim = c(0, 20))
 legend("topright", c(expression(nu == 2), expression(nu == 1),
                      expression(nu == .5), expression(nu == 0.25)),
@@ -603,25 +604,25 @@ Figure~\ref{fig:covariances} plots the correlation functions for the
 parametric families introduced above. The left panel was generated
 with the following lines
 <<eval=FALSE>>=
-covariance(sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
            xlim = c(0,9), ylim = c(0, 1))
-covariance(sill = 1, range = 1, smooth = 2, cov.mod = "whitmat",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 2, cov.mod = "whitmat",
            add = TRUE, col = 2, xlim = c(0,9))
-covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
            add = TRUE, col = 3, xlim = c(0,9))
-covariance(sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
+covariance(nugget = 0, sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
            col = 4, add = TRUE, xlim = c(0,9))
 legend("topright", c(expression(nu == 4), expression(nu == 2),
                      expression(nu == 1), expression(nu == 0.5)),
        col = 1:4, lty = 1, inset = 0.05)
 @
 
-<<label=Schlather2Sim,echo=FALSE>>=
+<<label=Schlather2Sim,echo=FALSE,eval=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 set.seed(12)
-ms0 <- rmaxstab(1, cbind(x, y), "whitmat", sill = 1, range = 1, smooth = 1, grid=TRUE)
+ms0 <- rmaxstab(1, cbind(x, y), "whitmat", nugget = 0, range = 1, smooth = 1, grid=TRUE)
 set.seed(12)
-ms1 <- rmaxstab(1, cbind(x, y), "powexp", sill = 1, range = 1.5, smooth = 1, grid=TRUE)
+ms1 <- rmaxstab(1, cbind(x, y), "powexp", nugget = 0, range = 1.5, smooth = 1, grid=TRUE)
 
 png("Figures/Schlather2Sim.png", width = 1400, height = 700)
 par(mfrow=c(1,2))
@@ -651,7 +652,7 @@ correlation function near the origin is steeper than the
 Whittle--Matérn.
 
 <<label=anisoCovFun,echo=FALSE>>=
-cov.fun <- covariance(sill = 1, range = 1, smooth = 1,
+cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1,
                       cov.mod = "powexp", plot = FALSE)
 phi <- pi / 4
 r <- sqrt(0.5)
@@ -961,7 +962,7 @@ has $\gamma_X$ as its covariance function.
 A comprehensive overview of methods for simulating random processes on
 a line from various covariance families is given by \citet{Emery2006}.
 
-<<label=tbm,echo=FALSE>>=
+<<label=tbm,echo=FALSE,eval=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 coord <- cbind(x, y)
 seed <- 3
@@ -1122,7 +1123,7 @@ reasonable choice is to let
 where $\sigma_{ii}$ are the diagonal elements of the covariance matrix
 $\Sigma$.
 
-<<echo=FALSE,label=rmaxstabSmith>>=
+<<echo=FALSE,label=rmaxstabSmith,eval=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 coord <- cbind(x, y)
 set.seed(8)
@@ -1185,13 +1186,13 @@ The package allows for simulation of max-stable processes by using the
 \verb|rmaxstab| function. A typical use for scattered location is
 <<eval=FALSE>>=
 coord <- matrix(runif(100, 0, 10), ncol = 2)
-data1 <- rmaxstab(100, coord, "whitmat", sill = 1, range = 1, smooth = 1)
+data1 <- rmaxstab(100, coord, "whitmat", nugget = 0, range = 1, smooth = 1)
 @
 while for locations located on a grid, users should invoke
 <<eval=FALSE>>=
 x <- seq(0, 10, length = 100)
 coord <- cbind(x, x)
-data2 <- rmaxstab(1, coord, "powexp", sill = 1, range = 1, smooth = 2,
+data2 <- rmaxstab(1, coord, "powexp", nugget = 0, range = 1, smooth = 2,
                   grid = TRUE)
 @
 
@@ -1285,7 +1286,7 @@ we have:
 
 <<label=extCoeffModels,echo=FALSE>>=
 smith <- function(h) 2 * pnorm(h/2)
-cov.fun <- covariance(sill = 1, range = 1, smooth = 1, plot = FALSE)
+cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1, plot = FALSE)
 schlather <- function(h)
   1 + sqrt((1-cov.fun(h))/2)
 alpha <- 0.1
@@ -1385,9 +1386,9 @@ coefficient between locations $x_1$ and $x_2$:
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
-data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1,
+data <- rmaxstab(n.obs, coord, "whitmat", nugget = 0, range = 1,
                  smooth = 1)
-cov.fun <- covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
+cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
                       plot = FALSE)
 ext.coeff <- function(h)
   1 + sqrt((1 - cov.fun(h))/2)
@@ -1422,7 +1423,7 @@ figure was generated using the following code:
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
-data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1,
+data <- rmaxstab(n.obs, coord, "whitmat", nugget = 0, range = 1,
                  smooth = 1)
 
 par(mfrow=c(1,2))
@@ -1484,14 +1485,14 @@ function and
 \end{equation*}
 
 <<echo=FALSE,label=madogram>>=
-cov.fun1 <- covariance(sill = 1, range = 1, smooth = 1,
+cov.fun1 <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1,
                        cov.mod = "whitmat", plot = FALSE)
 ext.coeff1 <- function(h)
   1 + sqrt((1 - cov.fun1(h))/2)
 mado1 <- function(h)
   log(ext.coeff1(h))
 
-cov.fun2 <- covariance(sill = 1, range = 1.5, smooth = 1,
+cov.fun2 <- covariance(nugget = 0, sill = 1, range = 1.5, smooth = 1,
                        cov.mod = "powexp", plot = FALSE)
 ext.coeff2 <- function(h)
   1 + sqrt((1 - cov.fun2(h))/2)
@@ -1501,7 +1502,7 @@ mado2 <- function(h)
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
-data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
+data <- rmaxstab(n.obs, coord, "whitmat", nugget = 0, range = 1, smooth = 1)
 
 par(mfrow=c(1,2))
 madogram(data, coord, which = "mado", ylim = c(0, log(2)))
@@ -1550,7 +1551,7 @@ was
 n.site <- 50
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
-data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
+data <- rmaxstab(n.obs, coord, "whitmat", nugget = 0, range = 1, smooth = 1)
 
 par(mfrow=c(1,2))
 madogram(data, coord, which = "mado")
@@ -1573,9 +1574,9 @@ a simple estimator for $\theta(\cdot)$:
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
-data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
+data <- rmaxstab(n.obs, coord, "whitmat", nugget = 0, range = 1, smooth = 1)
 
-cov.fun <- covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
+cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
                       plot = FALSE)
 ext.coeff <- function(h)
   1 + sqrt((1 - cov.fun(h))/2)
@@ -1613,7 +1614,7 @@ respectively. The figure was generated using the code below.
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
-data <- rmaxstab(n.obs, coord, "whitmat", sill = 1, range = 1, smooth = 1)
+data <- rmaxstab(n.obs, coord, "whitmat", nugget = 0, range = 1, smooth = 1)
 
 madogram(data, coord)
 @
@@ -1883,8 +1884,8 @@ get an estimator for the dependence measure
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
-data1 <- rmaxstab(n.obs, coord, "powexp", sill = 1, range = 1, smooth = 1)
-data2 <- rmaxstab(n.obs, coord, "cauchy", sill = 1, range = 1, smooth = 1)
+data1 <- rmaxstab(n.obs, coord, "powexp", nugget = 0, range = 1, smooth = 1)
+data2 <- rmaxstab(n.obs, coord, "cauchy", nugget = 0, range = 1, smooth = 1)
 
 par(mfrow=c(1,2), pty = "s")
 lmadogram(data1, coord, n.bins = 60)
@@ -1912,8 +1913,8 @@ to produce this figure was:
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
-data1 <- rmaxstab(n.obs, coord, "powexp", sill = 1, range = 1, smooth = 1)
-data2 <- rmaxstab(n.obs, coord, "cauchy", sill = 1, range = 1, smooth = 1)
+data1 <- rmaxstab(n.obs, coord, "powexp", nugget = 0, range = 1, smooth = 1)
+data2 <- rmaxstab(n.obs, coord, "cauchy", nugget = 0, range = 1, smooth = 1)
 
 par(mfrow=c(1,2), pty = "s")
 lmadogram(data1, coord, n.bins = 60)
@@ -2117,7 +2118,7 @@ n.obs <- 80
 n.site <- 40
 set.seed(12)
 coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-data <- rmaxstab(n.obs, coord, "whitmat", sill = .2, range = 3, smooth = 1.2)
+data <- rmaxstab(n.obs, coord, "whitmat", nugget = 0.8, range = 3, smooth = 1.2)
 
 fitmaxstab(data, coord, cov.mod = "whitmat", std.err.type = "none")
 @
@@ -2142,7 +2143,7 @@ specific case and one can consider more exotic models. Fixing
 parameters of the model is illustrated by the following lines
 <<eval=FALSE>>=
 fitmaxstab(data, coord, cov.mod = "whitmat", smooth = 1.2)
-fitmaxstab(data, coord, cov.mod = "whitmat", sill = 1)
+fitmaxstab(data, coord, cov.mod = "whitmat", nugget = 0)
 fitmaxstab(data, coord, cov.mod = "whitmat", range = 3)
 @
 
@@ -2353,7 +2354,7 @@ set.seed(1)
 n.obs <- 80
 n.site <- 40
 coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-data <- rmaxstab(n.obs, coord, "cauchy", sill = 0.8, range = 3, smooth = 1.2)
+data <- rmaxstab(n.obs, coord, "cauchy", nugget = 0.2, range = 3, smooth = 1.2)
 
 M0 <- fitmaxstab(data, coord, cov.mod = "powexp")
 M1 <- fitmaxstab(data, coord, cov.mod = "cauchy")

@@ -17,7 +17,8 @@ void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
   if (*grid)
     neffSite = R_pow_di(neffSite, *dim);
 
-  memset(ans, 0, *nobs * neffSite * sizeof(double));
+  for (i=(*nobs * neffSite);i--;)
+    ans[i] = 0;
     
   double *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
   

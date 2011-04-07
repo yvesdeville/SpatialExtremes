@@ -57,7 +57,7 @@ kriging <- function(data, data.coord, krig.coord, cov.mod = "whitmat",
 
   distMat <- as.matrix(dist(data.coord, diag = TRUE, upper = TRUE))
   
-  icovMat <- covariance(sill = sill, range = range, smooth = smooth,
+  icovMat <- covariance(nugget = 0, sill = sill, range = range, smooth = smooth,
                         smooth2 = smooth2, cov.mod = cov.mod, plot = FALSE,
                         dist = distMat)$cov.val
 

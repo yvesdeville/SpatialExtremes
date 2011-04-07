@@ -1,7 +1,7 @@
 #include "header.h"
 
 void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
-	      int *covmod, int *grid, double *sigma2, double *sill,
+	      int *covmod, int *grid, double *sigma2, double *nugget,
 	      double *range, double *smooth, double *uBound,
 	      int *nlines, double *ans){
   /* This function generates random fields from the geometric model
@@ -13,7 +13,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
     covmod: the covariance model
       grid: Does coord specifies a grid?
     sigma2: the variance of the geometric gaussian process
-      sill: the sill parameter - (1 - sill) is a nugget effect
+      nugget: the nugget parameter
      range: the range parameter
     smooth: the smooth parameter
     uBound: the uniform upper bound for the stoch. proc.
@@ -22,7 +22,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 
   int i, neffSite, lagi = 1, lagj = 1;
   const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
-  double sigma = sqrt(*sigma2), nugget = 1 - *sill,
+  double sigma = sqrt(*sigma2), sill = 1 - *nugget,
     *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
 
   if (*grid){
@@ -80,9 +80,11 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
-      memset(gp, 0, neffSite * sizeof(double));
-      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-	      sill, range, smooth, nlines, lines, gp);
+      for (j=neffSite;j--;)
+	gp[j] = 0;
+
+      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, nugget,
+	      &sill, range, smooth, nlines, lines, gp);
       
       nKO = neffSite;
       double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
@@ -107,7 +109,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 }
 
 void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
-		 int *covmod, int *grid, double *sigma2, double *sill,
+		 int *covmod, int *grid, double *sigma2, double *nugget,
 		 double *range, double *smooth, double *uBound,
 		 double *ans){
   /* This function generates random fields for the geometric model
@@ -119,14 +121,14 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     covmod: the covariance model
       grid: Does coord specifies a grid?
     sigma2: the variance of the geometric gaussian process
-      sill: the sill parameter - (1 - sill) is a nugget effect
+      nugget: the nugget parameter
      range: the range parameter
     smooth: the smooth parameter
        ans: the generated random field */
 
   int i, j, k, neffSite, lagi = 1, lagj = 1;
   const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
-  double sigma = sqrt(*sigma2), nugget = 1 - *sill, one = 1, zero = 0;
+  double sigma = sqrt(*sigma2), sill = 1 - *nugget, one = 1, zero = 0;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
@@ -145,7 +147,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
     *gp = (double *)R_alloc(neffSite, sizeof(double));
 
-  buildcovmat(nSite, grid, covmod, coord, dim, &nugget, sill, range,
+  buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
 	      smooth, covmat);
   
   /* Compute the singular value decomposition of the covariance
@@ -238,7 +240,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 }
 
 void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
-	       int *covmod, double *sigma2, double *sill, double *range,
+	       int *covmod, double *sigma2, double *nugget, double *range,
 	       double *smooth, double *uBound, double *ans){
   /* This function generates random fields from the geometric model
 
@@ -246,15 +248,16 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
     ngrid: the number of locations along one axis
       dim: the random field is generated in R^dim
    covmod: the covariance model
-     sill: the sill parameter - (1 - sill) is a nugget effect
+     nugget: the nugget parameter
     range: the range parameter
    smooth: the smooth parameter
    uBound: the uniform upper bound for the stoch. proc.
       ans: the generated random field */
 
   int i, j, k = -1, nbar = R_pow_di(*ngrid, *dim), r, m;
-  const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
-  double sigma = sqrt(*sigma2), nugget = 1 - *sill, *rho, *irho, *dist;
+  const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2,
+    zero = 0;
+  double sigma = sqrt(*sigma2), sill = 1 - *nugget, *rho, *irho, *dist;
 
   //Below is a table of highly composite numbers
   int HCN[39] = {1, 2, 4, 6, 12, 24, 36, 48, 60, 120, 180, 240,
@@ -296,20 +299,21 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
     //Computations of the covariances
     rho = (double *)R_alloc(mbar, sizeof(double));
     irho = (double *)R_alloc(mbar, sizeof(double));
-    memset(irho, 0, mbar * sizeof(double));
+    for (i=mbar;i--;)
+      irho[i] = 0;
 
     switch (*covmod){
     case 1:
-      whittleMatern(dist, mbar, *sill, *range, *smooth, rho);
+      whittleMatern(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 2:
-      cauchy(dist, mbar, *sill, *range, *smooth, rho);
+      cauchy(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 3:
-      powerExp(dist, mbar, *sill, *range, *smooth, rho);
+      powerExp(dist, mbar, zero, sill, *range, *smooth, rho);
       break;
     case 4:
-      bessel(dist, mbar, *dim, *sill, *range, *smooth, rho);
+      bessel(dist, mbar, *dim, zero, sill, *range, *smooth, rho);
       break;
     }
 
@@ -377,7 +381,7 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
-      circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, nugget, gp);
+      circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, *nugget, gp);
       
       nKO = nbar;
       double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;

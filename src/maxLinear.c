@@ -55,9 +55,8 @@ void rcondMaxLin(double *data, double *dsgnMat, int *p, int *nSite, int *nSim,
       if (sizeJs){
 	/* i.e. J_s \neq \empyset. Should not arise in theory but
 	   numerically do! */
-	int *Js = (int *) R_alloc(sizeJs,
-	sizeof(int)); double *weights = (double *) R_alloc(sizeJs,
-	sizeof(double));
+	int *Js = (int *) R_alloc(sizeJs, sizeof(int));
+	double *weights = (double *) R_alloc(sizeJs, sizeof(double));
 
 	int current = 0;
 	double dummy = 1.0;

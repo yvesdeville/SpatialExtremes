@@ -2,7 +2,7 @@
 
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
 		      int *weighted, double *weights, double *locs, double *scales, double *shapes, 
-		      double *alpha, double *sill, double *range, double *smooth,
+		      double *alpha, double *nugget, double *range, double *smooth,
 		      double *smooth2, int *fitmarge,double *dns){
   //This is the independent Schlater's model. It's a wrapper to several
   //sub-functions. It's named xxxfull as it either assume that the
@@ -33,27 +33,27 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite, int *
     return;
   }
 
-  if (*sill > 1){
-    *dns = *sill * *sill * MINF;
+  if (*nugget >= 1){
+    *dns = *nugget * *nugget * MINF;
     return;
   }
    
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    *dns = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = whittleMatern(dist, nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 2:
-    *dns = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = cauchy(dist, nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 3:
-    *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = powerExp(dist, nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 4:
-    *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
+    *dns = bessel(dist, nPairs, *dim, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 5:
-    *dns = caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
+    *dns = caugen(dist, nPairs, *nugget, 1 - *nugget, *range, *smooth, *smooth2, rho);
     break;
   }
   
@@ -76,7 +76,8 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite, int *
   }
   
   else {
-    memset(jac, 0, *nSite * *nObs * sizeof(double));
+    for (i=(*nSite * *nObs);i--;)
+      jac[i] = 0;
 
     if (*weighted)
       *dns = wlplikschlatherind(data, *alpha, rho, jac, *nObs, *nSite, weights);
@@ -105,7 +106,7 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 			 int *ntempcoeffshape, int *nppartempcoeffshape, double *temppenaltyshape,
 			 double *loccoeff, double *scalecoeff, double *shapecoeff,
 			 double *tempcoeffloc, double *tempcoeffscale, double *tempcoeffshape,
-			 double *alpha, double *sill, double *range, double *smooth,
+			 double *alpha, double *nugget, double *range, double *smooth,
 			 double *smooth2, double *dns){
   //This is the independent Schlater's model.
   //The GEV parameters are defined using a polynomial response surface
@@ -127,27 +128,27 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
     return;
   }
 
-  if (*sill > 1){
-    *dns = *sill * *sill * MINF;
+  if (*nugget >= 1){
+    *dns = *nugget * *nugget * MINF;
     return;
   }
 
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    *dns = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = whittleMatern(dist, nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 2:
-    *dns = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = cauchy(dist, nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 3:
-    *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns = powerExp(dist, nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 4:
-    *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
+    *dns = bessel(dist, nPairs, *dim, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 5:
-    *dns = caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
+    *dns = caugen(dist, nPairs, *nugget, 1 - *nugget, *range, *smooth, *smooth2, rho);
     break;
   }
 

@@ -46,7 +46,8 @@ void brownresnickfull(double *data, double *dist, int *nSite, int *nObs, int *we
   }
     
   else {
-    memset(jac, 0, *nSite * *nObs * sizeof(double));
+    for (i=(*nSite * *nObs);i--;)
+      jac[i] = 0;
    
     if (*weighted)
       *dns = wlpliksmith(data, rho, jac, *nObs, *nSite, weights);

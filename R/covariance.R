@@ -1,4 +1,4 @@
-covariance <- function(fitted, sill, range, smooth, smooth2 = NULL,
+covariance <- function(fitted, nugget, sill, range, smooth, smooth2 = NULL,
                        cov.mod = "whitmat", plot = TRUE, dist, xlab,
                        ylab, ...){
 
@@ -6,7 +6,8 @@ covariance <- function(fitted, sill, range, smooth, smooth2 = NULL,
     cov.mod <- fitted$cov.mod
     smooth <- fitted$param["smooth"]
     range <- fitted$param["range"]
-    sill <- fitted$param["sill"]
+    nugget <- fitted$param["nugget"]
+    sill <- 1 - fitted$param["nugget"]
 
     if (cov.mod == "caugen")
       smooth2 <- fitted$param["smooth2"]
@@ -19,12 +20,12 @@ covariance <- function(fitted, sill, range, smooth, smooth2 = NULL,
     stop("Invalid covariance model. ''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
   
   if (cov.mod == "whitmat"){
-    if ((smooth <= 0) || (range <= 0) || (smooth > 150) || (sill <= 0))
+    if ((smooth <= 0) || (range <= 0) || (smooth > 150) || (sill <= 0) || (nugget < 0))
       stop("invalid parameter for the whittle-matern covariance function")
     
     cov.fun <- function(dist) {
       idx <- dist == 0
-      ans <- rep(sill, length(dist))
+      ans <- rep(nugget + sill, length(dist))
       ans[!idx] <- sill * 2^(1-smooth) / gamma(smooth) * (dist[!idx] / range)^smooth *
         besselK(dist[!idx] / range, smooth)
       dim(ans) <- dim(dist)
@@ -33,33 +34,57 @@ covariance <- function(fitted, sill, range, smooth, smooth2 = NULL,
   }
 
   if (cov.mod == "cauchy"){
-    if ((smooth <= 0) || (range <= 0) || (sill <= 0))
+    if ((smooth <= 0) || (range <= 0) || (sill <= 0) || (nugget < 0))
       stop("invalid parameter for the cauchy covariance function")
     
-    cov.fun <- function(dist) sill * (1 + (dist / range)^2)^-smooth
+    cov.fun <- function(dist){
+      idx <- dist == 0
+      ans <- rep(nugget + sill, length(dist))
+      ans[!idx] <- sill * (1 + (dist[!idx] / range)^2)^-smooth
+      dim(ans) <- dim(dist)
+      return(ans)
+    }
   }
 
   if (cov.mod == "caugen"){
     if ((smooth <= 0) || (range <= 0) || (sill <= 0) || (smooth2 <= 0) ||
-        (smooth2 > 2))
+        (smooth2 > 2) || (nugget < 0))
       stop("invalid parameter for the generalized cauchy covariance function")
 
-    cov.fun <- function(dist) sill * (1 + (dist / range)^smooth2)^(-smooth/smooth2)
+    cov.fun <- function(dist){
+      idx <- dist == 0
+      ans <- rep(nugget + sill, length(dist))
+      ans[!idx] <- sill * (1 + (dist[!idx] / range)^smooth2)^(-smooth/smooth2)
+      dim(ans) <- dim(dist)
+      return(ans)
+    }
   }
 
   if (cov.mod == "powexp"){
-    if ((smooth < 0) || (smooth > 2) || (range <= 0) || (sill <= 0))
+    if ((smooth < 0) || (smooth > 2) || (range <= 0) || (sill <= 0) || (nugget < 0))
       stop("invalid parameter for the powered exponential covariance function")
 
-    cov.fun <- function(dist) sill * exp(-(dist / range)^smooth)
+    cov.fun <- function(dist){
+      idx <- dist == 0
+      ans <- rep(nugget + sill, length(dist))
+      ans[!idx] <- sill * exp(-(dist[!idx] / range)^smooth)
+      dim(ans) <- dim(dist)
+      return(ans)
+    }
   }
 
   if (cov.mod == "bessel"){
-    if ((range <= 0) || (sill <= 0))
+    if ((range <= 0) || (sill <= 0) || (nugget < 0))
       stop("invalid parameter for the Bessel covariance function")
 
-    cov.fun <- function(dist) sill * (2 * range / dist)^smooth * gamma(smooth + 1) *
-      besselJ(dist / range, smooth)
+    cov.fun <- function(dist){
+      idx <- dist == 0
+      ans <- rep(nugget + sill, length(dist))
+      ans[!idx] <- sill * (2 * range / dist[!idx])^smooth * gamma(smooth + 1) *
+        besselJ(dist[!idx] / range, smooth)
+      dim(ans) <- dim(dist)
+      return(ans)
+    }
   }
 
   if (plot){
@@ -68,7 +93,7 @@ covariance <- function(fitted, sill, range, smooth, smooth2 = NULL,
       xlab <- "h"
 
     if (missing(ylab))
-      ylab <- expression(rho(h))
+      ylab <- expression(gamma(h))
 
     if (is.null(list(...)$xlim)){
       tmp.fun <- function(dist) (cov.fun(dist) - 0.05)^2
@@ -78,7 +103,12 @@ covariance <- function(fitted, sill, range, smooth, smooth2 = NULL,
     else
       xlimsup <- list(...)$xlim[2]
     
-    plot(cov.fun, from = 0, to = xlimsup, xlab = xlab, ylab = ylab, ...)
+    plot(cov.fun, from = 0, to = xlimsup, xlab = xlab, ylab = ylab, ...,
+         type = "n")
+    curve(cov.fun, from = 1e-3, to = xlimsup, add = TRUE)
+
+    if (nugget > 0)
+      points(0, nugget + sill)
   }
 
   if (!missing(dist)){

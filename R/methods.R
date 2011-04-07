@@ -108,7 +108,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     if (x$fit.marge){
       idx <- which(names(x$fitted.values) == "alpha")
       idx <- c(idx, which(names(x$fitted.values) == "sigma2"))
-      idx <- c(idx, which(names(x$fitted.values) == "sill"))
+      idx <- c(idx, which(names(x$fitted.values) == "nugget"))
       idx <- c(idx, which(names(x$fitted.values) == "range"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth2"))
@@ -393,52 +393,58 @@ print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
   
   cat("Covariance Family:", cov.mod, "\n")
 
-  cat("\nEstimates\n")
-  cat("  Marginal Parameters:\n")
-
-  idx <- which(names(x$fitted.values) == "sill")
+  idx <- which(names(x$fitted.values) == "DoF")
+  idx <- c(idx, which(names(x$fitted.values) == "nugget"))
   idx <- c(idx, which(names(x$fitted.values) == "range"))
   idx <- c(idx, which(names(x$fitted.values) == "smooth"))
   idx <- c(idx, which(names(x$fitted.values) == "smooth2"))
-  idx <- c(idx, which(names(x$fitted.values) == "DoF"))
+  
 
-  margin.param <- x$fitted.values[-idx]
-  loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")
-  scale.idx <- which(substr(names(margin.param), 1, 5) == "scale")
-  shape.idx <- which(substr(names(margin.param), 1, 5) == "shape")
+  cat("\nEstimates\n")
+  cat("  Marginal Parameters:\n")
+  
+  if (x$fit.marge){
+    margin.param <- x$fitted.values[-idx]
+    loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")
+    scale.idx <- which(substr(names(margin.param), 1, 5) == "scale")
+    shape.idx <- which(substr(names(margin.param), 1, 5) == "shape")
 
-  cat("    Location Parameters:\n")
-  print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
-                quote = FALSE)
-  cat("       Scale Parameters:\n")
-  print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
-                quote = FALSE)
-  cat("       Shape Parameters:\n")
-  print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
-                quote = FALSE)
-
-  loc.idx <- which(substr(names(margin.param), 1, 12) == "tempCoeffLoc")
-  scale.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffScale")
-  shape.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffShape")
-
-  if (length(loc.idx) > 0){
-    cat("Temporal Location Parameters:\n")
+    cat("    Location Parameters:\n")
     print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
                   quote = FALSE)
-  }
-  
-  if (length(scale.idx)> 0){
-    cat("Temporal Scale Parameters:\n")
+    cat("       Scale Parameters:\n")
     print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
                   quote = FALSE)
-  }
-  
-  if (length(shape.idx)>0){
-    cat("Temporal Shape Parameters:\n")
-    
+    cat("       Shape Parameters:\n")
     print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
                   quote = FALSE)
+    
+    loc.idx <- which(substr(names(margin.param), 1, 12) == "tempCoeffLoc")
+    scale.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffScale")
+    shape.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffShape")
+    
+    if (length(loc.idx) > 0){
+      cat("Temporal Location Parameters:\n")
+      print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
+                    quote = FALSE)
+    }
+    
+    if (length(scale.idx)> 0){
+      cat("Temporal Scale Parameters:\n")
+      print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
+                    quote = FALSE)
+    }
+    
+    if (length(shape.idx)>0){
+      cat("Temporal Shape Parameters:\n")
+      
+      print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
+                    quote = FALSE)
+    }
   }
+
+  else
+    cat("  Assuming unit Frechet.\n\n")
   
   cat("  Dependence Parameters:\n")
   print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2,

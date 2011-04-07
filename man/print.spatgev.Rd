@@ -24,7 +24,7 @@ n.site <- 35
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
-data <- rmaxstab(50, locations, cov.mod = "whitmat", sill = 1, range = 3,
+data <- rmaxstab(50, locations, cov.mod = "whitmat", nugget = 0, range = 3,
 smooth = 0.5)
 
 ## 2- Transformation to non unit Frechet margins

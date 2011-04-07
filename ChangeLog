@@ -1,3 +1,77 @@
+2011-07-04 09:19  mathieu_ribatet
+
+	* src/nsgeomgauss.c: Remove nsgeomgauss as I don't plan to work on
+	  it now
+
+2011-07-04 09:19  mathieu_ribatet
+
+	* R/conditionalSim.R, R/copula.R, R/covariance.R, R/extremalt.R,
+	  R/fitcovmat.R, R/geomgauss.R, R/kriging.R, R/methods.R,
+	  R/modelChecking.R, R/plots.R, R/schlather.R, R/schlatherind.R,
+	  R/simmaxstab.R, R/standardErrors.R, R/starting.values.R,
+	  inst/doc/SpatialExtremesGuide.Rnw, man/TIC.Rd, man/condmap.Rd,
+	  man/condrgp.Rd, man/covariance.Rd, man/extcoeff.Rd,
+	  man/fitcopula.Rd, man/fitcovariance.Rd, man/fitmaxstab.Rd,
+	  man/fitspatgev.Rd, man/fmadogram.Rd, man/lmadogram.Rd,
+	  man/logLik.maxstab.Rd, man/madogram.Rd, man/map.Rd,
+	  man/plot.copula.Rd, man/plot.maxstab.Rd, man/predict.copula.Rd,
+	  man/predict.maxstab.Rd, man/predict.spatgev.Rd,
+	  man/print.copula.Rd, man/print.maxstab.Rd, man/print.spatgev.Rd,
+	  man/profile2d.maxstab.Rd, man/simmaxstab.Rd, src/brownResnick.c,
+	  src/circulant.c, src/copula.c, src/covariance.c, src/direct.c,
+	  src/extremalt.c, src/fitcovmat.c, src/geomgauss.c, src/header.h,
+	  src/kriging.c, src/latentVariable.c, src/schlather.c,
+	  src/schlatherind.c, src/simextremalt.c, src/simgeometric.c,
+	  src/simschlather.c, src/smith.c, src/smith3d.c,
+	  src/standardErrors.c, src/turningbands.c, src/utils.c: Rename
+	  what was call "sill" to "nugget", i.e., nugget = 1 - sill, as
+	  it might confuse the users
+
+2011-07-04 09:17  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.pdf: Remove the pdf vignette from
+	  the svn repos
+
+2011-06-23 16:07  mathieu_ribatet
+
+	* src/simschlather.c: Small improvement
+
+2011-06-23 16:07  mathieu_ribatet
+
+	* src/maxLinear.c: Get the code looking nicer
+
+2011-06-23 16:06  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw,
+	  inst/doc/SpatialExtremesGuide.pdf, inst/doc/layout.sty: Ensure
+	  that the utf8 encoding will be recognize by R CMD check.
+	  Reduce the size of the vignette by using utils::compactPDF
+
+2011-06-23 16:06  mathieu_ribatet
+
+	* R/copula.R, R/methods.R, R/modelChecking.R, R/predict.R,
+	  man/fitcopula.Rd, man/plot.copula.Rd, man/predict.copula.Rd,
+	  man/rcopula.Rd, src/copula.c, src/header.h: Fix a bug in
+	  computing the likelihood for the Student copula.
+	  A new function to get realisations from copula based models is
+	  now
+	  implemented.
+	  Prediction and model checking is also available.
+
+2011-04-22 20:33  mathieu_ribatet
+
+	* src/Makevars, src/covariance.c, src/fitcovmat.c, src/header.h,
+	  src/pairwiselik.c, src/utils.c: Now use openmp and small
+	  optimizations
+
+2011-04-22 20:32  mathieu_ribatet
+
+	* R/madogram.R: Fix a bug when using a too large number of bins
+
+2011-03-22 13:23  mathieu_ribatet
+
+	* ChangeLog: Update the ChangeLog
+
 2011-03-22 13:21  mathieu_ribatet
 
 	* inst/doc/SpatialExtremesGuide.pdf: Use png figures to reduce

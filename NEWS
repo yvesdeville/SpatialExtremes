@@ -1,3 +1,27 @@
+		CHANGES IN SpatialExtremes VERSION 1.8-1
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The parameter "sill" is now called "nugget" to avoid
+    confusion. More precisely, we now have nugget = 1 - sill, so if
+    one wants no nugget effect just set nugget = 0.
+
+NEW FEATURES
+
+    o Model checking for the copula based models is now implemented
+    --- similar to the plot.maxstab function
+
+    o It is now possible to simulate from copula based models
+
+    o The package now uses openmp as much as possible!
+
+BUG FIXES
+
+    o Fix a bug with the Student-t copula model
+    
+    o Fix a bug with standard errors and 3d Smith model
+
+
 		CHANGES IN SpatialExtremes VERSION 1.8-0
 
 SIGNIFICANT USER-VISIBLE CHANGES

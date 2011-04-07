@@ -56,7 +56,7 @@ locations <- cbind(lon = x[idx.x], lat = y[idx.y])
 alt <- diag(volcano[idx.x, idx.y])
 
 ##Simulate a max-stable process - with unit Frechet margins
-data <- rmaxstab(40, locations, cov.mod = "whitmat", sill = 1, range = 750,
+data <- rmaxstab(40, locations, cov.mod = "whitmat", nugget = 0, range = 750,
 smooth = 1)
 
 ##Now define the spatial model for the GEV parameters
@@ -78,8 +78,8 @@ shape.form <- shape ~ 1
 
 ##  1- Fit a max-stable process
 schlather <- fitmaxstab(data, locations, "whitmat", loc.form, scale.form,
-                        shape.form, marg.cov = cbind(alt = alt), sill =
-1, std.err.type = "none")
+                        shape.form, marg.cov = cbind(alt = alt), nugget =
+0, std.err.type = "none")
 
 ##  2- Produce a map of the pointwise 50-year return level
 

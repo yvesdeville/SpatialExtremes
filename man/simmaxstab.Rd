@@ -29,12 +29,12 @@ list(), \dots)
 }
 \details{
   Users must supply the parameters for the max-stable model. For the
-  Schlather model, users should supply the "sill", "range" and "smooth"
+  Schlather model, users should supply the "nugget", "range" and "smooth"
   parameter values. For the Smith model, if \code{coord} is univariate
   you must specify \code{var}, otherwise users should supply the
   covariance parameters i.e. parameters with names such as \code{cov11},
   \code{cov12}, \ldots For the extremal-t model, users should supply the
-  "DoF", "sill", "range" and "smooth" parameters. Finally for the
+  "DoF", "nugget", "range" and "smooth" parameters. Finally for the
   Brown--Resnick model, users should supply the "range" and the "smooth"
   parameters.
 
@@ -72,16 +72,16 @@ data <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 0, cov22 = 9/8,
 filled.contour(x, y, log(data), color.palette = terrain.colors)
 
 ## 2. Schlather's model
-data <- rmaxstab(1, coord, cov.mod = "powexp", sill = 1, range = 3,
+data <- rmaxstab(1, coord, cov.mod = "powexp", nugget = 0, range = 3,
 smooth = 1, grid = TRUE)
 filled.contour(x, y, log(data), color.palette = terrain.colors)
 
-## 3. Brown--Resnick's model **** Only available in 1d currently ****
+## 3. Brown--Resnick's model **** Only available for non gridded points currently ****
 data <- rmaxstab(1, x, cov.mod = "brown", range = 3, smooth = 0.5)
 plot(x, log(data), type = "l")
 
 ## 4. Extremal-t model *** Very time consuming for 2d grids ***
-data <- rmaxstab(1, x, "twhitmat", DoF = 4, sill = 1, range = 3,
+data <- rmaxstab(1, x, "twhitmat", DoF = 4, nugget = 0, range = 3,
 smooth = 0.7)
 plot(x, log(data), type = "l")
 }

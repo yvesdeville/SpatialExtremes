@@ -38,9 +38,9 @@ extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
     
     else{
       model <- "Schlather"
-      names(param) <- c("sill", "range", "smooth")
+      names(param) <- c("nugget", "range", "smooth")
       extCoeff <- function(h)
-        1 + sqrt(0.5 - 0.5 * (covariance(sill = param[1], range = param[2],
+        1 + sqrt(0.5 - 0.5 * (covariance(nugget = param[1], sill = 1 - param[1], range = param[2],
                                          smooth = param[3], smooth2 = param[3],
                                          cov.mod = cov.mod, plot = FALSE, dist = h)))
     }
@@ -436,7 +436,8 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
       flag <- FALSE
       while (!flag){
         scale <- scale + condrgp(1, cbind(x, y), fitted$coord, res,
-                                 cov.mod = fitted$cov.mod[2], sill = fitted$chain.scale[i,"sill"],
+                                 cov.mod = fitted$cov.mod[2],
+                                 sill = fitted$chain.scale[i,"sill"],
                                  range = fitted$chain.scale[i,"range"],
                                  smooth = fitted$chain.shape[i,"smooth"], grid = TRUE,
                                  control = control)$cond.sim
@@ -485,9 +486,10 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
       
       while (!flag){        
         scale <- scale + condrgp(1, cbind(x, y), fitted$coord, res,
-                                cov.mod = fitted$cov.mod[2], sill = fitted$chain.scale[i,"sill"],
-                                range = fitted$chain.scale[i,"range"],
-                                smooth = fitted$chain.shape[i,"smooth"], grid = TRUE,
+                                 cov.mod = fitted$cov.mod[2],
+                                 sill = fitted$chain.scale[i,"sill"],
+                                 range = fitted$chain.scale[i,"range"],
+                                 smooth = fitted$chain.shape[i,"smooth"], grid = TRUE,
                                  control = control)$cond.sim
         
         flag <- all(scale > 0)

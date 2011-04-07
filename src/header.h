@@ -12,7 +12,7 @@
 //
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		   int *dim, int *weighted, double *weights, double *locs,
-		   double *scales, double *shapes, double *sill, double *range,
+		   double *scales, double *shapes, double *nugget, double *range,
 		   double *smooth, double *smooth2, int *fitmarge, double *dns);
 void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
 		      int *weighted, double *weights, double *locdsgnmat, double *locpenmat,
@@ -27,7 +27,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      int *ntempcoeffshape, int *nppartempcoeffshape, double *temppenaltyshape,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff,
 		      double *tempcoeffloc, double *tempcoeffscale, double *tempcoeffshape,
-		      double *sill, double *range, double *smooth, double *smooth2, double *dns);
+		      double *nugget, double *range, double *smooth, double *smooth2, double *dns);
 
 ///////////////////////////////////
 //  From schlatherind.c
@@ -35,7 +35,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
 		      int *nObs, int *dim, int *weighted, double *weights,
 		      double *locs, double *scales, double *shapes,
-		      double *alpha, double *sill, double *range, double *smooth,
+		      double *alpha, double *nugget, double *range, double *smooth,
 		      double *smooth2, int *fitmarge,double *dns);
 void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
 			 int *weighted, double *weights, double *locdsgnmat, double *locpenmat,
@@ -50,7 +50,7 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 			 int *ntempcoeffshape, int *nppartempcoeffshape, double *temppenaltyshape,
 			 double *loccoeff, double *scalecoeff, double *shapecoeff,
 			 double *tempcoeffloc, double *tempcoeffscale, double *tempcoeffshape,
-			 double *alpha, double *sill, double *range, double *smooth,
+			 double *alpha, double *nugget, double *range, double *smooth,
 			 double *smooth2, double *dns);
 
 ///////////////////////////////////
@@ -58,7 +58,7 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 //
 void geomgaussfull(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
 		   int *weighted, double *weights, double *locs, double *scales, double *shapes,
-		   double *sigma2, double *sigma2Bound, double *sill, double *range,
+		   double *sigma2, double *sigma2Bound, double *nugget, double *range,
 		   double *smooth, double *smooth2, int *fitmarge,double *dns);
 void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
 		      int *weighted, double *weights, double *locdsgnmat, double *locpenmat,
@@ -73,25 +73,8 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      int *ntempcoeffshape, int *nppartempcoeffshape, double *temppenaltyshape,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff,
 		      double *tempcoeffloc, double *tempcoeffscale, double *tempcoeffshape,
-		      double *sigma2, double *sigma2Bound, double *sill, double *range,
+		      double *sigma2, double *sigma2Bound, double *nugget, double *range,
 		      double *smooth, double *smooth2, double *dns);
-
-///////////////////////////////////
-//  From nsgeomgauss.c
-//
-void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
-		     int *nObs, int *dim, double *locs, double *scales, double *shapes,
-		     double *sigma2dsgnmat, double *sigma2coeff, int *nsigma2coeff,
-		     double *sill, double *range, double *smooth, double *smooth2, int *fitmarge,
-		     double *dns);
-void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-			int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
-			double *locpenalty, double *scaledsgnmat, double *scalepenmat,
-			int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
-			double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
-			double *sigma2dsgnmat, int *nsigma2coeff, double *loccoeff, double *scalecoeff,
-			double *shapecoeff, double *sigma2coeff, double *sill, double *range,
-			double *smooth, double *smooth2, double *dns);
 
 ///////////////////////////////////
 //  From brownResnick.c
@@ -163,7 +146,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
 //
 void extremaltfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		   int *dim, int *weighted, double *weights, double *locs, double *scales,
-		   double *shapes, double *sill, double *range, double *smooth, double *smooth2,
+		   double *shapes, double *nugget, double *range, double *smooth, double *smooth2,
 		   double *df, int *fitmarge, double *dns);
 void extremaltdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
 		      int *weighted, double *weights, double *locdsgnmat, double *locpenmat,
@@ -178,7 +161,7 @@ void extremaltdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      int *ntempcoeffshape, int *nppartempcoeffshape, double *temppenaltyshape,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff,
 		      double *tempcoeffloc, double *tempcoeffscale, double *tempcoeffshape,
-		      double *sill, double *range, double *smooth, double *smooth2, double *df,
+		      double *nugget, double *range, double *smooth, double *smooth2, double *df,
 		      double *dns);
 
 ///////////////////////////////////
@@ -222,6 +205,8 @@ double gev2unifTrend(double *data, int nObs, int nSite, double *locs,
 		     double *scales, double *shapes, double *trendlocs,
 		     double *trendscales, double *trendshapes, double *unif,
 		     double *logdens);
+int getCurrentPair(int site1, int site2, int nSite);
+void getSiteIndex(int currentPair, int nSite, int *site1, int *site2);
 
 ///////////////////////////////////
 //  From univllik.c
@@ -234,15 +219,15 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
 ///////////////////////////////////
 //  From covariance.c
 //
-double whittleMatern(double *dist, int n, double sill, double range,
+double whittleMatern(double *dist, int n, double nugget, double sill, double range,
 		     double smooth, double *rho);
-double cauchy(double *dist, int n, double sill, double range,
+double cauchy(double *dist, int n, double nugget, double sill, double range,
 	      double smooth, double *rho);
-double caugen(double *dist, int n, double sill, double range,
+double caugen(double *dist, int n, double nugget, double sill, double range,
 	      double smooth, double smooth2, double *rho);
-double powerExp(double *dist, int n, double sill, double range,
+double powerExp(double *dist, int n, double nugget, double sill, double range,
 		double smooth, double *rho);
-double bessel(double *dist, int n, int dim, double sill,
+double bessel(double *dist, int n, int dim, double nugget, double sill,
 	      double range, double smooth, double *rho);
 double mahalDistFct(double *distVec, int n, double *cov11,
 		    double *cov12, double *cov22, double *mahal);
@@ -250,12 +235,9 @@ double mahalDistFct3d(double *distVec, int n, double *cov11,
 		      double *cov12, double *cov13, double *cov22,
 		      double *cov23, double *cov33, double *mahal);
 double geomCovariance(double *dist, int n, int dim, int covmod,
-		      double sigma2, double sigma2Bound, double sill,
+		      double sigma2, double sigma2Bound, double nugget,
 		      double range, double smooth, double smooth2,
 		      double *rho);
-double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
-			double *sigma2, double sill, double range,
-			double smooth, double smooth2, double *rho);
 double brownResnick(double *dist, int n, double range, double smooth,
 		    double *rho);
 double fbm(double *coord, double *dist, int dim, int nSite, double sill, double range,
@@ -318,16 +300,16 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 		 double *cov22, double *cov23, double *cov33,
 		 int *nPairs, double *dist, double *extcoeff,
 		 double *weights, double *ans);
-void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
+void fitcovariance(int *covmod, double *nugget, double *range, double *smooth,
 		   double *smooth2, int *nPairs, int *dim, double *distVec,
 		   double *extcoeff, double *weights, double *ans);
-void fittcovariance(int *covmod, double *sill, double *range, double *smooth,
+void fittcovariance(int *covmod, double *nugget, double *range, double *smooth,
 		    double *smooth2, double *DoF, int *nPairs, int *dim, double *dist,
 		    double *extcoeff, double *weights, double *ans);
-void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
+void fiticovariance(int *covmod, double *alpha, double *nugget, double *range,
 		    double *smooth, double *smooth2, int *nPairs, int *dim,
 		    double *dist, double *extcoeff, double *weights, double *ans);
-void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *sill,
+void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *nugget,
 		    double *range, double *smooth, double *smooth2, int *nPairs,
 		    int *dim, double *dist, double *extcoeff, double *weights,
 		    double *ans);
@@ -398,11 +380,11 @@ void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
 //  From simschlather.c
 //
 void rschlathertbm(double *coord, int *nObs, int *nSites, int *dim,
-		   int *covmod, int *grid, double *sill, double *range,
+		   int *covmod, int *grid, double *nugget, double *range,
 		   double *smooth, double *uBound, int *nlines,
 		   double *ans);
 void rschlatherdirect(double *coord, int *nObs, int *nSites, int *dim,
-		      int *covmod, int *grid, double *sill, double *range,
+		      int *covmod, int *grid, double *nugget, double *range,
 		      double *smooth, double *uBound, double *ans);
 void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	     int *grid, double *coord, double *nugget, double *sill,
@@ -416,15 +398,15 @@ void circcore(double *rho, double *a, double *ia, int m, int halfM, int mdag,
 //  From simgeometric.c
 //
 void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
-	      int *covmod, int *grid, double *sigma2, double *sill,
+	      int *covmod, int *grid, double *sigma2, double *nugget,
 	      double *range, double *smooth, double *uBound, int *nlines,
 	      double *ans);
 void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
-		 int *covmod, int *grid, double *sigma2, double *sill,
+		 int *covmod, int *grid, double *sigma2, double *nugget,
 		 double *range, double *smooth, double *uBound,
 		 double *ans);
 void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
-	       int *covmod, double *sigma2, double *sill, double *range,
+	       int *covmod, double *sigma2, double *nugget, double *range,
 	       double *smooth, double *uBound, double *ans);
 
 ///////////////////////////////////
@@ -438,14 +420,14 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 //  From simextremalt.c
 //
 void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
-		   int *covmod, int *grid, double *sill, double *range,
+		   int *covmod, int *grid, double *nugget, double *range,
 		   double *smooth, double *DoF, int *blockSize, int *nlines,
 		   double *ans);
 void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
-		      int *covmod, int *grid, double *sill, double *range,
+		      int *covmod, int *grid, double *nugget, double *range,
 		      double *smooth, double *DoF, int *blockSize, double *ans);
 void rextremaltcirc(int *nObs, int *ngrid, double *steps, int *dim,
-		    int *covmod, double *sill, double *range,
+		    int *covmod, double *nugget, double *range,
 		    double *smooth, double *DoF, int *blockSize, double *ans);
 
 ///////////////////////////////////
@@ -486,7 +468,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     int *ntemploccoeff, double *tempdsgnmatscale, int *ntempscalecoeff,
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
-		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
+		     double *tempscalecoeff, double *tempshapecoeff, double *nugget, double *range,
 		     double *smooth, double *smooth2, int *fitmarge, int *usetempcov, double *weights,
 		     double *hess, double *grad);
 void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int *nObs,
@@ -496,7 +478,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 			int *ntempscalecoeff, double *tempdsgnmatshape, int *ntempshapecoeff,
 			double *loccoeff, double *scalecoeff, double *shapecoeff,
 			double *temploccoeff, double *tempscalecoeff, double *tempshapecoeff,
-			double *alpha, double *sill, double *range, double *smooth,
+			double *alpha, double *nugget, double *range, double *smooth,
 			double *smooth2, int *fitmarge, int *usetempcov, double *weights, double *hess,
 			double *grad);
 void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *nObs,
@@ -506,7 +488,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
 		     double *tempscalecoeff, double *tempshapecoeff, double *sigma2,
-		     double *sill, double *range, double *smooth, double *smooth2,
+		     double *nugget, double *range, double *smooth, double *smooth2,
 		     int *fitmarge, int *usetempcov, double *weights, double *hess, double *grad);
 void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs, double *locdsgnmat,
 			int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
@@ -531,7 +513,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     int *ntemploccoeff, double *tempdsgnmatscale, int *ntempscalecoeff,
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
-		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
+		     double *tempscalecoeff, double *tempshapecoeff, double *nugget, double *range,
 		     double *smooth, double *smooth2, double *df, int *fitmarge, int *usetempcov,
 		     double *weights, double *hess, double *grad);
 
@@ -606,7 +588,7 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
 //  From copula.c
 //
 void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, int *nObs,
-	    int *dim, double *locdsgnmat,  double *locpenmat, int *nloccoeff,
+	    int *dim, int * fitmarge, double *locdsgnmat,  double *locpenmat, int *nloccoeff,
 	    int *npparloc, double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 	    int *nscalecoeff, int *npparscale, double *scalepenalty,
 	    double *shapedsgnmat, double *shapepenmat, int *nshapecoeff, int *npparshape,
@@ -617,7 +599,7 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
 	    double *tempdsgnmatshape, double *temppenmatshape, int *ntempcoeffshape,
 	    int *nppartempcoeffshape, double *temppenaltyshape, double *loccoeff,
 	    double *scalecoeff, double *shapecoeff, double *tempcoeffloc,
-	    double *tempcoeffscale, double *tempcoeffshape, double *DoF, double *sill, double *range,
+	    double *tempcoeffscale, double *tempcoeffshape, double *DoF, double *nugget, double *range,
 	    double *smooth, double *smooth2, double *dns);
 double gaussianCopula(double *unif, double sd, double *covMat, int nObs, int nSite);
 double studentCopula(double *data, double DoF, double *covMat, int nObs,

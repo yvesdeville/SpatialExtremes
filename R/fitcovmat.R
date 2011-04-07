@@ -316,7 +316,7 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
         param <- c("range", "smooth")
 
     else
-        param <- c("sill", "range", "smooth")
+        param <- c("nugget", "range", "smooth")
 
     if (model == "iSchlather")
         param <- c("alpha", param)
@@ -339,15 +339,15 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
 
     if (model == "Schlather"){
         if (cov.mod == "caugen")
-            funS2 <- function(sill, range, smooth, smooth2)
-                .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
+            funS2 <- function(nugget, range, smooth, smooth2)
+                .C("fitcovariance", as.integer(cov.mod.num), as.double(nugget), as.double(range),
                    as.double(smooth), as.double(smooth2), as.integer(n.pairs), as.integer(dist.dim),
                    as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
                    PACKAGE = "SpatialExtremes")$ans
 
         else
-            funS1 <- function(sill, range, smooth)
-                .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
+            funS1 <- function(nugget, range, smooth)
+                .C("fitcovariance", as.integer(cov.mod.num), as.double(nugget), as.double(range),
                    as.double(smooth), double(1), as.integer(n.pairs), as.integer(dist.dim),
                    as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
                    PACKAGE = "SpatialExtremes")$ans
@@ -355,15 +355,15 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
 
     else if (model == "iSchlather"){
         if (cov.mod == "caugen")
-            funI2 <- function(alpha, sill, range, smooth, smooth2)
-                .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(sill),
+            funI2 <- function(alpha, nugget, range, smooth, smooth2)
+                .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(nugget),
                    as.double(range), as.double(smooth), as.double(smooth2), as.integer(n.pairs),
                    as.integer(dist.dim), as.double(dist), as.double(extcoeff), as.double(weights),
                    ans = double(1), PACKAGE = "SpatialExtremes")$ans
 
         else
-            funI1 <- function(alpha, sill, range, smooth)
-                .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(sill),
+            funI1 <- function(alpha, nugget, range, smooth)
+                .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(nugget),
                    as.double(range), as.double(smooth), double(1), as.integer(n.pairs), as.integer(dist.dim),
                    as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
                    PACKAGE = "SpatialExtremes")$ans
@@ -371,30 +371,30 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
 
     else if (model == "Geometric"){
         if (cov.mod == "caugen")
-            funG2 <- function(sigma2, sill, range, smooth, smooth2)
+            funG2 <- function(sigma2, nugget, range, smooth, smooth2)
                 .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sigma2Bound),
-                   as.double(sill), as.double(range), as.double(smooth), as.double(smooth2),
+                   as.double(nugget), as.double(range), as.double(smooth), as.double(smooth2),
                    as.integer(n.pairs), as.integer(dist.dim), as.double(dist), as.double(extcoeff),
                    as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
 
         else
-            funG1 <- function(sigma2, sill, range, smooth)
+            funG1 <- function(sigma2, nugget, range, smooth)
                 .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sigma2Bound),
-                   as.double(sill), as.double(range), as.double(smooth), double(1), as.integer(n.pairs),
+                   as.double(nugget), as.double(range), as.double(smooth), double(1), as.integer(n.pairs),
                    as.integer(dist.dim), as.double(dist), as.double(extcoeff), as.double(weights),
                    ans = double(1), PACKAGE = "SpatialExtremes")$ans
     }
 
     else if (model == "Extremal-t") {
         if (cov.mod == "caugen")
-            funT2 <- function(sill, range, smooth, smooth2, DoF)
-                .C("fittcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range), as.double(smooth),
+            funT2 <- function(nugget, range, smooth, smooth2, DoF)
+                .C("fittcovariance", as.integer(cov.mod.num), as.double(nugget), as.double(range), as.double(smooth),
                    as.double(smooth2), as.double(DoF), as.integer(n.pairs), as.integer(dist.dim), as.double(dist),
                    as.double(extcoeff), as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
 
         else
-            funT1 <- function(sill, range, smooth, DoF)
-                .C("fittcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range), as.double(smooth),
+            funT1 <- function(nugget, range, smooth, DoF)
+                .C("fittcovariance", as.integer(cov.mod.num), as.double(nugget), as.double(range), as.double(smooth),
                    double(1), as.double(DoF), as.integer(n.pairs), as.integer(dist.dim), as.double(dist),
                    as.double(extcoeff), as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
     }
@@ -443,7 +443,7 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
             start <- list(range = range.start, smooth = smooth.start)
 
         else
-            start <- list(sill = .9, range = range.start, smooth = smooth.start)
+            start <- list(nugget = .1, range = range.start, smooth = smooth.start)
 
         if (cov.mod == "caugen")
             start <- c(start, list(smooth2 = 0.5))
@@ -455,13 +455,13 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
             start <- c(list(sigma2 = 9), start)
 
         if (model == "Extremal-t"){
-          start <- list(sill = 0.9, range = 2 * max(dist), smooth = 1, DoF = 4.5)
+          start <- list(nugget = 0.1, range = 2 * max(dist), smooth = 1, DoF = 4.5)
           
           if (cov.mod == "caugen")
-            start <- list(sill = 0.9, range = 2 * max(dist), smooth = 1, smooth2 = 1, DoF = 4.5)
+            start <- list(nugget = 0.1, range = 2 * max(dist), smooth = 1, smooth2 = 1, DoF = 4.5)
 
           if (cov.mod == "cauchy")
-            start <- list(sill = 0.9, range = 0.07 * max(dist), smooth = 0.1, DoF = 4.5)
+            start <- list(nugget = 0.1, range = 0.07 * max(dist), smooth = 0.1, DoF = 4.5)
         }
 
         start <- start[!(param %in% names(list(...)))]
@@ -629,11 +629,11 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
 
     if (cov.mod != "brown"){
         if (cov.mod != "caugen")
-            cov.fun <- covariance(sill = param["sill"], range = param["range"],
+            cov.fun <- covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                                   smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
 
         else
-            cov.fun <- covariance(sill = param["sill"], range = param["range"],
+            cov.fun <- covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                                   smooth = param["smooth"], smooth2 = param["smooth2"],
                                   cov.mod = cov.mod, plot = FALSE)
 

@@ -25,20 +25,15 @@ coord <- matrix(runif(2 * n.site, -10, 10), ncol = 2)
 colnames(coord) <- c("lon", "lat")
 
 ## Generate data from a Gaussian copula model
+data <- rcopula(n.obs, coord, "gaussian", "powexp", nugget = 0, range = 4, smooth = 1.2)
 
-## 1. Generate of Gaussian random field
-data <- rgp(n.obs, coord, "powexp", sill = 1, range = 4, smooth = 1.2)
-
-## 2. Transform the margins to U(0,1)
-data <- pnorm(data)
-
-## 3. Transform the margins to GEV
+## Transform the margins to GEV
 locs <- -5 + coord[,"lon"] / 10
 scales <- 10 + coord[,"lat"] / 2
 shapes <- rep(0.2, n.site)
 
 for (i in 1:n.site)
-  data[,i] <- qgev(data[,i], locs[i], scales[i], shapes[i])
+  data[,i] <- frech2gev(data[,i], locs[i], scales[i], shapes[i])
 
 ## Fit a Gaussian copula model
 
@@ -49,7 +44,7 @@ shape.form <- y ~ 1
 
 ## 2. Fit
 M0 <- fitcopula(data, coord, "gaussian", "powexp", loc.form, scale.form,
-                shape.form, sill = 1)
+                shape.form, nugget = 0)
 M0
 }
 \author{Mathieu Ribatet}

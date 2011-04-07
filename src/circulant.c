@@ -7,6 +7,7 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
   int i, j, k = -1, r, nbar = *ngrid * *ngrid, m;
   //irho is the imaginary part of the covariance -> 0
   double *rho, *irho;
+  const double zero = 0;
   //Below is a table of highly composite numbers
   int HCN[39] = {1, 2, 4, 6, 12, 24, 36, 48, 60, 120, 180, 240,
 		 360, 720, 840, 1260, 1680, 2520, 5040, 7560,
@@ -48,20 +49,22 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
     //Computations of the covariances
     rho = (double *)R_alloc(mbar, sizeof(double));
     irho = (double *)R_alloc(mbar, sizeof(double));
-    memset(irho, 0, mbar * sizeof(double));
+
+    for (i=mbar;i--;)
+      irho[i] = 0;
 
     switch (*covmod){
     case 1:
-      whittleMatern(dist, mbar, *sill, *range, *smooth, rho);
+      whittleMatern(dist, mbar, zero, *sill, *range, *smooth, rho);
       break;
     case 2:
-      cauchy(dist, mbar, *sill, *range, *smooth, rho);
+      cauchy(dist, mbar, zero, *sill, *range, *smooth, rho);
       break;
     case 3:
-      powerExp(dist, mbar, *sill, *range, *smooth, rho);
+      powerExp(dist, mbar, zero, *sill, *range, *smooth, rho);
       break;
     case 4:
-      bessel(dist, mbar, *dim, *sill, *range, *smooth, rho);
+      bessel(dist, mbar, *dim, zero, *sill, *range, *smooth, rho);
       break;
     }
 

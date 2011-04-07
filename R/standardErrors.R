@@ -108,7 +108,7 @@
       grad[,1] <- rowSums(grad[,c(1,4,6)])
       grad <- grad[,-(2:6), drop = FALSE]
 
-      hess[,1] <- rowSums(grad[,c(1,4,6)])
+      hess[,1] <- rowSums(hess[,c(1,4,6)])
       hess <- hess[,-(2:6), drop = FALSE]
     }
   }
@@ -157,7 +157,7 @@
   if (is.null(weights))
     weights <- rep(1, n.pairs)
   
-  sill <- par["sill"]
+  nugget <- par["nugget"]
   range <- par["range"]
   smooth <- par["smooth"]
 
@@ -210,7 +210,7 @@
                 as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
                 as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
                 as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
-                as.double(temp.shape.param), as.double(sill), as.double(range),
+                as.double(temp.shape.param), as.double(nugget), as.double(range),
                 as.double(smooth), as.double(smooth2), as.integer(fit.marge),
                 as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
                 grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
@@ -263,7 +263,7 @@
     weights <- rep(1, n.pairs)
   
   alpha <- par["alpha"]
-  sill <- par["sill"]
+  nugget <- par["nugget"]
   range <- par["range"]
   smooth <- par["smooth"]
 
@@ -316,7 +316,7 @@
                 as.double(temp.dsgn.mat.shape), as.integer(n.tempshapecoeff),
                 as.double(loc.param), as.double(scale.param), as.double(shape.param),
                 as.double(temp.loc.param), as.double(temp.scale.param),
-                as.double(temp.shape.param), as.double(alpha), as.double(sill),
+                as.double(temp.shape.param), as.double(alpha), as.double(nugget),
                 as.double(range), as.double(smooth), as.double(smooth2), as.integer(fit.marge),
                 as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
                 grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
@@ -369,7 +369,7 @@
     weights <- rep(1, n.pairs)
   
   sigma2 <- par["sigma2"]
-  sill <- par["sill"]
+  nugget <- par["nugget"]
   range <- par["range"]
   smooth <- par["smooth"]
 
@@ -423,7 +423,7 @@
                 as.double(temp.dsgn.mat.shape), as.integer(n.tempshapecoeff),
                 as.double(loc.param), as.double(scale.param), as.double(shape.param),
                 as.double(temp.loc.param), as.double(temp.scale.param),
-                as.double(temp.shape.param), as.double(sigma2), as.double(sill),
+                as.double(temp.shape.param), as.double(sigma2), as.double(nugget),
                 as.double(range), as.double(smooth), as.double(smooth2), as.integer(fit.marge),
                 as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
                 grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
@@ -645,7 +645,7 @@
   if (is.null(weights))
     weights <- rep(1, n.pairs)
   
-  sill <- par["sill"]
+  nugget <- par["nugget"]
   range <- par["range"]
   smooth <- par["smooth"]
   DoF <- par["DoF"]
@@ -699,7 +699,7 @@
                 as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
                 as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
                 as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
-                as.double(temp.shape.param), as.double(sill), as.double(range),
+                as.double(temp.shape.param), as.double(nugget), as.double(range),
                 as.double(smooth), as.double(smooth2), as.double(DoF), as.integer(fit.marge),
                 as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
                 grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")

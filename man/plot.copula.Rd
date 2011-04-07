@@ -1,16 +1,16 @@
-\name{plot.maxstab}
-\alias{plot.maxstab}
+\name{plot.copula}
+\alias{plot.copula}
 \title{
-Model checking of a fitted max-stable model
+Model checking of a fitted copula based model.
 }
 \description{
 This function produces several plots to assess the goodness of fit of a
-fitted max-stable model.
+fitted copula based model for spatial extremes.
 }
-\usage{\method{plot}{maxstab}(x, ..., sites)}
+\usage{\method{plot}{copula}(x, ..., sites)}
 \arguments{
-  \item{x}{An object of class \code{maxstab}. Most often, this will be
-    the output of \code{\link{fitmaxstab}} or \code{\link{lsmaxstab}}.}
+  \item{x}{An object of class \code{copula}. Most often, this will be
+    the output of \code{\link{fitcopula}}.}
   \item{\dots}{Here for compatibility reasons but not yet implemented.}
   \item{sites}{A vector of integer of length 4 specifying the locations
     to be used for the model checking. If missing, locations will be
@@ -36,7 +36,7 @@ coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
 colnames(coord) <- c("lon", "lat")
 data <- rmaxstab(n.obs, coord, "powexp", nugget = 0, range = 3, smooth =
 1)
-fitted <- fitmaxstab(log(data), coord, "powexp", y ~ 1, y ~ 1, y ~ 1,
+fitted <- fitcopula(log(data), coord, "student", "powexp", y ~ 1, y ~ 1, y ~ 1,
 nugget = 0)
 plot(fitted)
 }

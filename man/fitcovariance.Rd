@@ -62,7 +62,7 @@ colnames(locations) <- c("lon", "lat")
 
 ##Simulating a max-stable process using RandomFields
 ##This is the Schlather's approach
-data <- rmaxstab(50, locations, cov.mod = "whitmat", sill = 1, range =
+data <- rmaxstab(50, locations, cov.mod = "whitmat", nugget = 0, range =
 30, smooth = 1)
 
 fitcovariance(data, locations, "whitmat")

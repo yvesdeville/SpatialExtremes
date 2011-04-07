@@ -64,39 +64,39 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   }
 
   else if (model == "Schlather"){
-    if (!all(c("sill", "range", "smooth") %in% names(list(...))))
-      stop("You must specify 'sill', 'range', 'smooth'")
+    if (!all(c("nugget", "range", "smooth") %in% names(list(...))))
+      stop("You must specify 'nugget', 'range', 'smooth'")
     
-    sill <- list(...)$sill
+    nugget <- list(...)$nugget
     range <- list(...)$range
     smooth <- list(...)$smooth
   }
 
   else if (model == "iSchlather"){
-    if (!all(c("alpha", "sill", "range", "smooth") %in% names(list(...))))
-      stop("You must specify 'alpha', 'sill', 'range', 'smooth'")
+    if (!all(c("alpha", "nugget", "range", "smooth") %in% names(list(...))))
+      stop("You must specify 'alpha', 'nugget', 'range', 'smooth'")
     
-    sill <- list(...)$sill
+    nugget <- list(...)$nugget
     range <- list(...)$range
     smooth <- list(...)$smooth
     alpha <- list(...)$alpha
   }
 
   else if (model == "Geometric") {
-    if (!all(c("sigma2", "sill", "range", "smooth") %in% names(list(...))))
-      stop("You must specify 'sigma2', 'sill', 'range', 'smooth'")
+    if (!all(c("sigma2", "nugget", "range", "smooth") %in% names(list(...))))
+      stop("You must specify 'sigma2', 'nugget', 'range', 'smooth'")
     
-    sill <- list(...)$sill
+    nugget <- list(...)$nugget
     range <- list(...)$range
     smooth <- list(...)$smooth
     sigma2 <- list(...)$sigma2
   }
 
   else if (model == "Extremal-t"){
-     if (!all(c("DoF", "sill", "range", "smooth") %in% names(list(...))))
-      stop("You must specify 'DoF', 'sill', 'range', 'smooth'")
+     if (!all(c("DoF", "nugget", "range", "smooth") %in% names(list(...))))
+      stop("You must specify 'DoF', 'nugget', 'range', 'smooth'")
     
-    sill <- list(...)$sill
+    nugget <- list(...)$nugget
     range <- list(...)$range
     smooth <- list(...)$smooth
     DoF <- list(...)$DoF
@@ -178,18 +178,18 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
     if (method == "direct")
       ans <- .C("rschlatherdirect", as.double(coord), as.integer(n), as.integer(n.site),
-                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                 as.double(range), as.double(smooth), as.double(uBound), ans = ans,
                 PACKAGE = "SpatialExtremes")$ans
     
     else if (method == "circ")
       ans <- .C("rschlathercirc", as.integer(n), as.integer(n.site), as.double(steps),
-                as.integer(dist.dim), as.integer(cov.mod), as.double(sill), as.double(range),
+                as.integer(dist.dim), as.integer(cov.mod), as.double(nugget), as.double(range),
                 as.double(smooth),  as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
     
     else     
       ans <- .C("rschlathertbm", as.double(coord), as.integer(n), as.integer(n.site),
-                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                 as.double(range), as.double(smooth), as.double(uBound), as.integer(nlines),
                 ans = ans, PACKAGE = "SpatialExtremes")$ans
   }
@@ -205,19 +205,19 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     if (method == "direct")
       ans <- .C("rgeomdirect", as.double(coord), as.integer(n), as.integer(n.site),
                 as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sigma2),
-                as.double(sill), as.double(range), as.double(smooth),
+                as.double(nugget), as.double(range), as.double(smooth),
                 as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
 
     else if (method == "circ")
       ans <- .C("rgeomcirc", as.integer(n), as.integer(n.site), as.double(steps),
                 as.integer(dist.dim), as.integer(cov.mod), as.double(sigma2),
-                as.double(sill), as.double(range), as.double(smooth),  as.double(uBound),
+                as.double(nugget), as.double(range), as.double(smooth),  as.double(uBound),
                 ans = ans, PACKAGE = "SpatialExtremes")$ans
     
     else      
       ans <- .C("rgeomtbm", as.double(coord), as.integer(n), as.integer(n.site),
                 as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sigma2),
-                as.double(sill), as.double(range), as.double(smooth), as.double(uBound),
+                as.double(nugget), as.double(range), as.double(smooth), as.double(uBound),
                 as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
   }
 
@@ -230,19 +230,19 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
     if (method == "direct")
       ans <- .C("rextremaltdirect", as.double(coord), as.integer(n), as.integer(n.site),
-                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                 as.double(range), as.double(smooth), as.double(DoF), as.integer(block.size),
                 ans = ans, PACKAGE = "SpatialExtremes")$ans
 
     else if (method == "circ")
       ans <- .C("rextremaltcirc", as.integer(n), as.integer(n.site), as.double(steps),
-                as.integer(dist.dim), as.integer(cov.mod), as.double(sill), as.double(range),
+                as.integer(dist.dim), as.integer(cov.mod), as.double(nugget), as.double(range),
                 as.double(smooth), as.double(DoF), as.integer(block.size), ans = ans,
                 PACKAGE = "SpatialExtremes")$ans
     
     else      
       ans <- .C("rextremalttbm", as.double(coord), as.integer(n), as.integer(n.site),
-                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
+                as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                 as.double(range), as.double(smooth), as.double(DoF), as.integer(block.size),
                 as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
   }
