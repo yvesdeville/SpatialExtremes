@@ -37,17 +37,15 @@ void distance(double *coord, int *nDim, int *nSite,
 
 void distance2orig(double *coord, int n, int dim, double *dist, int grid){
   //It computes the l_2 norm of points in R^d i.e. sqrt(x[1]^2 + ... + x[d]^2)
-  int i, j;
-
   if (grid){
     //Only works with two dimensional grids!!!
     int current = -1;
     double dummy;
 
-    for (i=0;i<n;i++){
+    for (int i=0;i<n;i++){
       dummy = coord[i] * coord[i];
 
-      for (j=0;j<n;j++){
+      for (int j=0;j<n;j++){
 	current++;
 	dist[current] = sqrt(dummy + coord[n + j] * coord[n + j]);
       }
@@ -55,9 +53,9 @@ void distance2orig(double *coord, int n, int dim, double *dist, int grid){
   }
 
   else {
-    for (i=n;i--;){
+    for (int i=0;i<n;i++){
       dist[i] = 0;
-      for (j=dim;j--;)
+      for (int j=0;j<dim;j++)
 	dist[i] += coord[i + j * n] * coord[i + j * n];
 
       dist[i] = sqrt(dist[i]);
@@ -181,29 +179,25 @@ void dsgnmat2temptrend(double *dsgnmatloc, double *dsgnmatscale, double *dsgnmat
 
   //This function computes the temporal trend for each GEV parameters
   //from the design matrix.
-  int i, j;
+
+  for (int i=0; i<nObs; i++)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
 
   if (usetempcov[0])
-    for (i=nObs;i--;){
-      trendlocs[i] = 0;
-
-      for (j=nloccoeff;j--;)
+    for (int i=0;i<nObs;i++){
+      for (int j=0;j<nloccoeff;j++)
 	trendlocs[i] += loccoeff[j] * dsgnmatloc[i + nObs * j];
     }
 
   if (usetempcov[1])
-    for (i=nObs;i--;){
-      trendscales[i] = 0;
-
-      for (j=nscalecoeff;j--;)
+    for (int i=0;i<nObs;i++){
+      for (int j=0;j<nscalecoeff;j++)
 	trendscales[i] += scalecoeff[j] * dsgnmatscale[i + nObs * j];
     }
 
   if (usetempcov[2])
-    for (i=nObs;i--;){
-      trendshapes[i] = 0;
-
-      for (j=nshapecoeff;j--;)
+    for (int i=0;i<nObs;i++){
+      for (int j=0;j<nshapecoeff;j++)
 	trendshapes[i] += shapecoeff[j] * dsgnmatshape[i + nObs * j];
     }
 

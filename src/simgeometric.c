@@ -22,8 +22,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 
   int i, neffSite, lagi = 1, lagj = 1;
   const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
-  double sigma = sqrt(*sigma2), sill = 1 - *nugget,
-    *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
+  double sigma = sqrt(*sigma2), sill = 1 - *nugget;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
@@ -34,6 +33,9 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
     neffSite = *nSite;
     lagj = *nObs;
   }
+
+  double *gp = malloc(neffSite * sizeof(double)),
+    *lines = malloc(3 * *nlines * sizeof(double));
 
   //rescale the coordinates
   for (i=(*nSite * *dim);i--;){
@@ -48,6 +50,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
   //Generate lines
   vandercorput(nlines, lines);
   
+
   GetRNGstate();
  
   for (i=*nObs;i--;){
@@ -58,8 +61,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
       /* The stopping rule is reached when nKO = 0 i.e. when each site
 	 satisfies the condition in Eq. (8) of Schlather (2002) */
       int j;
-      double *gp = (double *)R_alloc(neffSite, sizeof(double));
-      
+            
       /* ------- Random rotation of the lines ----------*/
       double u = unif_rand() - 0.5,
 	v = unif_rand() - 0.5,
@@ -100,11 +102,12 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 
   PutRNGstate();
 
-  /* So fare we generate a max-stable process with standard Gumbel
+  /* So far we generate a max-stable process with standard Gumbel
      margins. Switch to unit Frechet ones */
   for (i=*nObs * neffSite;i--;)
     ans[i] = exp(ans[i]);
 
+  free(lines); free(gp);
   return;
 }
 
@@ -126,7 +129,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     smooth: the smooth parameter
        ans: the generated random field */
 
-  int i, j, k, neffSite, lagi = 1, lagj = 1;
+  int i, j, neffSite, lagi = 1, lagj = 1, oneInt = 1;
   const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
   double sigma = sqrt(*sigma2), sill = 1 - *nugget, one = 1, zero = 0;
 
@@ -140,58 +143,19 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     lagj = *nObs;
   }
 
-  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
-    *d = (double *)R_alloc(neffSite, sizeof(double)),
-    *u = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
-    *v = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
-    *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
-    *gp = (double *)R_alloc(neffSite, sizeof(double));
+  double *covmat = malloc(neffSite * neffSite * sizeof(double)),
+    *gp = malloc(neffSite * sizeof(double));
 
   buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
 	      smooth, covmat);
   
-  /* Compute the singular value decomposition of the covariance
-     matrix.
+  /* Compute the Cholesky decomposition of the covariance matrix */
+  int info = 0;
+  F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
 
-     This piece of code is strongly inspired from Lapack.c */
-  
-  Memcpy(xvals, covmat, neffSite * neffSite);
-  
-  {
-    int *iwork= (int *) R_alloc(8 * neffSite, sizeof(int));
-    double tmp;
+  if (info != 0)
+    error("error code %d from Lapack routine '%s'", info, "dpotrf");
 
-    /* ask for optimal size of work array */
-    int lwork = -1, info = 0;
-    F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
-		     &neffSite, v, &neffSite, &tmp, &lwork, iwork, &info);
-    if (info != 0)
-      error("error code %d from Lapack routine '%s'", info, "dgesdd");
-
-    lwork = (int) tmp;
-    double *work = (double *) R_alloc(lwork, sizeof(double));
-
-    F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
-		     &neffSite, v, &neffSite, work, &lwork, iwork, &info);
-    if (info != 0)
-      error("error code %d from Lapack routine '%s'", info, "dgesdd");
-  }
-
-  /*--------------- end of singular value decomposition ---------------*/
-
-  /* Compute the square root of the covariance matrix */
-  // a) First compute diag(sqrt(d)) %*% u
-  for (i=0;i<neffSite;i++){
-    double dummy = sqrt(d[i]);
-    
-    for (j=0;j<neffSite;j++)
-      u[i + neffSite * j] *= dummy;
-  }
-
-  // b) Then compute v^T %*% diag(sqrt(d)) %*% u and put it in covmat
-  F77_CALL(dgemm)("T", "N", &neffSite, &neffSite, &neffSite, &one,
-		  v, &neffSite, u, &neffSite, &zero, covmat, &neffSite);
-  
   GetRNGstate();
   
   for (i=*nObs;i--;){
@@ -207,15 +171,9 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
       for (j=neffSite;j--;)
-	d[j] = norm_rand();
+	gp[j] = norm_rand();
       
-      for (j=neffSite;j--;){
-	double sum = 0;
-	for (k=neffSite;k--;)
-	  sum += d[k] * covmat[j + k * neffSite];
-	
-	gp[j] = sum;
-      }
+      F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
       
       nKO = neffSite;
       double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
@@ -235,6 +193,8 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
      margins. Switch to unit Frechet ones */
   for (i=*nObs * neffSite;i--;)
     ans[i] = exp(ans[i]);
+
+  free(covmat); free(gp);
 
   return;
 }

@@ -10,16 +10,10 @@ void smithfull(double *data, double *distVec, int *nSite, int *nObs,
   //each locations.
 
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i;
-  double *jac, *mahalDist, *frech;
-  
-  jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
-  mahalDist = (double *)R_alloc(nPairs, sizeof(double));
-  frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
   //Some preliminary steps: Valid points?
   if (*fitmarge){
-    for (i=0;i<*nSite;i++){
+    for (int i=0;i<*nSite;i++){
       if ((scales[i] <= 0) || (shapes[i] <= -1)){
 	*dns = MINF;
 	return;
@@ -28,17 +22,24 @@ void smithfull(double *data, double *distVec, int *nSite, int *nObs,
   }
   
   //Stage 1: Computing the Mahalanobis distance
+  double *mahalDist = malloc(nPairs * sizeof(double));
   *dns = mahalDistFct(distVec, nPairs, cov11, cov12, cov22, mahalDist);
 
-  if (*dns != 0.0)
-      return;
+  if (*dns != 0.0){
+    free(mahalDist);
+    return;
+  }
 
   //Stage 2: Transformation to unit Frechet
+  double *jac = malloc(*nSite * *nObs * sizeof(double)),
+    *frech = malloc(*nSite * *nObs * sizeof(double));
   if (*fitmarge){
     *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes, jac, frech);
 
-    if (*dns != 0.0)
+    if (*dns != 0.0){
+      free(mahalDist); free(frech); free(jac);
       return;
+    }
 
     if (*weighted)
       *dns = wlpliksmith(frech, mahalDist, jac, *nObs, *nSite, weights);
@@ -48,7 +49,7 @@ void smithfull(double *data, double *distVec, int *nSite, int *nObs,
   }
   
   else {
-    for (i=(*nSite * *nObs);i--;)
+    for (int i=(*nSite * *nObs);i--;)
       jac[i] = 0;
     
     if (*weighted)
@@ -58,6 +59,8 @@ void smithfull(double *data, double *distVec, int *nSite, int *nObs,
       *dns = lpliksmith(data, mahalDist, jac, *nObs, *nSite);
   }
   
+
+  free(jac); free(mahalDist); free(frech);
   return;
 }
 
@@ -81,48 +84,51 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
-  double *jac, *mahalDist, *locs, *scales, *shapes, *frech, *trendlocs, *trendscales,
-    *trendshapes;
-  
-  jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
-  mahalDist = (double *)R_alloc(nPairs, sizeof(double));
-  locs = (double *)R_alloc(*nSite, sizeof(double));
-  scales = (double *)R_alloc(*nSite, sizeof(double));
-  shapes = (double *)R_alloc(*nSite, sizeof(double));
-  frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
   //Stage 1: Computing the Mahalanobis distance
+  double *mahalDist = malloc(nPairs * sizeof(double));
   *dns = mahalDistFct(distVec, nPairs, cov11, cov12, cov22, mahalDist);
 
-  if (*dns != 0)
+  if (*dns != 0){
+    free(mahalDist);
     return;
+  }
 
   //Stage 2: Computing the GEV parameters using the design matrix
+  double *locs = malloc(*nSite * sizeof(double)),
+    *scales = malloc(*nSite * sizeof(double)),
+    *shapes = malloc(*nSite * sizeof(double)),
+    *trendlocs = malloc(*nObs * sizeof(double)),
+    *trendscales = malloc(*nObs * sizeof(double)),
+    *trendshapes = malloc(*nObs * sizeof(double));
+
   *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat, loccoeff, scalecoeff, shapecoeff,
 		       *nSite, *nloccoeff, *nscalecoeff, *nshapecoeff, locs, scales, shapes);
 
   if (flag){
-    int i, j;
-    trendlocs = (double *)R_alloc(*nObs, sizeof(double));
-    trendscales = (double *)R_alloc(*nObs, sizeof(double));
-    trendshapes = (double *)R_alloc(*nObs, sizeof(double));
-
     dsgnmat2temptrend(tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, tempcoeffloc,
 		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
 		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
 
-    for (i=*nSite;i--;)
-      for (j=*nObs;j--;)
+    for (int i=*nSite;i--;)
+      for (int j=*nObs;j--;)
 	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
 	  *dns = MINF;
+	  free(mahalDist); free(locs); free(scales); free(shapes); free(trendlocs);
+	  free(trendscales); free(trendshapes);
 	  return;
 	}
   }
 
-  else if (*dns != 0.0)
+  else if (*dns != 0.0){
+    free(mahalDist); free(locs); free(scales); free(shapes); free(trendlocs);
+    free(trendscales); free(trendshapes);
     return;
+  }
 
   //Stage 3: Transformation to unit Frechet
+  double *jac = malloc(*nSite * *nObs * sizeof(double)),
+    *frech = malloc(*nSite * *nObs * sizeof(double));
   if (flag)
     *dns = gev2frechTrend(data, *nObs, *nSite, locs, scales, shapes, trendlocs, trendscales,
 			  trendshapes, jac, frech);
@@ -130,8 +136,11 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
   else
     *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes, jac, frech);
 
-  if (*dns != 0.0)
+  if (*dns != 0.0){
+    free(mahalDist); free(locs); free(scales); free(shapes); free(trendlocs);
+    free(trendscales); free(trendshapes); free(jac); free(frech);
     return;
+  }
   
   if (*weighted)
     *dns = wlpliksmith(frech, mahalDist, jac, *nObs, *nSite, weights);
@@ -178,5 +187,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
     *dns -= penalization(temppenmatshape, tempcoeffshape, *temppenaltyshape, *ntempcoeffshape,
 			 *nppartempcoeffshape);
 
+  free(mahalDist); free(locs); free(scales); free(shapes); free(trendlocs);
+  free(trendscales); free(trendshapes); free(jac); free(frech);
   return;
 }

@@ -9,19 +9,13 @@
 smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                       ..., warn = TRUE, method = "BFGS",
                       std.err.type = "none", control = list(),
-                      corr = FALSE, weights = NULL){
+                      corr = FALSE, weights = NULL, check.grad = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
   n.obs <- nrow(data)
   dist.dim <- ncol(coord)
   n.pair <- n.site * (n.site - 1) / 2
-
-  if (iso && (method == "Nelder"))
-    method2 <- "BFGS"
-
-  else
-    method2 <- method
 
   distVec <- distance(coord, vec = TRUE)
   weighted <- !is.null(weights)
@@ -116,12 +110,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
     }
 
     if (length(fixed.param) > 0){
-      args <- c(list(data = data, coord = coord, marge = "emp", iso = iso, method = method2), fixed.param)
+      args <- c(list(data = data, coord = coord, marge = "emp", iso = iso, fixed.param))
       cov.start <- do.call("fitcovmat", args)$param
     }
 
     else
-      cov.start <- fitcovmat(data, coord, marge = "emp", iso = iso, method = method2)$param
+      cov.start <- fitcovmat(data, coord, marge = "emp", iso = iso)$param
 
     if (iso){
       cov.start <- cov.start[1]
@@ -252,6 +246,9 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                             std.err.type, fixed.param = names(fixed.param),
                             param.names = param.names, iso = iso, weights = weights)
 
+    if (check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+    
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
@@ -338,7 +335,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form, start, fit.
                       iso = TRUE, marg.cov = NULL, ..., warn = TRUE, method = "BFGS",
                       std.err.type = "none", control = list(), corr = FALSE,
                       weights = weights, temp.cov = NULL, temp.form.loc = NULL,
-                      temp.form.scale = NULL, temp.form.shape = NULL){
+                      temp.form.scale = NULL, temp.form.shape = NULL, check.grad = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -744,6 +741,9 @@ PACKAGE = 'SpatialExtremes')$dns"))
                             fit.marge = fit.marge, std.err.type = std.err.type, fixed.param = names(fixed.param),
                             param.names = param.names, iso = iso, weights = weights)
 
+    if (check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+    
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)

@@ -7,7 +7,7 @@
 }
 \usage{
 covariance(fitted, nugget, sill, range, smooth, smooth2 = NULL, cov.mod =
-"whitmat", plot = TRUE, dist, xlab, ylab, ...)
+"whitmat", plot = TRUE, dist, xlab, ylab, col = 1, ...)
 }
 \arguments{
   \item{fitted}{An object of class ``maxstab''. Most often this will be
@@ -27,6 +27,7 @@ covariance(fitted, nugget, sill, range, smooth, smooth2 = NULL, cov.mod =
   \item{dist}{A numeric vector corresponding to the distance at which
     the covariance function should be evaluated. May be missing.}
   \item{xlab,ylab}{The x-axis and y-axis labels. May be missing.}
+  \item{col}{The color to be used for the plot.}
   \item{\dots}{Several option to be passed to the \code{\link{plot}}
     function.}
 }
@@ -37,34 +38,38 @@ covariance(fitted, nugget, sill, range, smooth, smooth2 = NULL, cov.mod =
 \details{
   Currently, four covariance functions are defined: the Whittle-Matern,
   powered exponential (also known as "stable"), Cauchy and Bessel
-  models. These covariance functions are defined as follows:
+  models. These covariance functions are defined as follows for \eqn{h >
+    0}{h > 0}
 
   \describe{
-    \item{Whittle-Matern}{\eqn{\rho(h) = \sigma
+    \item{Whittle-Matern}{\eqn{\gamma(h) = \sigma
 	\frac{2^{1-\kappa}}{\Gamma(\kappa)} \left(\frac{h}{\lambda}
-	\right)^{\kappa} K_{\kappa}\left(\frac{h}{\lambda} \right)}{\rho(h) =
+	\right)^{\kappa} K_{\kappa}\left(\frac{h}{\lambda} \right)}{\gamma(h) =
 	\sigma  2^(1-\kappa) / \Gamma(\kappa)  (h/\lambda)^\kappa  K_\kappa(h
     / \lambda)}}
-    \item{Powered Exponential}{\eqn{\rho(h) = \sigma \exp \left[-
-	\left(\frac{h}{\lambda} \right)^{\kappa} \right]}{\rho(h) = \sigma
+    \item{Powered Exponential}{\eqn{\gamma(h) = \sigma \exp \left[-
+	\left(\frac{h}{\lambda} \right)^{\kappa} \right]}{\gamma(h) = \sigma
     exp[-(h/\lambda)^\kappa]}}
-    \item{Cauchy}{\eqn{\rho(h) = \sigma \left[1 + \left(\frac{h}{\lambda}
-	\right)^2 \right]^{-\kappa}}{\rho(h) = \sigma [1 +
+    \item{Cauchy}{\eqn{\gamma(h) = \sigma \left[1 + \left(\frac{h}{\lambda}
+	\right)^2 \right]^{-\kappa}}{\gamma(h) = \sigma [1 +
     (h/\lambda)^2]^(-\kappa)}}
-    \item{Bessel}{\eqn{\rho(h) = \sigma \left(\frac{2
+    \item{Bessel}{\eqn{\gamma(h) = \sigma \left(\frac{2
 	  \lambda}{h}\right)^{\kappa} \Gamma(\kappa + 1)
-	J_{\kappa}\left(\frac{h}{\lambda} \right)}{\rho(h) = \sigma (2 \lambda /
+	J_{\kappa}\left(\frac{h}{\lambda} \right)}{\gamma(h) = \sigma (2 \lambda /
 	h)^(\kappa) Gamma(\kappa + 1) J_\kappa(h / \lambda)}}
-    \item{Generalized Cauchy}{\eqn{\rho(h) = \sigma \left\{1 +
+    \item{Generalized Cauchy}{\eqn{\gamma(h) = \sigma \left\{1 +
     \left(\frac{h}{\lambda} \right)^{\kappa_2} \right\}^{-\kappa /
-    \kappa_2}}{\rho(h) = \sigma [1 + (h /
+    \kappa_2}}{\gamma(h) = \sigma [1 + (h /
     \lambda)^\kappa_2]^(-\kappa / \kappa_2)}}
   }
   where \eqn{\sigma}{\sigma}, \eqn{\lambda}{\lambda} and
-    \eqn{\kappa}{\kappa} are the sill, the range and shape parameters,
-    \eqn{\Gamma}{\Gamma} is the gamma function,
-    \eqn{K_{\kappa}}{K_\kappa} and  \eqn{J_\kappa}{J_\kappa} are both
-    modified Bessel functions of order \eqn{\kappa}{\kappa}.
+  \eqn{\kappa}{\kappa} are the sill, the range and shape parameters,
+  \eqn{\Gamma}{\Gamma} is the gamma function,
+  \eqn{K_{\kappa}}{K_\kappa} and  \eqn{J_\kappa}{J_\kappa} are both
+  modified Bessel functions of order \eqn{\kappa}{\kappa}. In addition
+  a nugget effect can be set that is there is a jump at the origin,
+  i.e., \eqn{\gamma(o) = \nu + \sigma}{\gamma(o) = \nu + \sigma}, where
+  \eqn{\nu}{\nu} is the nugget effect.
 }
 \examples{
 ## 1- Calling covariance using fixed covariance parameters

@@ -10,7 +10,7 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
 		 double *weights, double *ans){
 
   double dummy = 0.0, res,
-    *mahalDist = (double *)R_alloc(*nPairs, sizeof(double));
+    *mahalDist = malloc(*nPairs * sizeof(double));
 
   *ans = - mahalDistFct(distVec, *nPairs, cov11, cov12, cov22,
 			mahalDist);
@@ -20,7 +20,7 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
     return;
   }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pnorm(0.5 * mahalDist[i], 0, 1, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -28,6 +28,7 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
 
   *ans = dummy;
 
+  free(mahalDist);
   return;
 }
 
@@ -38,7 +39,7 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 		 double *weights, double *ans){
 
   double res, dummy = 0.0,
-    *mahalDist = (double *) R_alloc(*nPairs, sizeof(double));
+    *mahalDist = malloc(*nPairs * sizeof(double));
 
   *ans = - mahalDistFct3d(distVec, *nPairs, cov11, cov12, cov13,
 			  cov22, cov23, cov33, mahalDist);
@@ -46,7 +47,7 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
   if (*ans != 0.0)
     return;
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pnorm(0.5 * mahalDist[i], 0, 1, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -54,6 +55,7 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 
   *ans = dummy;
 
+  free(mahalDist);
   return;
 }
 
@@ -66,7 +68,7 @@ void fitcovariance(int *covmod, double *nugget, double *range, double *smooth,
     return;
   }
 
-  double *rho = (double *) R_alloc(*nPairs, sizeof(double)),
+  double *rho = malloc(*nPairs * sizeof(double)),
     dummy = 0.0, res;
 
   switch (*covmod){
@@ -87,10 +89,12 @@ void fitcovariance(int *covmod, double *nugget, double *range, double *smooth,
     break;
   }
 
-  if (*ans != 0.0)
+  if (*ans != 0.0){
+    free(rho);
     return;
+  }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 1 + sqrt(0.5 - 0.5 * rho[i]) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -98,6 +102,7 @@ void fitcovariance(int *covmod, double *nugget, double *range, double *smooth,
 
   *ans = dummy;
 
+  free(rho);
   return;
 }
 
@@ -116,7 +121,7 @@ void fittcovariance(int *covmod, double *nugget, double *range, double *smooth,
   }
 
   double dummy = 0.0, res,
-    *rho = (double *)R_alloc(*nPairs, sizeof(double));
+    *rho = malloc(*nPairs * sizeof(double));
 
   switch (*covmod){
   case 1:
@@ -136,10 +141,12 @@ void fittcovariance(int *covmod, double *nugget, double *range, double *smooth,
     break;
   }
 
-  if (*ans != 0.0)
+  if (*ans != 0.0){
+    free(rho);
     return;
+  }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pt(sqrt((1 - rho[i]) * (*DoF + 1) / (1 + rho[i])), *DoF + 1, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -147,6 +154,7 @@ void fittcovariance(int *covmod, double *nugget, double *range, double *smooth,
 
   *ans = dummy;
 
+  free(rho);
   return;
 }
 
@@ -171,7 +179,7 @@ void fiticovariance(int *covmod, double *alpha, double *nugget, double *range,
   }
 
   double res, dummy = 0.0,
-    *rho = (double *)R_alloc(*nPairs, sizeof(double));
+    *rho = malloc(*nPairs * sizeof(double));
 
   switch (*covmod){
   case 1:
@@ -191,10 +199,12 @@ void fiticovariance(int *covmod, double *alpha, double *nugget, double *range,
     break;
   }
 
-  if (*ans != 0.0)
+  if (*ans != 0.0){
+    free(rho);
     return;
+  }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * *alpha + (1 - *alpha) * (1 + sqrt(0.5 - 0.5 * rho[i])) - extcoeff[i];
     dummy +=  res * res / (weights[i] * weights[i]);
@@ -202,6 +212,7 @@ void fiticovariance(int *covmod, double *alpha, double *nugget, double *range,
   
   *ans = dummy;
 
+  free(rho);
   return;
 }
 
@@ -217,15 +228,17 @@ void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *nu
   }
 
   double res, dummy = 0.0,
-    *rho = (double *)R_alloc(*nPairs, sizeof(double));
+    *rho = malloc(*nPairs * sizeof(double));
 
   *ans = -geomCovariance(dist, *nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
 			 *nugget, *range, *smooth, *smooth2, rho);
 
-  if (*ans != 0.0)
+  if (*ans != 0.0){
+    free(rho);
     return;
+  }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pnorm(0.5 * rho[i], 0.0, 1.0, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -233,6 +246,7 @@ void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *nu
 
   *ans = dummy;
 
+  free(rho);
   return;
 }
 
@@ -242,19 +256,22 @@ void fitbrcovariance(double *range, double *smooth, int *nPairs,
   /* This computes the least squares for the Brown-Resnick model */
 
   double dummy = 0.0, res,
-    *rho = (double *)R_alloc(*nPairs, sizeof(double));
+    *rho = malloc(*nPairs * sizeof(double));
 
   *ans = -brownResnick(dist, *nPairs, *range, *smooth, rho);
 
-  if (*ans != 0.0)
+  if (*ans != 0.0){
+    free(rho);
     return;
+  }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pnorm(0.5 * rho[i], 0.0, 1.0, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
   }
 
   *ans = dummy;
+  free(rho);
   return;
 }

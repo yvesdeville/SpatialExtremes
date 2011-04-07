@@ -9,7 +9,8 @@
 shape.form, marg.cov = NULL, temp.cov = NULL, temp.form.loc = NULL,
 temp.form.scale = NULL, temp.form.shape = NULL, iso = FALSE, ...,
 fit.marge = FALSE, warn = TRUE, method = "Nelder", start, control =
-list(), weights = NULL, std.err.type = "score", corr = FALSE)}
+list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
+= FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
@@ -73,6 +74,10 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE)}
     section Details.}
   \item{corr}{Logical. If \code{TRUE} (non default), the asymptotic
     correlation matrix is computed.}
+  \item{check.grad}{Logical. If \code{TRUE} (non default), the analytic
+    gradient of the pairwise likelihood will be compared to the
+    numerical one. Such a checking might be usefull for ill-conditionned
+    situation diagnosis.}
 }
 \value{
   This function returns a object of class \code{maxstab}. Such objects

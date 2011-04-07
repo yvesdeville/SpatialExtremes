@@ -466,6 +466,7 @@ rcopula <- function(n, coord, copula = "gaussian", cov.mod = "whitmat", grid = F
       ans <- gp * scalings
 
     else {
+      ans <- array(NA, dim = dim(gp))
       for (i in 1:n)
         ans[,,i] <- gp[,,i] * scalings[i]
     }

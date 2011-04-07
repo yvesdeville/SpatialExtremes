@@ -432,7 +432,8 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                         byrow = TRUE)
       res <- as.numeric(fitted$chain.scale[i,-(1:(n.scalecoeff+3))] -
                         fitted$scale.dsgn.mat %*% fitted$chain.scale[i,1:n.scalecoeff])
-      
+
+      n.trials <- 1
       flag <- FALSE
       while (!flag){
         scale <- scale + condrgp(1, cbind(x, y), fitted$coord, res,
@@ -443,9 +444,16 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                                  control = control)$cond.sim
         
         flag <- all(scale > 0)
+        n.trials <- n.trials + 1
+
+        if (n.trials >= 100){
+          ans[,,i] <- NA
+          break
+        }
       }
-      
+
       ans[,,i] <- scale
+
     }
   }
 
@@ -483,7 +491,8 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                         byrow = TRUE)
       res <- as.numeric(fitted$chain.scale[i,-(1:(n.scalecoeff+3))] -
                         fitted$scale.dsgn.mat %*% fitted$chain.scale[i,1:n.scalecoeff])
-      
+
+      n.trials <- 1
       while (!flag){        
         scale <- scale + condrgp(1, cbind(x, y), fitted$coord, res,
                                  cov.mod = fitted$cov.mod[2],
@@ -493,36 +502,44 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                                  control = control)$cond.sim
         
         flag <- all(scale > 0)
+        n.trials <- n.trials + 1
+
+        if (n.trials >= 100)
+          break
       }
-      
-      shape <- matrix(shape.dsgn.mat %*% fitted$chain.shape[i, 1:n.shapecoeff], n.x, n.y,
-                      byrow = TRUE)
-      res <- as.numeric(fitted$chain.shape[i,-(1:(n.shapecoeff+3))] -
-                        fitted$shape.dsgn.mat %*% fitted$chain.shape[i,1:n.shapecoeff])
-      
-      shape <- shape + condrgp(1, cbind(x, y), fitted$coord, res,
-                               cov.mod = fitted$cov.mod[1],
-                               sill = fitted$chain.shape[i,"sill"], range = fitted$chain.shape[i,"range"],
-                               smooth = fitted$chain.shape[i,"smooth"], grid = TRUE,
-                               control = control)$cond.sim
-      
-      ans[,,i] <- .qgev(1 - 1 / ret.per, loc, scale, shape)
+
+      if (n.trials < 100){
+        shape <- matrix(shape.dsgn.mat %*% fitted$chain.shape[i, 1:n.shapecoeff], n.x, n.y,
+                        byrow = TRUE)
+        res <- as.numeric(fitted$chain.shape[i,-(1:(n.shapecoeff+3))] -
+                          fitted$shape.dsgn.mat %*% fitted$chain.shape[i,1:n.shapecoeff])
+        
+        shape <- shape + condrgp(1, cbind(x, y), fitted$coord, res,
+                                 cov.mod = fitted$cov.mod[1],
+                                 sill = fitted$chain.shape[i,"sill"], range = fitted$chain.shape[i,"range"],
+                                 smooth = fitted$chain.shape[i,"smooth"], grid = TRUE,
+                                 control = control)$cond.sim
+        
+        ans[,,i] <- .qgev(1 - 1 / ret.per, loc, scale, shape)
+      }
+
+      else
+        ans[,,i] <- NA
     }
   }
   
-  alpha <- 0.95
   prob.low <- (1 - level) /2
   prob.up <- 1 - prob.low
   post.sum <- ci.low <- ci.up <- matrix(NA, n.x, n.y)
 
   for (i in 1:n.x){
-    post.sum[i,] <- apply(ans[i,,], 1, fun)
-    ci.low[i,] <- apply(ans[i,,], 1, quantile, prob.low)
-    ci.up[i,] <- apply(ans[i,,], 1, quantile, prob.up)
+    post.sum[i,] <- apply(ans[i,,], 1, fun, na.rm = TRUE)
+    ci.low[i,] <- apply(ans[i,,], 1, quantile, prob.low, na.rm = TRUE)
+    ci.up[i,] <- apply(ans[i,,], 1, quantile, prob.up, na.rm = TRUE)
   }
 
   op <- par(no.readonly = TRUE)
-  layout(matrix(1:6,1), width = rep(c(1, .4), 3))
+  layout(matrix(1:6,1), widths = rep(c(1, .4), 3))
   
   for (i in 1:3){
     par(mar = rep(0.5, 4))

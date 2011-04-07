@@ -83,6 +83,7 @@ TRUE, warn = TRUE, corr = FALSE)
   \code{\link{fitmaxstab}}, \code{\link{latent}}
 }
 \examples{
+\dontrun{
 n.site <- 30
 n.obs <- 50
 
@@ -110,6 +111,6 @@ shape.form <- y ~ 1
 ## 2. Fit
 M0 <- fitcopula(data, coord, "gaussian", "powexp", loc.form, scale.form,
                 shape.form, nugget = 0)
-
+}
 }
 \keyword{htest}

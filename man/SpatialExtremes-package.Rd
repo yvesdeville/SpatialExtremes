@@ -23,13 +23,11 @@
 \details{
   The package provides the following main tools:
   \enumerate{
-    \item \code{\link{rgp}}: simulates gaussian random fields,
-    \item \code{\link{rmaxstab}}: simulates max-stable random fields,
-    \item \code{\link{rmaxlin}}: simulates max-linear processes,
-    \item \code{\link{condrmaxlin}}: conditional simulations for
-    max-linear processes,
-    \item \code{\link{condrgp}}: conditional simulations for Gaussian
-    processes,
+    \item \code{\link{rgp}, \link{rmaxstab}, \link{rmaxlin},
+      \link{rcopula}}: simulates gaussian, max-stable, max-linear and copula
+    based random fields,
+    \item \code{\link{condrgp}, \link{condrmaxlin}}: conditional simulations for
+    gaussian, max-linear processes,
     \item \code{\link{fitspatgev}}: fits a spatial GEV model to data,
     \item \code{\link{fitmaxstab}}, \code{\link{lsmaxstab}}: fits
     max-stable processes to data,

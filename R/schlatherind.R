@@ -9,7 +9,7 @@
 schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                              fit.marge = FALSE, warn = TRUE, method = "BFGS",
                              control = list(), std.err.type = "none", corr = FALSE,
-                             weights = NULL){
+                             weights = NULL, check.grad = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##locations is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -217,6 +217,9 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                                    std.err.type = std.err.type, fixed.param = names(fixed.param),
                                    param.names = param.names, weights = weights)
 
+    if (check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
@@ -267,7 +270,7 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                            cov.mod = cov.mod, plot = FALSE)
 
   else
-    cov.fun <-  covariance(nugget = param["nugget"], sill = param["nugget"], range = param["range"],
+    cov.fun <-  covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                            smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
@@ -296,7 +299,7 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
                              warn = TRUE, method = "BFGS", control = list(),
                              std.err.type = "none", corr = FALSE, weights = NULL,
                              temp.cov = NULL, temp.form.loc = NULL, temp.form.scale = NULL,
-                             temp.form.shape = NULL){
+                             temp.form.shape = NULL, check.grad = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -624,6 +627,9 @@ as.double(temp.penalty.shape),",
                                    fit.marge = fit.marge, std.err.type = std.err.type,
                                    fixed.param = names(fixed.param), param.names =
                                    param.names, weights = weights)
+
+    if (check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
 
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score

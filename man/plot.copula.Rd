@@ -30,6 +30,7 @@ fitted copula based model for spatial extremes.
 }
 \author{Mathieu Ribatet}
 \examples{
+\dontrun{
 n.site <- 20
 n.obs <- 50
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -39,5 +40,6 @@ data <- rmaxstab(n.obs, coord, "powexp", nugget = 0, range = 3, smooth =
 fitted <- fitcopula(log(data), coord, "student", "powexp", y ~ 1, y ~ 1, y ~ 1,
 nugget = 0)
 plot(fitted)
+}
 }
 \keyword{hplot}

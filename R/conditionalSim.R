@@ -169,8 +169,8 @@ condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
 
   honored <- all.equal(data, sim.cond)
   if (!isTRUE(honored))
-    warning(paste("Some conditional observations aren't honored!\n The maximum absolute difference was ", round(max(abs(data - sim.cond)), 2), " for site #",
-                  which.max(abs(data - sim.cond)), sep = ""))
+    warning(paste("Some conditional observations aren't honored!\n The maximum absolute difference was ",
+                  round(max(abs(data - sim.cond)), 2), " for site #", which.max(abs(data - sim.cond)), sep = ""))
 
   ## Compute the "design matrix" for the max-linear model (only for
   ## the points where we want our simulation)

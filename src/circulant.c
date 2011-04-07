@@ -28,8 +28,7 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
   /* ---------- beginning of the embedding stage ---------- */
   int mbar = m * m, halfM = m / 2, notPosDef = 0;
   do {
-    double *dist;
-    dist = (double *)R_alloc(mbar, sizeof(double));
+    double *dist = malloc(mbar * sizeof(double));
 
     notPosDef = 0;
     //Computation of the distance
@@ -101,6 +100,8 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
 
     if (k > 30)
       error("Impossible to embbed the covariance matrix");
+
+    free(dist);
     
   } while (notPosDef);
   /* --------- end of the embedding stage --------- */
@@ -112,10 +113,10 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
   }
 
   int mdag = m / 2 + 1, mdagbar = mdag * mdag;
-  double *a, *ia, isqrtMbar = 1 / sqrt(mbar);
+  double isqrtMbar = 1 / sqrt(mbar);
 
-  a = (double *)R_alloc(mbar, sizeof(double));
-  ia = (double *)R_alloc(mbar, sizeof(double));
+  double *a = malloc(mbar * sizeof(double)),
+    *ia = malloc(mbar * sizeof(double));
     
   GetRNGstate();
   for (k=*nsim;k--;){
@@ -221,6 +222,8 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
 
     PutRNGstate();
   }
+
+  free(a); free(ia);
 
   return;
 }

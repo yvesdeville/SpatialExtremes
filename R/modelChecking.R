@@ -261,6 +261,17 @@ plot.maxstab <- function(x, ..., sites){
                             range = range, smooth = smooth)
   }
 
+  else if (model == "Extremal-t"){
+    DoF <- x$par["DoF"]
+    nugget <- x$par["nugget"]
+    range <- x$par["range"]
+    smooth <- x$par["smooth"]
+    cov.mod <- paste("t", x$cov.mod, sep = "")
+    sim.maxstab <- rmaxstab(n.obs * 1000, x$coord[sites,], cov.mod,
+                            DoF = DoF, nugget = nugget, range = range,
+                            smooth = smooth)
+  }
+
   if (notimplemented){
     for (i in 1:7){
       plot(0, 0, type = "n", bty = "n", axes = FALSE, xlab = "", ylab = "")

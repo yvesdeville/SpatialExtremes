@@ -333,9 +333,7 @@ double fbm(double *coord, double *dist, int dim, int nSite, double sill, double 
 
   const int nPairs = nSite * (nSite - 1) / 2;
   const double irange = 1 / range;
-  double *distOrig;
-
-  distOrig = (double *)R_alloc(nSite, sizeof(double));
+  double *distOrig = malloc(nSite * sizeof(double));
 
   //Some preliminary steps: Valid points?
   if (smooth < EPS)
@@ -364,6 +362,8 @@ double fbm(double *coord, double *dist, int dim, int nSite, double sill, double 
     rho[currentPair] = sill * (distOrig[i] + distOrig[j] -
 			       R_pow(dist[currentPair] * irange, smooth));
   }
+
+  free(distOrig);
 
   return 0;
 }

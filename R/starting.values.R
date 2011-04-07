@@ -64,6 +64,7 @@
     cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(c(covs$fitted, spatgev$fitted))
+    cat("\n \n \n")
   }
 
   return(start)

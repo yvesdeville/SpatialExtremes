@@ -1,6 +1,6 @@
 covariance <- function(fitted, nugget, sill, range, smooth, smooth2 = NULL,
                        cov.mod = "whitmat", plot = TRUE, dist, xlab,
-                       ylab, ...){
+                       ylab, col = 1, ...){
 
   if (!missing(fitted)){
     cov.mod <- fitted$cov.mod
@@ -103,12 +103,11 @@ covariance <- function(fitted, nugget, sill, range, smooth, smooth2 = NULL,
     else
       xlimsup <- list(...)$xlim[2]
     
-    plot(cov.fun, from = 0, to = xlimsup, xlab = xlab, ylab = ylab, ...,
-         type = "n")
-    curve(cov.fun, from = 1e-3, to = xlimsup, add = TRUE)
+    plot(cov.fun, from = 1e-3, to = xlimsup, xlab = xlab, ylab = ylab,
+         col = col, ...)
 
     if (nugget > 0)
-      points(0, nugget + sill)
+      points(0, nugget + sill, col = col)
   }
 
   if (!missing(dist)){

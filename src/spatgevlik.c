@@ -19,12 +19,12 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
      i.e. the GEV paramters are defined through a response surface
      that could be either is simple linear model or a p-spline. */
 
-  int i, j, flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
-  double *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes;
+  int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
+  double *trendlocs, *trendscales, *trendshapes;
 
-  locs = (double *)R_alloc(*nSite, sizeof(double));
-  scales = (double *)R_alloc(*nSite, sizeof(double));
-  shapes = (double *)R_alloc(*nSite, sizeof(double));
+  double *locs = (double *)R_alloc(*nSite, sizeof(double)),
+    *scales = (double *)R_alloc(*nSite, sizeof(double)),
+    *shapes = (double *)R_alloc(*nSite, sizeof(double));
   
   //Stage 1: Computing the GEV parameters using the design matrix
   *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat, loccoeff, scalecoeff,
@@ -32,16 +32,16 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
 		       scales, shapes);
 
   if (flag){
-    trendlocs = (double *)R_alloc(*nObs, sizeof(double));
-    trendscales = (double *)R_alloc(*nObs, sizeof(double));
-    trendshapes = (double *)R_alloc(*nObs, sizeof(double));
+    trendlocs = (double *) R_alloc(*nObs, sizeof(double));
+    trendscales = (double *) R_alloc(*nObs, sizeof(double));
+    trendshapes = (double *) R_alloc(*nObs, sizeof(double));
 
     dsgnmat2temptrend(tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, tempcoeffloc,
 		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
 		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
 
-    for (i=*nSite;i--;)
-      for (j=*nObs;j--;)
+    for (int i=0;i<*nSite;i++)
+      for (int j=0;j<*nObs;j++)
 	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
 	  *dns = MINF;
 	  return;
@@ -54,8 +54,8 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
   //Stage 2: Compute the log-likelihood (assuming independence between
   //stations)
   if (flag){
-    for (i=0;i<*nSite;i++){
-      for (j=0;j<*nObs;j++){
+    for (int i=0;i<*nSite;i++){
+      for (int j=0;j<*nObs;j++){
 	if (fabs(shapes[i] + trendshapes[j]) <= 1e-6){
 	  data[j + i * *nObs] = (data[j + i * *nObs] - locs[i] - trendlocs[j]) /
 	    (scales[i] + trendscales[j]);
@@ -82,10 +82,10 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
   }
 
   else {
-    for (i=0;i<*nSite;i++){
+    for (int i=0;i<*nSite;i++){
       
       if (fabs(shapes[i]) <= 1e-6){
-	for (j=0;j<*nObs;j++){
+	for (int j=0;j<*nObs;j++){
 	  data[j + i * *nObs] = (data[j + i * *nObs] - locs[i]) /
 	    scales[i];
 	  
@@ -95,7 +95,7 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
       }
       
       else{
-	for (j=0;j<*nObs;j++){
+	for (int j=0;j<*nObs;j++){
 	  data[j + i * *nObs] = 1 + shapes[i] * (data[j + i * *nObs] - locs[i]) /
 	    scales[i];
 	  

@@ -316,9 +316,14 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
   const int nPairs = *nSite * (*nSite - 1) / 2,
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 3;
-  double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech;
-  const double eps = 0.001, sill = 1 - *nugget;
+  double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech, h;
+  // h is used for numerical derivative (whitmat and bessel)
+  const double sill = 1 - *nugget;
 
+  h = sqrt(DOUBLE_EPS) * *smooth;
+  double temp = *smooth + h;
+  h = temp - *smooth;
+  
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
   locs = (double *)R_alloc(*nSite, sizeof(double));
@@ -405,7 +410,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  dDrho = (-frech[k + j * *nObs] + frech[k + i * *nObs] * rho[currentPair]) / (2 * c1 * c1 * c1),
 	  jacCommonRho = weights[currentPair] * (dArho + (dBrho + dCrho * D + C * dDrho) / (B + C * D));
 
-	hess[k * nPairs + currentPair] = rho[currentPair] / sill * jacCommonRho;
+	hess[k * nPairs + currentPair] = -rho[currentPair] / sill * jacCommonRho;
 	grad[k] += hess[k * nPairs + currentPair];
 
 	switch (*covmod){
@@ -420,9 +425,10 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	     BesselK function w.r.t. smooth. We use finite differences
 	     for this... */
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
-	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) - 
-	     (1 - bessel_k(dist[currentPair] / *range, *smooth + eps, 1) /
-	      bessel_k(dist[currentPair] / *range, *smooth, 1)) / eps) *
+	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) +
+	     (bessel_k(dist[currentPair] / *range, *smooth + h, 1) - 
+	      bessel_k(dist[currentPair] / *range, *smooth - h, 1)) /
+	     (2 * h * bessel_k(dist[currentPair] / *range, *smooth, 1))) *
 	    jacCommonRho;
 	  break;
 	case 2:
@@ -453,9 +459,10 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	     BesselJ function w.r.t. smooth. We use finite differences
 	     for this... */
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
-	    (log(2 * *range / dist[currentPair]) + digamma(*smooth + 1) +
-	     (bessel_j(dist[currentPair] / *range, *smooth + eps) /
-	      bessel_j(dist[currentPair] / *range, *smooth) - 1) / eps) *
+	    (M_LN2 - log(dist[currentPair] / *range) + digamma(*smooth + 1) +
+	     (bessel_j(dist[currentPair] / *range, *smooth + h) -
+	      bessel_j(dist[currentPair] / *range, *smooth)) /
+	     (h * bessel_j(dist[currentPair] / *range, *smooth))) *
 	    jacCommonRho;
 	  break;
 	case 5:
@@ -509,9 +516,13 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
   const int nPairs = *nSite * (*nSite - 1) / 2,
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 4;
-  double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech;
-  const double eps = 0.001, sill = 1 - *nugget;
+  double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech, h;
+  const double sill = 1 - *nugget;
 
+  h = sqrt(DOUBLE_EPS) * *smooth;
+  double temp = *smooth + h;
+  h = temp - *smooth;
+  
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
   locs = (double *)R_alloc(*nSite, sizeof(double));
@@ -616,7 +627,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 
 	hess[k * nPairs + currentPair] = weights[currentPair] * 
 	  (dAalpha + (dBalpha + dCalpha * D + dDalpha * C) / (B + C * D));
-	hess[(*nObs + k) * nPairs + currentPair] = rho[currentPair] / sill * jacCommonRho;
+	hess[(*nObs + k) * nPairs + currentPair] = -rho[currentPair] / sill * jacCommonRho;
 
 	grad[k] += hess[k * nPairs + currentPair];
 	grad[*nObs + k] += hess[(*nObs + k) * nPairs + currentPair];
@@ -633,9 +644,10 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 	     BesselK function w.r.t. smooth. We use finite differences
 	     for this... */
 	  hess[(3 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
-	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) - 
-	     (1 - bessel_k(dist[currentPair] / *range, *smooth + eps, 1) /
-	      bessel_k(dist[currentPair] / *range, *smooth, 1)) / eps) *
+	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) +
+	     (bessel_k(dist[currentPair] / *range, *smooth + h, 1) -
+	      bessel_k(dist[currentPair] / *range, *smooth - h, 1)) / 
+	     (2 * h * bessel_k(dist[currentPair] / *range, *smooth, 1))) *
 	    jacCommonRho;
 	  break;
 	case 2:
@@ -666,9 +678,10 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 	     BesselJ function w.r.t. smooth. We use finite differences
 	     for this... */
 	  hess[(3 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
-	    (log(2 * *range / dist[currentPair]) + digamma(*smooth + 1) +
-	     (bessel_j(dist[currentPair] / *range, *smooth + eps) /
-	      bessel_j(dist[currentPair] / *range, *smooth) - 1) / eps) *
+	    (M_LN2 - log(dist[currentPair] / *range) + digamma(*smooth + 1) +
+	     (bessel_j(dist[currentPair] / *range, *smooth + h) -
+	      bessel_j(dist[currentPair] / *range, *smooth- h)) / 
+	     (2 * h *  - bessel_j(dist[currentPair] / *range, *smooth))) *
 	    jacCommonRho;
 	  break;
 	case 5:
@@ -723,9 +736,13 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 4;
   double *mahalDist, *locs, *scales, *shapes, *jac, *frech, *trendlocs,
-    *trendscales, *trendshapes;
-  const double eps = 0.001, sill = 1 - *nugget;
+    *trendscales, *trendshapes, h;
+  const double sill = 1 - *nugget;
 
+  h = sqrt(DOUBLE_EPS) * *smooth;
+  double temp = *smooth + h;
+  h = temp - *smooth;
+  
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
   locs = (double *)R_alloc(*nSite, sizeof(double));
@@ -807,7 +824,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  jacCommon = weights[currentPair] * (dAa + (dBa * C + B * dCa + dDa) / (B*C + D));
 
 	hess[k * nPairs + currentPair] = mahalDist[currentPair] / (2 * *sigma2) * jacCommon;
-	hess[(*nObs + k) * nPairs + currentPair] = -*sigma2 * rho / (mahalDist[currentPair] * sill) *
+	hess[(*nObs + k) * nPairs + currentPair] = *sigma2 * rho / (mahalDist[currentPair] * sill) *
 	  jacCommon;
 
 	grad[k] += hess[k * nPairs + currentPair];
@@ -824,10 +841,11 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	   /* There's no closed form for the partial derivative of the
 	     BesselK function w.r.t. smooth. We use finite differences
 	     for this... */
-	  hess[(3 * *nObs + k) * nPairs + currentPair] = *sigma2 * rho / mahalDist[currentPair] *
-	    (M_LN2 + digamma(*smooth) - log(dist[currentPair] / *range) + 
-	     (1 - bessel_k(dist[currentPair] / *range, *smooth + eps, 1) /
-	      bessel_k(dist[currentPair] / *range, *smooth, 1)) / eps) *
+	  hess[(3 * *nObs + k) * nPairs + currentPair] = -*sigma2 * rho / mahalDist[currentPair] *
+	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) + 
+	     (bessel_k(dist[currentPair] / *range, *smooth + h, 1) -
+	      bessel_k(dist[currentPair] / *range, *smooth - h, 1)) / 
+	     (2 * h * bessel_k(dist[currentPair] / *range, *smooth, 1))) *
 	    jacCommon;
 	  break;
 	case 2:
@@ -858,9 +876,10 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	     BesselJ function w.r.t. smooth. We use finite differences
 	     for this... */
 	  hess[(3 * *nObs + k) * nPairs + currentPair] = -*sigma2 * rho *
-	    (log(2 * *range / dist[currentPair]) + digamma(*smooth + 1) +
-	     (bessel_j(dist[currentPair] / *range, *smooth + eps) /
-	      bessel_j(dist[currentPair] / *range, *smooth) - 1) / eps) /
+	    (M_LN2 - log(dist[currentPair] / *range) + digamma(*smooth + 1) +
+	     (bessel_j(dist[currentPair] / *range, *smooth + h) -
+	      bessel_j(dist[currentPair] / *range, *smooth - h)) /
+	     (2 * h * bessel_j(dist[currentPair] / *range, *smooth))) /
 	    mahalDist[currentPair] * jacCommon;
 	  break;
 	case 5:
@@ -1135,7 +1154,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     didfidfdfPlus1_df = - (*df + 2) * idf * idf * idf,
     sill = 1 - *nugget;
 
-  double *jac = (double *)R_alloc(*nObs * *nSite, sizeof(double)),
+  double h, *jac = (double *)R_alloc(*nObs * *nSite, sizeof(double)),
     *rho = (double *)R_alloc(nPairs, sizeof(double)),
     *locs = (double *)R_alloc(*nSite, sizeof(double)),
     *scales = (double *)R_alloc(*nSite, sizeof(double)),
@@ -1144,6 +1163,19 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     *trendlocs = (double *)R_alloc(*nObs, sizeof(double)),
     *trendscales = (double *)R_alloc(*nObs, sizeof(double)),
     *trendshapes = (double *)R_alloc(*nObs, sizeof(double));
+
+
+  if (*covmod == 1){
+    h = sqrt(DOUBLE_EPS) * *smooth;
+    double temp = *smooth + h;
+    h = temp - *smooth;
+  }
+
+  else if (*covmod == 4){
+    h = sqrt(DOUBLE_EPS) * (*smooth + 1);
+    double temp = (*smooth + 1) + h;
+    h = temp - (*smooth + 1);
+  }
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
@@ -1269,7 +1301,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  iBCplusD = 1 / (B * C + D),
 	  jacCommonRho = weights[currentPair] * (dA_rho + (dB_rho * C + B * dC_rho + dD_rho) * iBCplusD);
 
-	hess[k * nPairs + currentPair] = rho[currentPair] / sill * jacCommonRho;
+	hess[k * nPairs + currentPair] = -rho[currentPair] / sill * jacCommonRho;
 	grad[k] += hess[k * nPairs + currentPair];
 
 	switch (*covmod){
@@ -1284,9 +1316,10 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	     BesselK function w.r.t. smooth. We use finite differences
 	     for this... */
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
-	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) - 
-	     (1 - bessel_k(dist[currentPair] / *range, *smooth + eps, 1) /
-	      bessel_k(dist[currentPair] / *range, *smooth, 1)) / eps) *
+	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) +
+	     (bessel_k(dist[currentPair] / *range, *smooth + h, 1) -
+	      bessel_k(dist[currentPair] / *range, *smooth - h, 1)) / 
+	     (2 * h * bessel_k(dist[currentPair] / *range, *smooth, 1))) *
 	    jacCommonRho;
 	  break;
 	case 2:
@@ -1317,9 +1350,10 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	     BesselJ function w.r.t. smooth. We use finite differences
 	     for this... */
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
-	    (log(2 * *range / dist[currentPair]) + digamma(*smooth + 1) +
-	     (bessel_j(dist[currentPair] / *range, *smooth + eps) /
-	      bessel_j(dist[currentPair] / *range, *smooth) - 1) / eps) *
+	    (M_LN2 - log(dist[currentPair] / *range) + digamma(*smooth + 1) +
+	     (bessel_j(dist[currentPair] / *range, *smooth + h) -
+	      bessel_j(dist[currentPair] / *range, *smooth - h)) /
+	     (2 * h * bessel_j(dist[currentPair] / *range, *smooth))) *
 	    jacCommonRho;
 	  break;
 	case 5:

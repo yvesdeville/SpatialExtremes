@@ -3,9 +3,10 @@
 ##location. However, if fit.marge = FALSE, observation are supposed to
 ##be unit Frechet and only the covariance function parameters are
 ##estimated.
-brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
+brownresnickfull <- function(data, coord, start, fit.marge = FALSE, ...,
                              warn = TRUE, method = "BFGS", control = list(),
-                             std.err.type = "none", corr = FALSE, weights = NULL){
+                             std.err.type = "none", corr = FALSE, weights = NULL,
+                             check.grad = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##locations is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -192,6 +193,9 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
                                    fixed.param = names(fixed.param), param.names = param.names,
                                    weights = weights)
 
+    if (check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
@@ -261,7 +265,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form, star
                              method = "BFGS", control = list(), std.err.type = "none",
                              corr = FALSE, weights = NULL, temp.cov = NULL,
                              temp.form.loc = NULL, temp.form.scale = NULL,
-                             temp.form.shape = NULL){
+                             temp.form.shape = NULL, check.grad = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -565,6 +569,9 @@ PACKAGE = 'SpatialExtremes')$dns"))
                                    std.err.type = std.err.type, fixed.param = names(fixed.param),
                                    param.names = param.names, weights = weights)
 
+    if (check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+    
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)

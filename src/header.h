@@ -414,21 +414,21 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
 //
 void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 		  int *dim, int *grid, double *range, double *smooth,
-		  double *ans);
+		  double *uBound, int *method, int *maxSim, double *ans);
 
 ///////////////////////////////////
 //  From simextremalt.c
 //
 void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
 		   int *covmod, int *grid, double *nugget, double *range,
-		   double *smooth, double *DoF, int *blockSize, int *nlines,
+		   double *smooth, double *DoF, double *uBound, int *nlines,
 		   double *ans);
 void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
 		      int *covmod, int *grid, double *nugget, double *range,
-		      double *smooth, double *DoF, int *blockSize, double *ans);
+		      double *smooth, double *DoF, double *uBound, double *ans);
 void rextremaltcirc(int *nObs, int *ngrid, double *steps, int *dim,
 		    int *covmod, double *nugget, double *range,
-		    double *smooth, double *DoF, int *blockSize, double *ans);
+		    double *smooth, double *DoF, double *uBound, double *ans);
 
 ///////////////////////////////////
 //  From gpdproc.c

@@ -48,6 +48,7 @@ map.latent(fitted, x, y, covariates = NULL, param = "quant", ret.per =
 \author{Mathieu Ribatet}
 \seealso{\code{\link{condrgp}}, \code{\link{map}}}
 \examples{
+\dontrun{
 ## Generate realizations from the model
 n.site <- 30
 n.obs <- 50
@@ -92,6 +93,7 @@ mc <- latent(data, coord, loc.form = loc.form, scale.form = scale.form,
 
 x.grid <- y.grid <- seq(-10, 10, length = 50)
 map.latent(mc, x.grid, y.grid, param = "shape")
+}
 }
 \keyword{hplot}
 

@@ -8,19 +8,18 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
   /* This function computes the kriging weights using simple kriging,
      i.e., the mean is supposed to be 0. */
 
-  int i, j, k;
   double zero = 0, one = 1,
-    *dist = (double *) R_alloc(*nSite * *nSiteKrig, sizeof(double)),
-    *covariances = (double *) R_alloc(*nSite * *nSiteKrig, sizeof(double));    
+    *dist = malloc(*nSite * *nSiteKrig * sizeof(double)),
+    *covariances = malloc(*nSite * *nSiteKrig * sizeof(double));    
 
-  for (i=(*nSite * *nSiteKrig);i--;)
+  for (int i=(*nSite * *nSiteKrig);i--;)
     dist[i] = 0;
 
   /* 1. Compute the distances between the kriging locations and the
      locations where we got data */
-  for (i=*nSiteKrig;i--;){       
-    for (j=*nSite;j--;){
-      for (k=*dim;k--;)
+  for (int i=*nSiteKrig;i--;){       
+    for (int j=*nSite;j--;){
+      for (int k=*dim;k--;)
 	dist[j + i * *nSite] += (coord[j + k * *nSite] - coordKrig[i + k * *nSiteKrig]) *
 	  (coord[j + k * *nSite] - coordKrig[i + k * *nSiteKrig]);
       
@@ -57,6 +56,7 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
      covariances */
   F77_CALL(dsymm)("L", "U", nSite, nSiteKrig, &one, icovMat, nSite,
 		  covariances, nSite, &zero, weights, nSite);
-  
+
+  free(dist); free(covariances);  
   return;
 }
