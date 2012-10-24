@@ -3,6 +3,8 @@
 #include <Rinternals.h>
 #include <R_ext/Lapack.h>
 #include <R_ext/Applic.h>
+#include <R_ext/Utils.h>
+#include <time.h>
 
 #define MINF -1.0e15
 #define EPS DBL_EPSILON
@@ -414,7 +416,8 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
 //
 void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 		  int *dim, int *grid, double *range, double *smooth,
-		  double *uBound, int *method, int *maxSim, double *ans);
+		  double *uBound, int *method, int *maxSim, int *nPP,
+		  int *idxsubOrig, int *nsubOrig, double *ans);
 
 ///////////////////////////////////
 //  From simextremalt.c
@@ -614,3 +617,74 @@ void maxLinear(int *nSim, double *dsgnMat, double *Z, int *nSite, int *p,
 	       int *grid, double *sim);
 void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *p,
 		   double *areaPixel, int *dim, double *param, double *dsgnMat);
+
+///////////////////////////////////
+//  From condsimMaxStab.c
+//
+// Utilities functions
+void getSubMatrix(double *mat, int *dim, int *nr, int *rows, int *nc,
+		  int *cols, double *submat);
+void listAllPartOfASet(int *n, int *nPart, int *allPart, int *allSize);
+void stirling2ndKind(int *n, int *k, double *ans);
+void bell(int *n, int *ans);
+void gettau(int *nCond, int *part, int *set, int *tau);
+void gettaubar(int *nCond, int *part, int *set, int *taubar);
+void standardize(double *quant, double *cov, double *mean, int *n);
+void pmvnorm(double *bounds, int *n, double *cor, double *prob,
+	     double *err, int *nMc);
+void pmvt(double *bounds, int *n, double *DoF, double *mu, double *scaleMat,
+	  double *prob, double *err, int *nMc);
+void convert2rightformat(int *partition, int *n, int *size);
+void sampleDiscreteDist(int *n, double *prob, int *ans);
+void validPart(int *partition, int *n, int *valid);
+void getBounds(int *partition, int *n, int *idx, int *lbound, int *ubound);
+int getPartSize(int *partition, int *n);
+
+// Functions for conditional simulations of Schlather processes
+void getStartingPartitionSC(int *nsim, int *n, double *covChol, int *startPart);
+void gibbsForPartSC(int *nchain, int *nthin, int *burnin, int *nCond,
+		    int *currentPart, double *cov, double *y, int *chain,
+		    double *timings);
+void getParametersSC(int *tau, int *taubar, int *ntau, int *ntaubar, double *cov,
+		   double *y, double *DoF, double *mu, double *scaleMat);
+void getfvaluesSC(double *y, int *n, int *ntau, int *tau, double *cov,
+		double *f);
+void computeprobaSC(double *DoF, double *mu, double *scaleMat, double *y,
+		  int *ntaubar, int *taubar, double *prob);
+void computeWeightsSC(int *nCond, double *y, int *nPart, int *allPart,
+		    int *allSize, double *cov, double *weights);
+double computeWeightForOneSetSC(int *idxSet, int *nCond, int *partition, double *cov,
+			      double *y);
+void condsimschlather(int *nsim, int *n, int *nCond, int *allPart, double *cov,
+		      double *y, double *sim, double *subextfct,
+		      double *extfct, double *timings);
+
+// Functions for conditional simulations of Brown-Resnick processes
+void computeWeightsBR(int *nCond, double *y, int *nPart, int *allPart, int *allSize,
+		      double *cov, double *sigma2, double *covChol, double *ham,
+		      double *mean1, double *weights);
+void computeprobaBR(double *icovChol, double *mu, double *y, int *n,
+		    int *r, int *nCond, int *taubar, double *prob);
+void getfvaluesBR(double *y, double *sigma2, double *covjchol, int *r,
+		  double *f);
+void buildJ(int *tau, int *n, int *r, double *J);
+void buildJtilde(int *tau, int *n, int *r, double *Jtilde);
+void getParametersBR(double *J, double *Jtilde, int *n, int *nr,
+		     double *covChol, double *ham, double *mean1,
+		     double *ytilde, double *iBchol, double *mu);
+void condsimbrown(int *nsim, int *n, int *nCond, int *allPart, double *covChol,
+		  double *sigma2, double *ham, double *mean1, double *ytilde, double *coord,
+		  double *range, double *smooth, int *dim,  double *sim, double *subextfct,
+		  double *extfct, double *timings);
+void condsimbrown2(int *nsim, int *n, int *nCond, int *allPart, double *covChol,
+		   double *sigma2, double *ham, double *mean1, double *ytilde, double *sim,
+		   double *coord, double *range, double *smooth, double *xlim);
+double computeWeightForOneSetBR(int *idxSet, int *nCond, int *partition, double *cov,
+				double *sigma2, double *covChol, double *ham, double *mean1,
+				double *y);
+void getStartingPartitionBR(int *nSim, int *n, double *coord, double *range, double *smooth,
+			    int *startPart);
+void gibbsForPartBR(int *nchain, int *nthin, int *burnin, int *nCond,
+		    int *currentPart, double *cov, double *sigma2,
+		    double *covChol, double *ham, double *mean1, double *y,
+		    int *chain, double *timing);

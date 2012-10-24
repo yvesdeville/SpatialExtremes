@@ -1,9 +1,10 @@
-6b1c7f7ff2c7cd54969fffde627a8c01 *ChangeLog
-ea160f89ddb7f64624d7b26be98e96b3 *DESCRIPTION
+9ba616fb1392e629a8a23282b4a98293 *ChangeLog
+b56c029ba47c914024cb74424db527bb *DESCRIPTION
 7a348fbb7436649fcca5aefa7af42651 *NAMESPACE
-e5525ec6ec4ffe27b7d44ddf8d035b97 *NEWS
+f8a514bd11361a13fa4b5808636bab47 *NEWS
 5e499d1a574ba7120962aae385a37df8 *R/brownresnick.R
 d41d8cd98f00b204e9800998ecf8427e *R/circulant.R
+01564813ebe056a40a4fff3e30c7989b *R/condSimMaxStab.R
 70eb4852e39442f97605f5e0dc75b4ab *R/conditionalSim.R
 7d8689e37281b200082a5a1948b5f545 *R/copula.R
 b9ce94886f11343bb86eeaf5b4e0cab3 *R/covariance.R
@@ -28,7 +29,7 @@ a521b0436775f802affee361a84d4a30 *R/schlather.R
 6d1de2f02290f0f55fcaa09737ddcc1f *R/schlatherind.R
 51c153fc893beffd427b5680c3d4dbc9 *R/selection.R
 5ce075d250fdaaf6d29aad4a46295bba *R/simgaussproc.R
-98560711e9a57709d96ad8f0f91f269e *R/simmaxstab.R
+40d7651eb757480ad3eef4e3f1a9b662 *R/simmaxstab.R
 ffebcc53ac21e4e1a40b435d11dd03bf *R/smith.R
 14b2eb9f5fc663412bd61afa04930fa8 *R/spatgev.R
 b694edfb266a71af793c52432d9f40a5 *R/standardErrors.R
@@ -38,10 +39,10 @@ e8587221285b94751548acf7eb0f5b62 *R/starting.values.R
 36bd90160cfe8e80a7d20fe05b1d8eed *R/univfit.R
 afeed3041b3fb79b80be57f16ec1f5ad *R/utils.R
 fadb7a4cde53de0a68a713a8105834df *R/zzz.R
-1607ac2f4e5330e4bf5ce6463737ea23 *data/rainfall.RData
-e84a631373eeea7c8b28bc71fa322037 *data/swissalt.RData
+344511de3288567da79d26b7eda967b9 *data/rainfall.RData
+2b4ccdc4dc00642239f0d03b19a84963 *data/swissalt.RData
 d90250938d82ecf992fc137a2cd75abd *inst/doc/SpatialExtremesGuide.Rnw
-bf54a699ce8b6d8325d790fcb266bcb8 *inst/doc/SpatialExtremesGuide.pdf
+47e20f02300aee9aec879af2efc22123 *inst/doc/SpatialExtremesGuide.pdf
 367aab88915f276167ea2117fa6d7cda *man/DIC.Rd
 9cf3761cae061fcd0f5d8b868a41d32a *man/GEV.Rd
 f5f0747c5b9daab0f6360f019f9f47f6 *man/GPD.Rd
@@ -51,6 +52,7 @@ d6c2c7466f3b182d92d325de388fa10d *man/SpatialExtremes-package.Rd
 f282b6710fc545c264b6cace6ed3b4eb *man/condmap.Rd
 904e93a5ea204629ccc684b6ab37e1d4 *man/condrgp.Rd
 b632f6628cc68af51f929894b294f20b *man/condrmaxlin.Rd
+1480e1ccc6361006666753f670b7d8a8 *man/condrmaxstab.Rd
 3517c5595ccdd1f2c4aaf7b9a84078fc *man/covariance.Rd
 2809f542dd4010aca890e0434bd70848 *man/cv.Rd
 0ec3b491177dcf0bb0aeffd6b5bfec31 *man/distances.Rd
@@ -64,7 +66,7 @@ aa471b87e3597db620da0a90e4ce73d4 *man/fitmaxstab.Rd
 6dc73f01746b2669c2ea53ee3cc06c0c *man/fmadogram.Rd
 fa2d96230efbd9344c6abee876a87ec1 *man/gcv.Rd
 5e6fcc66d4219fafc498da85cb19dc0d *man/gev2frech.Rd
-84ddaf6696f8da438404214278c6d1d9 *man/internals.Rd
+b2b9b43be83ad1d9d954a456f13b04a1 *man/internals.Rd
 60dd3fcf67930b7e28906f2f32395c23 *man/kriging.Rd
 bb63803da54fbfc79426782df54aa0f6 *man/latentVariable.Rd
 67ffe809bca8cb5ccc73f095c9c066cc *man/lmadogram.Rd
@@ -76,7 +78,7 @@ cac8965d0ea21b6f66761a2fc6a76556 *man/map.latent.Rd
 dbd50230c2dfecb47f3299f5901e0657 *man/modeldef.Rd
 23e5ef1b78710cff4c3f9bcc8da6d99d *man/plot.copula.Rd
 134e7d1e09f296eb7ad39f07dfb16463 *man/plot.maxstab.Rd
-a7bac775f21a9499fe46f119e69da5e3 *man/predict.copula.Rd
+f59dc130bbe0a1b9692e6391ea1fa37a *man/predict.copula.Rd
 d216b206cdd79cdb42082d27cb7fdea4 *man/predict.maxstab.Rd
 2a716806ec01abfada6b3e24d2daefd3 *man/predict.pspline.Rd
 c526f1a272876793b491efe4cc7d707a *man/predict.spatgev.Rd
@@ -95,7 +97,7 @@ f34eee62dfdc7cfc71f09c89ee935c2a *man/rbpspline.Rd
 142e1a0ef1680e7b5ce42399fb5be3cd *man/rcopula.Rd
 164de0fd235ae32d5786cd4265fd7a0c *man/rgp.Rd
 598318ea535bff5ae76d6188948f7fd6 *man/rmaxlin.Rd
-4a37b056472d564e9f459c7c67635b6b *man/simmaxstab.Rd
+eef3c4b6d90ea10269c9c1b760c8c0f5 *man/simmaxstab.Rd
 5d466000f07317f05de760d74351a2d5 *man/swiss.Rd
 40726de3c2b9cc845872088a59ae9a82 *man/swissalt.Rd
 285035cbbb35d1a3b8a133217b636c52 *man/univfit.Rd
@@ -104,6 +106,7 @@ f34eee62dfdc7cfc71f09c89ee935c2a *man/rbpspline.Rd
 189087126049e969612cebc6f8a59615 *src/Makevars
 30930e7dc83ed9d0255a9e419f71fdda *src/brownResnick.c
 0b9a9b0e20b455a0a36766ff456909e0 *src/circulant.c
+60e916885bca8471b19fb222b371c752 *src/condsimMaxStab.c
 fc85ec2ee6a4399331fcce028cb4c6cc *src/copula.c
 cd1cfa73fd1b40dfba47974fbe75dea2 *src/covariance.c
 889fb49fc9b10716bb21ec612e25b489 *src/direct.c
@@ -111,8 +114,7 @@ e24d2ae8ccc9618570613637170d1421 *src/extcoeff.c
 86f346a935dfaf03c0871c81e6e14b50 *src/extremalt.c
 974cccb766f1a5421353658dfe93e9ed *src/fitcovmat.c
 6f7a1a50d54ac654e077cb66258cf838 *src/geomgauss.c
-ad8bfec43d4bf250f7e66bfa2e931270 *src/gpdproc.c
-f9bb1a562a4596ff5c2530a027f5f72d *src/header.h
+3b2af69aceb0ef6d9455139fb9606ed3 *src/header.h
 b316ed2d10425f5104b8c90e5a761081 *src/kriging.c
 459ae9c591871f8e1e4648f0f2211b86 *src/latentVariable.c
 749938c2c06e732a8527e283eed7db9c *src/madogram.c
@@ -123,7 +125,7 @@ e5946d6ae6d2bd6c76544a0ffb35d627 *src/penalizations.c
 546c5c44aede0be58e25106a8fc7013e *src/randomlines.c
 1a3c7071e733f0126eaf895e7f758b12 *src/schlather.c
 0e65d46317c0e922b240e8292f29e53a *src/schlatherind.c
-fc03aacedfbb4b93c9f00727dd70532e *src/simBrownResnick.c
+fd0f47cea6053ee2bdf5d56de30e9e53 *src/simBrownResnick.c
 7ffe0f7279c55a4c9fe9fecf569e570e *src/simextremalt.c
 2950c9d5b29944c26aac9fd34d5754ab *src/simgeometric.c
 21c274b584693e7e8745515563fa046b *src/simschlather.c

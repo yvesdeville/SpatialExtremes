@@ -60,7 +60,7 @@ list(), \dots)
   extremes. Unpublished manuscript.
 }
 \author{Mathieu Ribatet}
-\seealso{\code{fitmaxstab}}
+\seealso{\code{\link{fitmaxstab}}}
 \examples{
 ## 1. Smith's model
 set.seed(8)

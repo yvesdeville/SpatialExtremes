@@ -1,3 +1,251 @@
+2012-10-24 07:30  mathieu_ribatet
+
+	* DESCRIPTION: Update the version number
+
+2012-10-24 07:29  mathieu_ribatet
+
+	* src/header.h: Add the headers for the conditional simulation
+	  functions of max-stable processes
+
+2012-10-24 07:29  mathieu_ribatet
+
+	* man/simmaxstab.Rd: Fix a missing link in the documentation
+
+2012-10-24 07:28  mathieu_ribatet
+
+	* R/condSimMaxStab.R, man/condrmaxstab.Rd, src/condsimMaxStab.c:
+	  Add functions and documentation for conditional simulation of
+	  max-stable processes
+
+2012-07-10 12:06  mathieu_ribatet
+
+	* src/simBrownResnick.c: Remove the printf calls
+
+2012-07-10 11:41  mathieu_ribatet
+
+	* src/utils.c: Fix a bug with temporal trend--these were not
+	  initialized---hmmm hmmm!
+
+2012-07-10 11:40  mathieu_ribatet
+
+	* src/spatgevlik.c: Small edits for nicer code
+
+2012-07-10 11:39  mathieu_ribatet
+
+	* R/modelChecking.R: Implement model checking for the extremal-t
+	  process
+
+2012-07-10 11:39  mathieu_ribatet
+
+	* R/copula.R: Fix a bug in simulating a Student copula on a grid.
+
+2012-06-13 11:53  mathieu_ribatet
+
+	* R/simmaxstab.R: Implementing different (naive) simulation
+	  techniques for
+	  Brown--Resnick processes
+
+2012-06-13 11:52  mathieu_ribatet
+
+	* src/header.h: Implementing different (naive) simulation
+	  techniques for
+	  Brown--Resnick processes
+
+2012-06-13 11:52  mathieu_ribatet
+
+	* src/simBrownResnick.c: Implementing different (naive) simulation
+	  techniques for
+	  Brown--Resnick processes
+
+2012-06-13 11:50  mathieu_ribatet
+
+	* src/utils.c: Cleaning the code
+
+2012-06-05 13:51  mathieu_ribatet
+
+	* man/map.latent.Rd, man/plot.copula.Rd: Don't run the example to
+	  save execution times
+
+2012-06-05 13:51  mathieu_ribatet
+
+	* man/fitcopula.Rd: Don't run the example to save execution times
+
+2012-06-05 13:50  mathieu_ribatet
+
+	* src/pairwiselik.c: Comment the OpenMP directive since it is not
+	  really efficient
+
+2012-06-05 13:50  mathieu_ribatet
+
+	* src/fitcovmat.c: Small optimization
+
+2012-06-05 13:50  mathieu_ribatet
+
+	* src/copula.c: Small optimization
+
+2012-05-22 14:18  mathieu_ribatet
+
+	* src/brownResnick.c, src/circulant.c, src/copula.c,
+	  src/covariance.c, src/direct.c, src/extremalt.c, src/fitcovmat.c,
+	  src/geomgauss.c, src/kriging.c, src/schlather.c,
+	  src/simBrownResnick.c, src/simextremalt.c, src/simgeometric.c,
+	  src/simschlather.c, src/smith.c: Optimize memory allocation!
+
+2012-05-22 12:35  mathieu_ribatet
+
+	* R/conditionalSim.R: ## Lines starting with '## ' will be removed
+	  from the log message.
+	  ## File(s) to commit recursively:
+	  ## R/conditionalSim.R
+	  Fix a small bug.
+
+2012-05-22 12:24  mathieu_ribatet
+
+	* R/conditionalSim.R: Fix a small bug.
+
+2012-05-22 11:59  mathieu_ribatet
+
+	* src/simBrownResnick.c: Minor change
+
+2012-05-22 11:59  mathieu_ribatet
+
+	* R/simmaxstab.R, src/header.h, src/simextremalt.c: Use the
+	  spectral characterization for the extremal-t process! Thanks
+	  Thomas!!!
+
+2012-05-04 13:32  mathieu_ribatet
+
+	* tests/gradientPllik.R: Some minor improvements
+
+2012-05-04 13:32  mathieu_ribatet
+
+	* src/standardErrors.c: Fix some small bug
+
+2012-05-04 13:31  mathieu_ribatet
+
+	* src/direct.c: Improve lisibility of code
+
+2012-05-04 13:31  mathieu_ribatet
+
+	* src/simextremalt.c, src/simgeometric.c, src/simschlather.c,
+	  src/simsmith.c: Improve lisibility of code
+
+2012-05-04 13:26  mathieu_ribatet
+
+	* man/SpatialExtremes-package.Rd, man/covariance.Rd,
+	  man/fitmaxstab.Rd: Update the documentations
+
+2012-05-04 13:25  mathieu_ribatet
+
+	* R/predict.R: Standard error for quantiles are now implemented if
+	  possible...
+
+2012-05-04 13:25  mathieu_ribatet
+
+	* R/conditionalSim.R, R/covariance.R: Minor modifications
+
+2012-05-04 13:19  mathieu_ribatet
+
+	* vignettes, vignettes/Figures, vignettes/SpatialExtremesGuide.Rnw,
+	  vignettes/layout.sty, vignettes/references.bib: Move the vignette
+	  files to the ./vignettes folder
+
+2012-05-04 13:17  mathieu_ribatet
+
+	* inst: Move the vignettes files to ./vignettes instead of
+	  ./inst/doc
+
+2012-05-04 13:16  mathieu_ribatet
+
+	* inst/doc/layout.sty, inst/doc/references.bib: Move the vignettes
+	  files to ./vignettes instead of ./inst/doc
+
+2012-05-04 13:16  mathieu_ribatet
+
+	* inst/doc/Figures/Schlather2Sim.png,
+	  inst/doc/Figures/Smith2Sim.png,
+	  inst/doc/Figures/rmaxstabSmith.png, inst/doc/Figures/tbm.png,
+	  inst/doc/SpatialExtremesGuide.Rnw: Move the vignettes files to
+	  ./vignettes instead of ./inst/doc
+
+2012-05-04 13:12  mathieu_ribatet
+
+	* NAMESPACE: Add a namespace as required by new releases of R
+
+2012-05-04 10:29  mathieu_ribatet
+
+	* R/plots.R: typo widths instead of width in layout
+
+2012-05-04 10:22  mathieu_ribatet
+
+	* R/plots.R: Some small modifications with the map and condmap
+	  functions.
+
+2012-05-02 04:57  mathieu_ribatet
+
+	* src/latentVariable.c: Fix a typo
+
+2012-04-23 11:11  mathieu_ribatet
+
+	* R/conditionalSim.R: Minor change
+
+2012-04-23 11:10  mathieu_ribatet
+
+	* R/brownresnick.R, R/extremalt.R, R/fitmaxstable.R, R/geomgauss.R,
+	  R/schlather.R, R/schlatherind.R, R/smith.R: Add an argument
+	  check.grad to compare the numerical gradient and the
+	  theoretical one. Only useful for debugging purposes.
+
+2012-04-23 11:04  mathieu_ribatet
+
+	* src/latentVariable.c: Fix a bug: going out of bound for the
+	  acceptance and external rates...
+
+2011-11-17 22:52  mathieu_ribatet
+
+	* src/simBrownResnick.c: Improve the Brown--Resnick simulation. A
+	  new method will appear soon!
+
+2011-07-06 13:52  mathieu_ribatet
+
+	* src/simschlather.c: Remove an unused C variable, i.e., zero.
+
+2011-07-06 13:52  mathieu_ribatet
+
+	* DESCRIPTION: Update the release number for the development
+	  version
+
+2011-07-06 13:51  mathieu_ribatet
+
+	* tests/gradientPllik.R: Test if the analytical gradient of the
+	  pairwise likelihood matches the
+	  numerical one
+
+2011-07-06 13:51  mathieu_ribatet
+
+	* tests: Add a new folder tests in the package skeleton to
+	  implement tests
+
+2011-07-06 13:50  mathieu_ribatet
+
+	* R/brownresnick.R, R/extremalt.R, R/fitmaxstable.R, R/geomgauss.R,
+	  R/schlather.R, R/schlatherind.R, R/smith.R, R/starting.values.R:
+	  Add a component check.grad in control to check if the analytical
+	  gradient matches the numerical one. This is used in the new
+	  folder
+	  tests!
+
+2011-07-04 12:57  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Some problem with the
+	  producing of the vignette when saving png
+	  figures in /inst/doc/Figures. Keep the figures fixed!
+
+2011-07-04 09:27  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION, NEWS: Update DESCRIPTION, ChangeLog and
+	  NEWS for the new release.
+
 2011-07-04 09:19  mathieu_ribatet
 
 	* src/nsgeomgauss.c: Remove nsgeomgauss as I don't plan to work on

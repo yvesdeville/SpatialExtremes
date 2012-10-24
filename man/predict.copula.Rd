@@ -28,11 +28,11 @@ TRUE, \dots)
 }
 \examples{
 ## 1- Simulate a max-stable random field
-n.site <- 35
+n.site <- 10
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
-data <- rmaxstab(50, locations, cov.mod = "whitmat", nugget = 0, range = 30,
+data <- rmaxstab(25, locations, cov.mod = "whitmat", nugget = 0, range = 30,
 smooth = 0.5)
 
 ## 2- Transformation to non unit Frechet margins

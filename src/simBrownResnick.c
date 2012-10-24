@@ -2,7 +2,8 @@
 
 void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 		  int *dim, int *grid, double *range, double *smooth,
-		  double *uBound, int *simType, int *maxSim, double *ans){
+		  double *uBound, int *simType, int *maxSim, int *nPP,
+		  int *idxsubOrig, int *nsubOrig, double *ans){
   /* This function generates random fields for the geometric model
 
      coord: the coordinates of the locations
@@ -175,6 +176,186 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 					   ans[j * lagj + i * lagi]);
       }
     }
+  }
+
+  else if (*simType == 4){
+    // Compute the covariance matrix once for all
+    buildcovmat(nSite, grid, &covmod, coord, dim, &zero, &one, range,
+		smooth, covmat);
+    
+    /* Compute the Cholesky decomposition of the covariance matrix. */
+    int info = 0;
+    F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
+    
+    if (info != 0)
+      error("error code %d from Lapack routine '%s'", info, "dpotrf");
+
+    for (int i=0; i<*nObs; i++){
+      double poisson = 0;
+      int nKO = neffSite, iter = 0;
+      
+      while ((nKO != 0) && (iter < *maxSim)){
+	iter++;
+
+	/* Simulate a std normal random vector from this decomposition */
+	for (int j=0; j<neffSite;j++)
+	  gp[j] = norm_rand();
+	
+	F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
+
+	// Translation of the process
+	int origIdx = runif(0, neffSite);
+	double verticalShift = gp[origIdx];
+	for (int j=0; j<neffSite;j++)
+	  gp[j] -= verticalShift;
+	
+	// Compute the variogram
+	for (int j=0; j<*nSite;j++)
+	  for (int k=0; k<*dim; k++)
+	    shiftedCoord[k * *nSite + j] = coord[k * *nSite + j] - coord[k * *nSite + origIdx];
+	
+	distance2orig(shiftedCoord, *nSite, *dim, vario, *grid);
+	
+	for (int j=0; j<neffSite; j++)
+	  vario[j] = R_pow(vario[j] * irange, *smooth);	
+	
+	poisson += exp_rand();
+	double ipoisson = -log(poisson), thresh = *uBound + ipoisson;
+	
+	nKO = neffSite;
+	for (int j=0; j<neffSite; j++){
+	  ans[j * lagj + i * lagi] = fmax2(gp[j] - vario[j] + ipoisson,
+					   ans[j * lagj + i * lagi]);
+	  nKO -= (thresh <= ans[j * lagj +  i * lagi]);
+	}
+      }
+    }
+  }
+
+  else if (*simType == 5){
+    // Compute the covariance matrix once for all
+    buildcovmat(nSite, grid, &covmod, coord, dim, &zero, &one, range,
+		smooth, covmat);
+    
+    /* Compute the Cholesky decomposition of the covariance matrix. */
+    int info = 0;
+    F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
+    
+    if (info != 0)
+      error("error code %d from Lapack routine '%s'", info, "dpotrf");
+
+    for (int i=0; i<*nObs; i++){
+      double poisson = 0;
+      int nKO = neffSite, iter1 = 0;
+      
+      while (iter1 < *nPP){
+	iter1++;
+
+	int origIdx = runif(0, neffSite);
+
+	// Compute the variogram
+	for (int j=0; j<*nSite;j++)
+	  for (int k=0; k<*dim; k++)
+	    shiftedCoord[k * *nSite + j] = coord[k * *nSite + j] - coord[k * *nSite + origIdx];
+	
+	distance2orig(shiftedCoord, *nSite, *dim, vario, *grid);
+	
+	for (int j=0; j<neffSite; j++)
+	  vario[j] = R_pow(vario[j] * irange, *smooth);	
+
+	poisson = 0;
+	nKO = neffSite;
+	int iter2 = 0;
+	while ((nKO != 0) && (iter2 < *maxSim)){
+	  iter2++;
+	  /* Simulate a std normal random vector from this decomposition */
+	  for (int j=0; j<neffSite;j++)
+	    gp[j] = norm_rand();
+	
+	  F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
+
+	  // Translation of the process
+	  double verticalShift = gp[origIdx];
+	  for (int j=0; j<neffSite;j++)
+	    gp[j] -= verticalShift;
+	
+	  poisson += exp_rand();
+	  double ipoisson = -log(poisson), thresh = *uBound + ipoisson;
+	
+	  nKO = neffSite;
+	  for (int j=0; j<neffSite; j++){
+	    ans[j * lagj + i * lagi] = fmax2(gp[j] - vario[j] + ipoisson,
+					     ans[j * lagj + i * lagi]);
+	    nKO -= (thresh <= ans[j * lagj +  i * lagi]);
+	  }
+	}
+      }
+    }
+
+    for (int i=0;i<(*nObs * neffSite);i++)
+      ans[i]-= log((double) *nPP);
+  }
+
+  else if (*simType == 6){
+    // Compute the covariance matrix once for all
+    buildcovmat(nSite, grid, &covmod, coord, dim, &zero, &one, range,
+		smooth, covmat);
+    
+    /* Compute the Cholesky decomposition of the covariance matrix. */
+    int info = 0;
+    F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
+    
+    if (info != 0)
+      error("error code %d from Lapack routine '%s'", info, "dpotrf");
+
+    for (int i=0; i<*nObs; i++){
+      double poisson = 0;
+      int nKO = neffSite;
+      
+      for (int l=0;l<*nsubOrig;l++){
+	int origIdx = idxsubOrig[l];
+
+	// Compute the variogram
+	for (int j=0; j<*nSite;j++)
+	  for (int k=0; k<*dim; k++)
+	    shiftedCoord[k * *nSite + j] = coord[k * *nSite + j] - coord[k * *nSite + origIdx];
+	
+	distance2orig(shiftedCoord, *nSite, *dim, vario, *grid);
+	
+	for (int j=0; j<neffSite; j++)
+	  vario[j] = R_pow(vario[j] * irange, *smooth);	
+	
+	poisson = 0;
+	nKO = neffSite;
+	int iter = 0;
+	while ((nKO != 0) && (iter < *maxSim)){
+	  iter++;
+	  /* Simulate a std normal random vector from this decomposition */
+	  for (int j=0; j<neffSite;j++)
+	    gp[j] = norm_rand();
+	
+	  F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
+
+	  // Translation of the process
+	  double verticalShift = gp[origIdx];
+	  for (int j=0; j<neffSite;j++)
+	    gp[j] -= verticalShift;
+	
+	  poisson += exp_rand();
+	  double ipoisson = -log(poisson), thresh = *uBound + ipoisson;
+	
+	  nKO = neffSite;
+	  for (int j=0; j<neffSite; j++){
+	    ans[j * lagj + i * lagi] = fmax2(gp[j] - vario[j] + ipoisson,
+					     ans[j * lagj + i * lagi]);
+	    nKO -= (thresh <= ans[j * lagj +  i * lagi]);
+	  }
+	}
+      }
+    }
+
+    for (int i=0;i<(*nObs * neffSite);i++)
+      ans[i]-= log((double) *nsubOrig);
   }
 
   PutRNGstate();

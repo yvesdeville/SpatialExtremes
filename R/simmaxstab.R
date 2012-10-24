@@ -1,25 +1,25 @@
 rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                      control = list(), ...){
-
+  
   if (!(cov.mod %in% c("gauss","whitmat","cauchy","powexp","bessel",
                        "iwhitmat", "icauchy", "ipowexp", "ibessel",
                        "gwhitmat", "gcauchy", "gpowexp", "gbessel",
                        "twhitmat", "tcauchy", "tpowexp", "tbessel",
                        "brown")))
     stop("'cov.mod' must be one of 'gauss', '(i/g/t)whitmat', '(i/g/t)cauchy', '(i/g/t)powexp', '(i/g/t)bessel' or 'brown'")
-
+  
   if (!is.null(control$method) && !(control$method %in% c("direct", "tbm", "circ")))
     stop("the argument 'method' for 'control' must be one of 'direct', 'tbm' and 'circ'")
-
+  
   if (cov.mod == "gauss")
     model <- "Smith"
-
+  
   else if (cov.mod == "brown")
     model <- "Brown-Resnick"
   
   else if (cov.mod %in% c("whitmat","cauchy","powexp","bessel"))
     model <- "Schlather"
-
+  
   else {
     if (substr(cov.mod, 1, 1) == "i")
       model <- "iSchlather"
@@ -93,7 +93,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   }
 
   else if (model == "Extremal-t"){
-     if (!all(c("DoF", "nugget", "range", "smooth") %in% names(list(...))))
+    if (!all(c("DoF", "nugget", "range", "smooth") %in% names(list(...))))
       stop("You must specify 'DoF', 'nugget', 'range', 'smooth'")
     
     nugget <- list(...)$nugget
@@ -138,18 +138,18 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   ##Identify which simulation technique is the most adapted or use the
   ##one specified by the user --- this is useless for the Smith model.
   if (is.null(control$method)){
-      if (grid && reg.grid)
-        method <- "circ"
-      
-      else if ((length(ans) / n) > 600)
-        method <- "tbm"
-        
-      else
-        method <- "direct"
-    }
-
+    if (grid && reg.grid)
+      method <- "circ"
+    
+    else if ((length(ans) / n) > 600)
+      method <- "tbm"
+    
     else
-      method <- control$method
+      method <- "direct"
+  }
+
+  else
+    method <- control$method
 
   if (method == "tbm"){
     if (is.null(control$nlines))
@@ -158,7 +158,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     else
       nlines <- control$nlines
   }      
-    
+  
   if (model == "Smith")
     ans <- switch(dist.dim,
                   .C("rsmith1d", as.double(coord), as.double(center), as.double(edge),
@@ -223,7 +223,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
   else if (model == "Extremal-t"){
     if (is.null(control$uBound))
-        uBound <- 3^DoF
+      uBound <- 3^DoF
 
     else
       uBound <- control$uBound
@@ -249,15 +249,15 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
   else if (model == "Brown-Resnick"){
     coord <- scale(coord, scale = FALSE)
-    
+
     if (is.null(control$max.sim))
-        max.sim <- 1000
+      max.sim <- 1000
 
     else
       max.sim <- control$max.sim
     
     if (is.null(control$uBound))
-        uBound <- 10
+      uBound <- 10
 
     else
       uBound <- control$uBound
@@ -274,11 +274,26 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     else
       bounds <- apply(coord, 2, range)
 
+    if (is.null(control$nPP))
+      nPP <- 15
+
+    else
+      nPP <- control$nPP
+
+    if (sim.type == 6){
+      idx.sub.orig <- getsubregions(coord, bounds, range, smooth, dist.dim)
+      n.sub.orig <- length(idx.sub.orig)
+    }
+    
+    else
+      idx.sub.orig <- n.sub.orig <- 0
+    
     if (method == "direct")
       ans <- .C("rbrowndirect", as.double(coord), as.double(bounds),
                 as.integer(n), as.integer(n.site), as.integer(dist.dim),
                 as.integer(grid), as.double(range), as.double(smooth),
                 as.double(uBound), as.integer(sim.type), as.integer(max.sim),
+                as.integer(nPP), as.integer(idx.sub.orig), as.integer(n.sub.orig),
                 ans = ans, PACKAGE = "SpatialExtremes")$ans
   }
 
@@ -295,3 +310,38 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
   return(ans)
 }
+
+getsubregions <- function(coord, bounds, range, smooth, dist.dim){
+
+  if (dist.dim == 1){
+    coord <- matrix(coord, ncol = 1)
+    bounds <- matrix(bounds, ncol = 1)
+  }
+  
+  h.star <- 2^(1/smooth) * range
+  n.windows <- 1 + floor(diff(bounds) / h.star)
+
+  sub.bounds <- list()
+  for (i in 1:dist.dim)
+    sub.bounds <- c(sub.bounds,
+                    list(seq(bounds[1,i], bounds[2, i], length = n.windows[i] + 1)))
+
+  sub.centers <- list()
+  for (i in 1:dist.dim)
+    sub.centers <- c(sub.centers, list(0.5 * (sub.bounds[[i]][-1] +
+                                              sub.bounds[[i]][-(n.windows + 1)])))
+
+  sub.origins <- as.matrix(expand.grid(sub.centers))
+
+  n.sub.origins <- prod(n.windows)
+  idx.sub.orig <- rep(NA, n.sub.origins)
+  for (i in 1:n.sub.origins){
+    dummy <- sqrt(colSums((t(coord) - sub.origins[i,])^2))
+    idx.sub.orig[i] <- which.min(dummy)
+  }
+    
+
+  return(idx.sub.orig = idx.sub.orig)
+}
+  
+  
