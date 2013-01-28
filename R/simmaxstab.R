@@ -48,7 +48,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
   if (model == "Smith"){
     if ((dist.dim == 1) && (!("var" %in% names(list(...)))))
-      stop("You must specify 'var'")
+      stop("For one dimensional simulations, you must specify 'var' not 'cov11', 'cov12', 'cov22'.")
     
     if ((dist.dim == 2) && (!all(c("cov11", "cov12", "cov22") %in% names(list(...)))))
       stop("You must specify 'cov11', 'cov12', 'cov22'")

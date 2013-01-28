@@ -2,7 +2,7 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 #include <R_ext/Lapack.h>
-#include <R_ext/Applic.h>
+//#include <R_ext/Applic.h>
 #include <R_ext/Utils.h>
 #include <time.h>
 
@@ -688,3 +688,13 @@ void gibbsForPartBR(int *nchain, int *nthin, int *burnin, int *nCond,
 		    int *currentPart, double *cov, double *sigma2,
 		    double *covChol, double *ham, double *mean1, double *y,
 		    int *chain, double *timing);
+
+///////////////////////////////////
+//  From fft.c
+//
+static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
+		  int m, int kt, double *at, double *ck, double *bt, double *sk,
+		  int *np, int *nfac);
+void fft_factor(int n, int *pmaxf, int *pmaxp);
+Rboolean fft_work(double *a, double *b, int nseg, int n, int nspn, int isn,
+		  double *work, int *iwork);

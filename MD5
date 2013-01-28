@@ -1,5 +1,6 @@
 9ba616fb1392e629a8a23282b4a98293 *ChangeLog
-b56c029ba47c914024cb74424db527bb *DESCRIPTION
+6e953f01284d77dbdd00ac9f677adc6d *Copyright
+87d32197fe0d9e22dbf63f0251004e82 *DESCRIPTION
 7a348fbb7436649fcca5aefa7af42651 *NAMESPACE
 f8a514bd11361a13fa4b5808636bab47 *NEWS
 5e499d1a574ba7120962aae385a37df8 *R/brownresnick.R
@@ -29,7 +30,7 @@ a521b0436775f802affee361a84d4a30 *R/schlather.R
 6d1de2f02290f0f55fcaa09737ddcc1f *R/schlatherind.R
 51c153fc893beffd427b5680c3d4dbc9 *R/selection.R
 5ce075d250fdaaf6d29aad4a46295bba *R/simgaussproc.R
-40d7651eb757480ad3eef4e3f1a9b662 *R/simmaxstab.R
+c768d9d8b69ec5b534021c986c95657e *R/simmaxstab.R
 ffebcc53ac21e4e1a40b435d11dd03bf *R/smith.R
 14b2eb9f5fc663412bd61afa04930fa8 *R/spatgev.R
 b694edfb266a71af793c52432d9f40a5 *R/standardErrors.R
@@ -38,11 +39,10 @@ e8587221285b94751548acf7eb0f5b62 *R/starting.values.R
 968a52d485065cf56f710e01d171a414 *R/univdist.R
 36bd90160cfe8e80a7d20fe05b1d8eed *R/univfit.R
 afeed3041b3fb79b80be57f16ec1f5ad *R/utils.R
-fadb7a4cde53de0a68a713a8105834df *R/zzz.R
-344511de3288567da79d26b7eda967b9 *data/rainfall.RData
-2b4ccdc4dc00642239f0d03b19a84963 *data/swissalt.RData
+1607ac2f4e5330e4bf5ce6463737ea23 *data/rainfall.RData
+e84a631373eeea7c8b28bc71fa322037 *data/swissalt.RData
 d90250938d82ecf992fc137a2cd75abd *inst/doc/SpatialExtremesGuide.Rnw
-47e20f02300aee9aec879af2efc22123 *inst/doc/SpatialExtremesGuide.pdf
+d8232766d1461791f07a0d39d53d8baa *inst/doc/SpatialExtremesGuide.pdf
 367aab88915f276167ea2117fa6d7cda *man/DIC.Rd
 9cf3761cae061fcd0f5d8b868a41d32a *man/GEV.Rd
 f5f0747c5b9daab0f6360f019f9f47f6 *man/GPD.Rd
@@ -112,9 +112,11 @@ cd1cfa73fd1b40dfba47974fbe75dea2 *src/covariance.c
 889fb49fc9b10716bb21ec612e25b489 *src/direct.c
 e24d2ae8ccc9618570613637170d1421 *src/extcoeff.c
 86f346a935dfaf03c0871c81e6e14b50 *src/extremalt.c
+27415ee60486e1dcbbee0211678e6578 *src/fft.c
 974cccb766f1a5421353658dfe93e9ed *src/fitcovmat.c
 6f7a1a50d54ac654e077cb66258cf838 *src/geomgauss.c
-3b2af69aceb0ef6d9455139fb9606ed3 *src/header.h
+ad8bfec43d4bf250f7e66bfa2e931270 *src/gpdproc.c
+eb0644fdb537909c4ed1a03b08671654 *src/header.h
 b316ed2d10425f5104b8c90e5a761081 *src/kriging.c
 459ae9c591871f8e1e4648f0f2211b86 *src/latentVariable.c
 749938c2c06e732a8527e283eed7db9c *src/madogram.c
