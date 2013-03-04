@@ -1,3 +1,94 @@
+2013-03-04 10:13  mathieu_ribatet
+
+	* src/latentVariable.c: Fix a bug related to the mean of the prior
+	  distribution assumed on the regression parameters!
+
+2013-03-04 10:06  mathieu_ribatet
+
+	* R/condSimMaxStab.R: Fix a bug when no conditional simulation were
+	  performed.
+
+2013-03-04 09:58  mathieu_ribatet
+
+	* R/latentVariable.R: Missing values are now supported.
+
+2013-03-04 09:57  mathieu_ribatet
+
+	* R/brownresnick.R, R/extremalt.R, R/fitmaxstable.R, R/geomgauss.R,
+	  R/methods.R, R/profile.R, R/schlather.R, R/schlatherind.R,
+	  R/smith.R, R/spatgev.R, R/standardErrors.R, R/starting.values.R,
+	  R/univfit.R, man/TIC.Rd, man/condmap.Rd, man/covariance.Rd,
+	  man/fitmaxstab.Rd, man/fitspatgev.Rd, man/map.Rd,
+	  src/pairwiselik.c, src/spatgevlik.c, src/standardErrors.c,
+	  src/standardErrorsCommonPart.c, src/univllik.c, src/utils.c,
+	  src/weightedPairwiselik.c, vignettes/SpatialExtremesGuide.Rnw:
+	  Missing values are now supported. Change the way standard errors
+	  are computed.
+
+2013-01-28 10:49  mathieu_ribatet
+
+	* R/zzz.R: .First.lib() is no longer useful.
+
+2013-01-28 10:48  mathieu_ribatet
+
+	* DESCRIPTION: Forgot the authorship in the DESCRIPTION file.
+
+2013-01-24 07:36  mathieu_ribatet
+
+	* src/fft.c, src/header.h: Add fft routine since they do not belong
+	  to the R API...
+
+2013-01-23 12:30  mathieu_ribatet
+
+	* DESCRIPTION, src/header.h: Add the fft routine as they do not
+	  belong to the R API.
+
+2013-01-23 12:29  mathieu_ribatet
+
+	* Copyright, src/fft.c: Add the fft routine as they do not belong
+	  to the R API
+
+2012-11-27 08:11  mathieu_ribatet
+
+	* R/simmaxstab.R: Add more details for an error according to a
+	  suggestion of Carlo
+	  Gaetan.
+
+2012-10-31 12:50  mathieu_ribatet
+
+	* man/predict.copula.Rd: Reduce the complexity of the example
+	  according to CRAN policies.
+
+2012-10-25 12:21  mathieu_ribatet
+
+	* man/internals.Rd: Add several simulation techniques for
+	  Brown-Resnick processes
+
+2012-10-25 12:21  mathieu_ribatet
+
+	* R/simmaxstab.R, src/header.h, src/simBrownResnick.c: Add several
+	  simulation techniques for Brown-Resnick processes
+
+2012-10-24 08:46  mathieu_ribatet
+
+	* man/condrmaxstab.Rd: Small fix.
+
+2012-10-24 08:00  mathieu_ribatet
+
+	* R/condSimMaxStab.R: Small fix
+
+2012-10-24 07:46  mathieu_ribatet
+
+	* R/condSimMaxStab.R: Small fix
+
+2012-10-24 07:41  mathieu_ribatet
+
+	* NEWS: Update the NEWS
+
+2012-10-24 07:35  mathieu_ribatet
+
+	* ChangeLog: Update the ChangeLog
+
 2012-10-24 07:30  mathieu_ribatet
 
 	* DESCRIPTION: Update the version number

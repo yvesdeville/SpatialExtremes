@@ -2120,7 +2120,7 @@ set.seed(12)
 coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 data <- rmaxstab(n.obs, coord, "whitmat", nugget = 0.8, range = 3, smooth = 1.2)
 
-fitmaxstab(data, coord, cov.mod = "whitmat", std.err.type = "none")
+fitmaxstab(data, coord, cov.mod = "whitmat")
 @
 
 From this output, we can see that we indeed use the Schlather's
@@ -2217,22 +2217,12 @@ bypass this hurdle, $J(\hat{\psi}_p)$ can be estimated by
   \ell_p(\hat{\psi}_p;\mathbf{y}_i) {\nabla
     \ell_p(\hat{\psi}_p;\mathbf{y}_i)}^T
 \end{equation}
-This estimator is tagged \verb|grad| as it uses the gradient of the
-log pairwise likelihood. Another estimator is given by noticing that
-$J(\psi)$ corresponds to the variance of the pairwise score
-equation\index{score equation} $\ell_p(\psi;\mathbf{Y}) =
-0$. Consequently, a second estimator, tagged \verb|score|, is given by
-the sample variance of each contribution to the pairwise score
-function. These two estimators are only accessible if independent
-replications of $\mathbf{Y}$ are available\footnote{which will mostly
-  be the case for spatial extremes.}.
-
-These two types of standard errors are available by invoking the
-following two lines:
-<<eval=FALSE>>=
-fitmaxstab(data, coord, cov.mod = "gauss", std.err.type = "score")
-fitmaxstab(data, coord, cov.mod = "gauss", std.err.type = "grad")
-@
+Another estimator is given by noticing that $J(\psi)$ corresponds to
+the variance of the pairwise score equation\index{score equation}
+$\ell_p(\psi;\mathbf{Y}) = 0$. The latter estimator is used to get
+standard errors. These two estimators are only accessible if
+independent replications of $\mathbf{Y}$ are available\footnote{which
+  will mostly be the case for spatial extremes.}.
 
 \chapter{Model Selection}
 \label{cha:model-selection}

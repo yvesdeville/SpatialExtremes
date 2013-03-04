@@ -1,5 +1,6 @@
 print.spatgev <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
+  cat("            Model: Spatial GEV model\n")
   cat("   Deviance:", x$deviance, "\n")
   cat("        TIC:", TIC(x), "\n\n")
 
@@ -73,7 +74,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     cat("   Pair. Deviance:", x$deviance, "\n")
     cat("              TIC:", TIC(x), "\n")
   }
-  if (x$est == "Least Squares")    
+  if (x$est == "Least Squares")
     cat("  Objective Value:", x$opt.value, "\n")
 
   if ((x$model == "Schlather") || (x$model == "Geometric") || (x$model == "Brown-Resnick") ||
@@ -226,8 +227,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
   }
 
   if(!is.null(x$std.err)) {
-    cat("\nStandard Error Type:", x$std.err.type, "\n")
-    cat("\nStandard Errors\n")
+      cat("\nStandard Errors\n")
     print.default(format(x$std.err, digits = digits), print.gap = 2,
                   quote = FALSE)
   }
@@ -291,14 +291,14 @@ print.latent <- function(x, digits = max(3, getOption("digits") - 3), ...,
     stop("'level' must lie in [0, 1]")
 
   alpha <- 0.5 * (1 - level)
-  
+
   cat("Effective length:", nrow(x$chain.loc), "\n")
   cat("         Burn-in:", x$burn.in, "\n")
   cat("        Thinning:", x$thin, "\n")
   cat("   Effective NoP:", x$eNoP, "\n")
   cat("             DIC:", x$DIC, "\n\n")
-  
-  
+
+
   cat("  Regression Parameters:\n")
   cat("      Location Parameters:\n")
   chain <- x$chain.loc
@@ -371,7 +371,7 @@ print.latent <- function(x, digits = max(3, getOption("digits") - 3), ...,
 }
 
 print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
-  
+
   cat("           Copula:", x$copula, "\n")
   cat("         Deviance:", x$deviance, "\n")
   cat("              AIC:", AIC(x), "\n")
@@ -381,16 +381,16 @@ print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
   if (x$cov.mod == "powexp")
     cov.mod <- "Powered Exponential"
-  
+
   if (x$cov.mod == "cauchy")
     cov.mod <- "Cauchy"
-  
+
   if (x$cov.mod == "caugen")
     cov.mod <- "Generalized Cauchy"
-  
+
   if (x$cov.mod == "bessel")
     cov.mod <- "Bessel"
-  
+
   cat("Covariance Family:", cov.mod, "\n")
 
   idx <- which(names(x$fitted.values) == "DoF")
@@ -398,11 +398,11 @@ print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
   idx <- c(idx, which(names(x$fitted.values) == "range"))
   idx <- c(idx, which(names(x$fitted.values) == "smooth"))
   idx <- c(idx, which(names(x$fitted.values) == "smooth2"))
-  
+
 
   cat("\nEstimates\n")
   cat("  Marginal Parameters:\n")
-  
+
   if (x$fit.marge){
     margin.param <- x$fitted.values[-idx]
     loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")
@@ -418,26 +418,26 @@ print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
     cat("       Shape Parameters:\n")
     print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
                   quote = FALSE)
-    
+
     loc.idx <- which(substr(names(margin.param), 1, 12) == "tempCoeffLoc")
     scale.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffScale")
     shape.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffShape")
-    
+
     if (length(loc.idx) > 0){
       cat("Temporal Location Parameters:\n")
       print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
     }
-    
+
     if (length(scale.idx)> 0){
       cat("Temporal Scale Parameters:\n")
       print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
     }
-    
+
     if (length(shape.idx)>0){
       cat("Temporal Shape Parameters:\n")
-      
+
       print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2,
                     quote = FALSE)
     }
@@ -445,7 +445,7 @@ print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
   else
     cat("  Assuming unit Frechet.\n\n")
-  
+
   cat("  Dependence Parameters:\n")
   print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2,
                 quote = FALSE)

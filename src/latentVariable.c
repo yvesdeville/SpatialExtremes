@@ -1,6 +1,6 @@
 #include "header.h"
 
-void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod, 
+void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	       int *dim, double *distMat, double *dsgnMat, int *nBeta,
 	       double *beta, double *sills, double *ranges, double *smooths,
 	       double *gevParams, double *hyperSill, double *hyperRange,
@@ -9,8 +9,8 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	       double *propSmooths, double *mcLoc, double *mcScale,
 	       double *mcShape, double *accRates, double *extRates, int *thin,
 	       int *burnin){
-  
-  
+
+
   int iter = 0, iterThin = 0, idxSite, idxSite2, idxMarge, idxBeta, info = 0,
     oneInt = 1, nSite2 = *nSite * *nSite,
     nPairs = *nSite * (*nSite + 1) / 2,
@@ -29,8 +29,8 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
   cumBeta2[2] = nBeta[0] * nBeta[0] + nBeta[1] * nBeta[1];
   nBeta2[0] = nBeta[0] * nBeta[0];
   nBeta2[1] = nBeta[1] * nBeta[1];
-  nBeta2[2] = nBeta[2] * nBeta[2];  
-  
+  nBeta2[2] = nBeta[2] * nBeta[2];
+
   double one = 1.0, zero = 0.0, flag = 0.0, logDetProp,
     *logDet = (double *) R_alloc(3, sizeof(double)),
     *covMatChol = (double *) R_alloc(3 * nSite2, sizeof(double)),
@@ -97,7 +97,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
     // Finally compute its Cholesky decomposition
     F77_CALL(dpotrf)("U", nSite, covMatChol + idxMarge * nSite2, nSite, &info);
-    
+
     if (info != 0)
       error("Impossible to get the Cholesky decomp. from the starting values\n");
 
@@ -107,15 +107,15 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     for (idxSite2=0;idxSite2<*nSite;idxSite2++)
       logDet[idxMarge] += log(covMatChol[idxSite2 * (*nSite + 1) + idxMarge *
 					 nSite2]);
-    
-    logDet[idxMarge] *= 2;          
+
+    logDet[idxMarge] *= 2;
   }
 
   // b. The mean of the Gaussian processes
   for (idxMarge=0;idxMarge<3;idxMarge++)
     for (idxSite=0;idxSite<*nSite;idxSite++)
       for (idxBeta=0;idxBeta<nBeta[idxMarge];idxBeta++)
-	GPmean[idxSite + idxMarge * *nSite] += 
+	GPmean[idxSite + idxMarge * *nSite] +=
 	  dsgnMat[idxBeta * *nSite + idxSite + cumBeta[idxMarge] * *nSite] *
 	  beta[cumBeta[idxMarge] + idxBeta];
 
@@ -127,8 +127,8 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
   for (idxMarge=0;idxMarge<3;idxMarge++)
     F77_CALL(dsymv)("U", nBeta + idxMarge, &one, hyperBetaIcov +
 		    cumBeta2[idxMarge], nBeta + idxMarge, hyperBetaMean +
-		    cumBeta[idxMarge], &oneInt, &zero, conjMeanCst, &oneInt);
-
+		    cumBeta[idxMarge], &oneInt, &zero, conjMeanCst + cumBeta[idxMarge],
+		    &oneInt);
 
   /*----------------------------------------------------*/
   //                                                    \\
@@ -138,86 +138,79 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
   GetRNGstate();
   while (iterThin<*n){
-    
+
     /*----------------------------------------------------*/
     //                                                    \\
     //           Updating the GEV parameters              \\
     //                                                    \\
     /*----------------------------------------------------*/
-    
+
     for (idxSite=0;idxSite<*nSite;idxSite++){
-      
       for (idxMarge=0;idxMarge<3;idxMarge++){
 	double logpropRatio = 0;
-
 	proposalGEV[0] = gevParams[idxSite];
 	proposalGEV[1] = gevParams[*nSite + idxSite];
 	proposalGEV[2] = gevParams[2 * *nSite + idxSite];
-	
+
 	if (idxMarge==1){
 	  proposalGEV[1] = rlnorm(log(gevParams[*nSite + idxSite]), propGev[1]);
 	  logpropRatio = log(proposalGEV[1] / gevParams[*nSite + idxSite]);
 	}
-	
-	else 
+
+	else
 	  proposalGEV[idxMarge] = rnorm(gevParams[idxMarge * *nSite + idxSite], propGev[idxMarge]);
-	
-	proposalGEV[0] = rnorm(gevParams[idxSite], propGev[0]);
-	proposalGEV[1] = rlnorm(log(gevParams[*nSite + idxSite]), propGev[1]);
-	proposalGEV[2] = rnorm(gevParams[2 * *nSite + idxSite], propGev[2]);
-	
+
 	double topGEV = 0, bottomGEV = 0;
-	
 	gevlik(data + idxSite * *nObs, nObs, proposalGEV, proposalGEV + 1,
 	       proposalGEV + 2, &topGEV);
-	
+
 	if (topGEV == -1e6){
 	  extRates[idxMarge]++;
 	  continue;
 	}
-	
+
 	gevlik(data + idxSite * *nObs, nObs, gevParams + idxSite, gevParams +
 	       *nSite + idxSite, gevParams + 2 * *nSite + idxSite, &bottomGEV);
-	
+
 	double topGP = 0, bottomGP = 0;
 	for (idxSite2=0;idxSite2<*nSite;idxSite2++)
 	  resBottom[idxSite2] = gevParams[idxSite2 + idxMarge * *nSite] -
 	    GPmean[idxSite2 + idxMarge * *nSite];
-	
+
 	memcpy(resTop, resBottom, *nSite * sizeof(double));
 	resTop[idxSite] = proposalGEV[idxMarge] - GPmean[idxSite + idxMarge *
 							 *nSite];
-	
+
 	F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
 			idxMarge * nSite2, nSite, resTop, nSite);
 	F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
 			idxMarge * nSite2, nSite, resBottom, nSite);
-	
+
 	for (idxSite2=0;idxSite2<*nSite;idxSite2++){
 	  topGP += resTop[idxSite2] * resTop[idxSite2];
 	  bottomGP += resBottom[idxSite2] * resBottom[idxSite2];
-	}	
-	
+	}
+
 	topGP *= -0.5;
 	bottomGP *= -0.5;
-	
+
 	if (unif_rand() < exp(topGEV - bottomGEV + topGP - bottomGP +
 			      logpropRatio)){
 	  gevParams[idxSite + idxMarge * *nSite] = proposalGEV[idxMarge];
 	  accRates[idxMarge]++;
 	}
       }
-    }    
-    
+    }
+
     /*----------------------------------------------------*/
     //                                                    \\
     //        Updating the regression parameters          \\
-    //                (conjugate prior)                   \\ 
+    //                (conjugate prior)                   \\
     //                                                    \\
     /*----------------------------------------------------*/
 
     for (idxMarge=0;idxMarge<3;idxMarge++){
-      
+
       /* conjCovMat is the covariance matrix for the conjugate
 	 distribution i.e. MVN
 
@@ -225,22 +218,22 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       double *dummy = malloc(*nSite * nBeta[idxMarge] * sizeof(double)),
 	*conjCovMat = malloc(nBeta2[idxMarge] * sizeof(double)),
 	*conjCovMatChol = malloc(nBeta2[idxMarge] * sizeof(double));
-            
+
       memcpy(conjCovMat, hyperBetaIcov + cumBeta2[idxMarge],
 	     nBeta2[idxMarge] * sizeof(double));
       memcpy(dummy, dsgnMat + *nSite * cumBeta[idxMarge],
 	     *nSite * nBeta[idxMarge] * sizeof(double));
-      
+
       // Compute dummy = covMatChol^(-T) %*% dsgnMat
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, nBeta + idxMarge, &one,
 		      covMatChol + idxMarge * nSite2, nSite, dummy, nSite);
 
       /* Compute conjCovMat = dummy^T %*% dummy + conjCovMat
-	 
+
 	 WARNING: Only the upper diagonal elements will be stored */
       F77_CALL(dsyrk)("U", "T", nBeta + idxMarge, nSite, &one, dummy, nSite,
 		      &one, conjCovMat, nBeta + idxMarge);
-      
+
       /* Rmk: The "real" conjugate cov. matrix is the inverse of
 	 conjCovMat but it is not necessary to compute it */
 
@@ -248,23 +241,23 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       memcpy(conjCovMatChol, conjCovMat, nBeta2[idxMarge] * sizeof(double));
       F77_CALL(dpotrf)("U", nBeta + idxMarge, conjCovMatChol, nBeta + idxMarge,
 		       &info);
-      
+
       // Compute dummy2 = covMatChol^(-T) %*% (locs or scales or shapes)
       double *dummy2 = malloc(*nSite * sizeof(double));
       memcpy(dummy2, gevParams + idxMarge * *nSite, *nSite * sizeof(double));
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
 		      idxMarge * nSite2, nSite, dummy2, nSite);
-      
+
       // conjMean is the mean for the conjugate distribution i.e. MVN
       // Set conjMean = conjMeanCst := hyperBetaIcov %*% hyperBetaMean
       double *conjMean = malloc(nBeta[idxMarge] * sizeof(double));
       memcpy(conjMean, conjMeanCst + cumBeta[idxMarge],
 	     nBeta[idxMarge] * sizeof(double));
-      
+
       // Compute conjMean = conjMean + dummy^T %*% dummy2 (dummy2 is a vector)
       F77_CALL(dgemv)("T", nSite, nBeta + idxMarge, &one, dummy, nSite, dummy2,
 		      &oneInt, &one, conjMean, &oneInt);
-      
+
       // Compute conjMean = conjCovMat^(-1) %*% conjMean
       F77_CALL(dposv)("U", nBeta + idxMarge, &oneInt, conjCovMat, nBeta +
 		      idxMarge, conjMean, nBeta + idxMarge, &info);
@@ -272,11 +265,11 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       /* The new state is a realisation from the MVN(conjMean,
 	 conjCovMat) so we simulate it from the Cholesky
 	 decomposition */
-      
+
       double *stdNormal = malloc(nBeta[idxMarge] * sizeof(double));
       for (idxBeta=0;idxBeta<nBeta[idxMarge];idxBeta++)
 	stdNormal[idxBeta] = norm_rand();
-      
+
       /* Rmk: Recall that conjCovMat is the precision matrix and *NOT*
 	 the covariance matrix. Instead of using the Cholesky
 	 decomposition of the conjugate covariance matrix (that we
@@ -284,7 +277,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	 decomposition. This is different from the standard simulation
 	 technique but completely equivalent since
 
-	      iSigma = iSigma_*^T %*% iSigma_* 
+	      iSigma = iSigma_*^T %*% iSigma_*
 	 <==> Sigma := iSigma^(-1) = iSigma_*^(-1) %*% iSigma_*^(-T),
 
 	 where iSigma_* is the Cholesky decomposition of iSigma.
@@ -293,15 +286,15 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       F77_CALL(dtrsm)("L", "U", "N", "N", nBeta + idxMarge, &oneInt,
 		      &one, conjCovMatChol, nBeta + idxMarge, stdNormal,
 		      nBeta + idxMarge);
-      
+
       for (idxBeta=0;idxBeta<nBeta[idxMarge];idxBeta++)
 	beta[cumBeta[idxMarge] + idxBeta] = stdNormal[idxBeta] +
 	  conjMean[idxBeta];
-      
+
       //The last step is to update the mean of the GP
       for (idxSite=0;idxSite<*nSite;idxSite++){
 	GPmean[idxSite + idxMarge * *nSite] = 0;
-	
+
 	for (idxBeta=0;idxBeta<nBeta[idxMarge];idxBeta++)
 	  GPmean[idxSite + idxMarge * *nSite] += dsgnMat[idxBeta * *nSite + idxSite +
 							 cumBeta[idxMarge] * *nSite] *
@@ -376,7 +369,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       // Cholesky decomposition of the covariance matrices
       F77_CALL(dpotrf)("U", nSite, covMatChol + idxMarge * nSite2, nSite,
 		       &info);
-      
+
       // Compute the log of the determinant of the proposal cov. mat.
       logDet[idxMarge] = 0;
       for (idxSite=0;idxSite<*nSite;idxSite++)
@@ -392,7 +385,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     //          Updating the ranges (M.-H. step)          \\
     //                                                    \\
     /*----------------------------------------------------*/
-    
+
     for (idxMarge=0;idxMarge<3;idxMarge++){
       if (propRanges[idxMarge] == 0)
 	continue;
@@ -418,12 +411,12 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 		      smooths[idxMarge], covariances);
 	break;
       }
-      
+
       if (flag != 0){
 	extRates[3 + idxMarge]++;
 	continue;
       }
-      
+
       /* We need to fill in the upper triangular part of covMatPropChol
 	 with covariances */
       {
@@ -460,9 +453,9 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 		      idxMarge * nSite2, nSite, resBottom, nSite);
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatPropChol,
 		      nSite, resTop, nSite);
-      
+
       double top = logDetProp, bottom = logDet[idxMarge],
-	logpriorRatio = (hyperRange[2 * idxMarge] - 1) * 
+	logpriorRatio = (hyperRange[2 * idxMarge] - 1) *
 	log(rangeProp / ranges[idxMarge]) + (ranges[idxMarge] - rangeProp) /
 	hyperRange[2 * idxMarge + 1];
 
@@ -480,7 +473,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	memcpy(covMatChol + idxMarge * nSite2, covMatPropChol, nSite2 *
 	       sizeof(double));
 	accRates[3 + idxMarge]++;
-      }    
+      }
     }
 
     /*----------------------------------------------------*/
@@ -488,14 +481,14 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     //         Updating the smooths (M.-H. step)          \\
     //                                                    \\
     /*----------------------------------------------------*/
-    
+
     for (idxMarge=0;idxMarge<3;idxMarge++){
       if (propSmooths[idxMarge] == 0)
 	continue;
 
       double smoothProp = rlnorm(log(smooths[idxMarge]), propSmooths[idxMarge]),
 	logpropRatio = log(smoothProp / smooths[idxMarge]);
-    
+
       switch(covmod[idxMarge]){
       case 1:
 	flag = whittleMatern(distMat, nPairs, zero, sills[idxMarge], ranges[idxMarge],
@@ -514,12 +507,12 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 		      smoothProp, covariances);
 	break;
       }
-            
+
       if (flag != 0){
     	extRates[6 + idxMarge]++;
     	continue;
       }
-      
+
       /* We need to fill in the upper triangular part of covMatPropChol
     	 with covariances */
       {
@@ -530,53 +523,53 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     	    covMatPropChol[idxSite + idxSite2 * *nSite] = covariances[current];
     	  }
       }
-    
+
       // Cholesky decomposition of the proposal cov. mat.
       F77_CALL(dpotrf)("U", nSite, covMatPropChol, nSite, &info);
-    
+
       if (info != 0){
     	extRates[6 + idxMarge]++;
     	continue;
       }
-    
+
       // Log of the determinant of the proposal cov. mat.
       logDetProp = 0;
       for (idxSite=0;idxSite<*nSite;idxSite++)
     	logDetProp += log(covMatPropChol[idxSite * (1 + *nSite)]);
 
       logDetProp *= 2;
-    
+
       for (idxSite=0;idxSite<*nSite;idxSite++)
     	resBottom[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
     	  GPmean[idxSite + idxMarge * *nSite];
-    
+
       memcpy(resTop, resBottom, *nSite * sizeof(double));
-      
+
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatPropChol,
 		      nSite, resTop, nSite);
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
 		      idxMarge * nSite2, nSite, resBottom, nSite);
-    
+
       double top = logDetProp, bottom = logDet[idxMarge],
-    	logpriorRatio = (hyperSmooth[2 * idxMarge] - 1) * 
+    	logpriorRatio = (hyperSmooth[2 * idxMarge] - 1) *
     	log(smoothProp / smooths[idxMarge]) + (smooths[idxMarge] - smoothProp) /
     	hyperSmooth[2 * idxMarge + 1];
-    
+
       for (idxSite=0;idxSite<*nSite;idxSite++){
     	top += resTop[idxSite] * resTop[idxSite];
     	bottom += resBottom[idxSite] * resBottom[idxSite];
       }
-    
+
       top *= -0.5;
       bottom *= -0.5;
-    
+
       if (unif_rand() < exp(top - bottom + logpriorRatio + logpropRatio)){
     	smooths[idxMarge] = smoothProp;
     	logDet[idxMarge] = logDetProp;
     	memcpy(covMatChol + idxMarge * nSite2, covMatPropChol, nSite2 *
     	       sizeof(double));
     	accRates[6 + idxMarge]++;
-      }    
+      }
     }
 
     iter++;
@@ -586,24 +579,24 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       mcLoc[nBeta[0] + iterThin * lagLoc] = sills[0];
       mcLoc[nBeta[0] + 1 + iterThin * lagLoc] = ranges[0];
       mcLoc[nBeta[0] + 2 + iterThin * lagLoc] = smooths[0];
-      
+
       mcScale[nBeta[1] + iterThin * lagScale] = sills[1];
       mcScale[nBeta[1] + 1 + iterThin * lagScale] = ranges[1];
       mcScale[nBeta[1] + 2 + iterThin * lagScale] = smooths[1];
-      
+
       mcShape[nBeta[2] + iterThin * lagShape] = sills[2];
       mcShape[nBeta[2] + 1 + iterThin * lagShape] = ranges[2];
       mcShape[nBeta[2] + 2 + iterThin * lagShape] = smooths[2];
-      
+
       for (idxBeta=0;idxBeta<nBeta[0];idxBeta++)
 	mcLoc[idxBeta + iterThin * lagLoc] = beta[idxBeta];
-      
+
       for (idxBeta=0;idxBeta<nBeta[1];idxBeta++)
 	mcScale[idxBeta + iterThin * lagScale] = beta[cumBeta[1] + idxBeta];
-      
+
       for (idxBeta=0;idxBeta<nBeta[2];idxBeta++)
 	mcShape[idxBeta + iterThin * lagShape] = beta[cumBeta[2] + idxBeta];
-      
+
       for (idxSite=0;idxSite<*nSite;idxSite++){
 	mcLoc[nBeta[0] + 3 + idxSite + iterThin * lagLoc] = gevParams[idxSite];
 	mcScale[nBeta[1] + 3 + idxSite + iterThin * lagScale] = gevParams[*nSite + idxSite];
@@ -613,7 +606,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     }
   }
   GetRNGstate();
-  
+
   for (int i=0;i<9;i++){
     accRates[i] /= (double) iter;
     extRates[i] /= (double) iter;
@@ -621,7 +614,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
   return;
 }
-  
+
 void DIC(int *nChain, int *nSite, int *nObs, double *data, double *chainLoc,
 	 double *chainScale, double *chainShape, double *postLoc,
 	 double *postScale, double *postShape, double *dic, double *effNpar,
@@ -638,7 +631,7 @@ void DIC(int *nChain, int *nSite, int *nObs, double *data, double *chainLoc,
     }
 
   *dbar *= -2 / ((double) *nChain);
-  
+
   for (i=*nSite;i--;){
     double dummy = 0;
     gevlik(data + i * *nObs, nObs, postLoc + i, postScale + i, postShape + i,
@@ -651,4 +644,4 @@ void DIC(int *nChain, int *nSite, int *nObs, double *data, double *chainLoc,
 
   return;
 }
-  
+

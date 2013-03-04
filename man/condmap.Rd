@@ -66,7 +66,7 @@ param.loc <- -10 - 4 * locations[,1] + locations[,2]^2
 param.scale <- 5 + locations[,2] + locations[,1]^2 / 10
 param.shape <- rep(.2, n.site)
 
-##Transform the unit Frechet margins to GEV 
+##Transform the unit Frechet margins to GEV
 for (i in 1:n.site)
   data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
 param.shape[i])
@@ -80,7 +80,7 @@ shape.form <- shape ~ 1
 
 ##  1- Fit a max-stable process
 fitted <- fitmaxstab(data, locations, "whitmat", loc.form, scale.form,
-                     shape.form, nugget = 0, std.err.type = "none")
+                     shape.form, nugget = 0)
 
 cond.coord <- c(5.1, 5.1)
 condmap(fitted, cond.coord, seq(0, 10, length = 25), seq(0,10, length

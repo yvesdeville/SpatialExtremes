@@ -78,22 +78,34 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
 
     if (shapes[i] == 0.0){
       for (j=nObs;j--;){
-	frech[i * nObs + j] = (data[i * nObs + j] - locs[i]) * iscale;
-	jac[i * nObs + j] = frech[i * nObs + j] - logScale;
-	frech[i * nObs + j] = exp(frech[i * nObs + j]);
+	if (ISNA(data[i * nObs + j])){
+	  frech[i * nObs + j] = jac[i * nObs + j] = NA_REAL;
+	}
+
+	else {
+	  frech[i * nObs + j] = (data[i * nObs + j] - locs[i]) * iscale;
+	  jac[i * nObs + j] = frech[i * nObs + j] - logScale;
+	  frech[i * nObs + j] = exp(frech[i * nObs + j]);
+	}
       }
     }
 
     else {
       double ishape = 1 / shapes[i];
       for (j=nObs;j--;){
-	frech[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) * iscale;
+	if (ISNA(data[i * nObs + j])){
+	  frech[i * nObs + j] = jac[i * nObs + j] = NA_REAL;
+	}
 
-	if (frech[i * nObs + j] <= 0)
-	  return MINF;
+	else {
+	  frech[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) * iscale;
 
-	jac[i * nObs + j] = (ishape - 1) * log(frech[i * nObs + j]) - logScale;
-	frech[i * nObs + j] = R_pow(frech[i * nObs + j], ishape);
+	  if (frech[i * nObs + j] <= 0)
+	    return MINF;
+
+	  jac[i * nObs + j] = (ishape - 1) * log(frech[i * nObs + j]) - logScale;
+	  frech[i * nObs + j] = R_pow(frech[i * nObs + j], ishape);
+	}
       }
     }
   }
@@ -119,19 +131,31 @@ double gev2frechTrend(double *data, int nObs, int nSite, double *locs, double *s
 	ishape = 1 / shape;
 
       if (shape == 0.0){
-	frech[i * nObs + j] = (data[i * nObs + j] - loc) * iscale;
-	jac[i * nObs + j] = frech[i * nObs + j] - logScale;
-	frech[i * nObs + j] = exp(frech[i * nObs + j]);
+	if (ISNA(data[i * nObs + j])){
+	  frech[i * nObs + j] = jac[i * nObs + j] = NA_REAL;
+	}
+
+	else {
+	  frech[i * nObs + j] = (data[i * nObs + j] - loc) * iscale;
+	  jac[i * nObs + j] = frech[i * nObs + j] - logScale;
+	  frech[i * nObs + j] = exp(frech[i * nObs + j]);
+	}
       }
 
       else {
-	frech[i * nObs + j] = 1 + shape * (data[i * nObs + j] - loc) * iscale;
+	if (ISNA(data[i * nObs + j])){
+	  frech[i * nObs + j] = jac[i * nObs + j] = NA_REAL;
+	}
 
-	if (frech[i * nObs + j] <= 0)
-	  return MINF;
+	else {
+	  frech[i * nObs + j] = 1 + shape * (data[i * nObs + j] - loc) * iscale;
 
-	jac[i * nObs + j] = (ishape - 1) * log(frech[i * nObs + j]) - logScale;
-	frech[i * nObs + j] = R_pow(frech[i * nObs + j], ishape);
+	  if (frech[i * nObs + j] <= 0)
+	    return MINF;
+
+	  jac[i * nObs + j] = (ishape - 1) * log(frech[i * nObs + j]) - logScale;
+	  frech[i * nObs + j] = R_pow(frech[i * nObs + j], ishape);
+	}
       }
     }
   }
@@ -215,7 +239,7 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
   for (i=*n;i--;){
 
     if (scales[i] <= 0){
-      quant[i] = R_NaReal;
+      quant[i] = NA_REAL;
 
     }
 
@@ -280,7 +304,7 @@ double gev2unif(double *data, int nObs, int nSite, double *locs,
      When ans > 0.0, the GEV parameters are invalid. */
 
   int i, j;
-  
+
   for (i=nSite;i--;){
     double iscale = 1 / scales[i], logIscale = log(iscale);
 
@@ -301,13 +325,13 @@ double gev2unif(double *data, int nObs, int nSite, double *locs,
 	if (unif[i * nObs + j] <= 0)
 	  return MINF;
 
-	logdens[i * nObs + j] = logIscale - (1 + ishape) * log(unif[i * nObs + j]) - 
+	logdens[i * nObs + j] = logIscale - (1 + ishape) * log(unif[i * nObs + j]) -
 	  R_pow(unif[i * nObs + j], -ishape);
 	unif[i * nObs + j] = exp(-R_pow(unif[i * nObs + j], -ishape));
       }
     }
   }
-  
+
   return 0.0;
 }
 
@@ -364,7 +388,7 @@ void getSiteIndex(int currentPair, int nSite, int *site1, int *site2){
       cum = nSite - 2;
 
   *site1 = 0;
-  
+
   while (currentPair > cum){
     *site1 = *site1 + 1;
     cum += nFree;

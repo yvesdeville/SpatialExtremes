@@ -1,3 +1,20 @@
+		CHANGES IN SpatialExtremes VERSION 2.0-0
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o There is only one methodology to compute standard errors; hence
+    the arguments std.err.type is deprectated.
+
+NEW FEATURES
+
+    o Missings values (NA's) are now available for max-stable and latent models !
+
+BUG FIXES
+
+    o Fix a bug with the mean of the prior distribution assumed on the
+    regression parameters for the latent variable approach.
+
+
 		CHANGES IN SpatialExtremes VERSION 1.9-0
 
 SIGNIFICANT USER-VISIBLE CHANGES

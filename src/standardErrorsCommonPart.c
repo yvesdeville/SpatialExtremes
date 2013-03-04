@@ -32,7 +32,14 @@ void marginalPartSmith(int *start, int *nObs, int *nSite, double *data, double *
       if (weights[currentPair] != 0){
 	for (k=*nObs;k--;){
 	  int l, idx = *start;
-	  
+
+	  if (ISNA(frech[k + i * *nObs]) || ISNA(frech[k + j * *nObs])){
+	    for (l=0;l<(*nloccoeff + *nscalecoeff + *nshapecoeff + *ntemploccoeff + *ntempscalecoeff + *ntempshapecoeff);l++)
+	      hess[((idx + l) * *nObs + k) * nPairs + currentPair] = NA_REAL;
+
+	    continue;
+	  }
+
 	  double ifrech1 = 1 / frech[k + i * *nObs], ifrech2 = 1 / frech[k + j * *nObs],
 	    ifrech1Square = ifrech1 * ifrech1, ifrech2Square = ifrech2 * ifrech2,
 	    c1 = log(frech[k + j * *nObs] * ifrech1) * imahal + 0.5 * mahalDist[currentPair],
@@ -40,11 +47,11 @@ void marginalPartSmith(int *start, int *nObs, int *nSite, double *data, double *
 	    dnormc1 = dnorm(c1, 0., 1., 0), pnormc1 = pnorm(c1, 0., 1., 1, 0),
 	    dnormc2 = dnorm(c2, 0., 1., 0), pnormc2 = pnorm(c2, 0., 1., 1, 0),
 	    dE, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape, dz2shape;
-	  
+
 	  double loc1 = locs[i] + trendlocs[k], loc2 = locs[j] + trendlocs[k],
 	    scale1 = scales[i] + trendscales[k], scale2 = scales[j] + trendscales[k],
 	    shape1 = shapes[i] + trendshapes[k], shape2 = shapes[j] + trendshapes[k];
-	  
+
 	  //A = - pnormc1 * ifrech1 - pnormc2 * ifrech2;
 	  double B = - dnormc1 * imahal * ifrech1 * ifrech2 + pnormc2 * ifrech2Square +
 	    dnormc2 * imahal * ifrech2Square,
@@ -73,25 +80,25 @@ void marginalPartSmith(int *start, int *nObs, int *nSite, double *data, double *
 	    imahal * imahalSquare * ifrech1 * ifrech2 * ifrech2Square -
 	    (1 + c2 * (mahalDist[currentPair] + c1)) * dnormc1 *
 	    imahal * imahalSquare * ifrech1Square * ifrech2Square;
-	  
+
 	  for (l=0;l<*nloccoeff;l++){
 	    dE = (shape1 - 1) * locdsgnmat[i + *nSite * l] / (scale1 * R_pow(frech[k + i * *nObs], shape1)) +
 	      (shape2 - 1) * locdsgnmat[j + *nSite * l] / (scale2 * R_pow(frech[k + j * *nObs], shape2));
-	    
+
 	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shape1) / scale1 * locdsgnmat[i + *nSite * l];
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shape2) / scale2 * locdsgnmat[j + *nSite * l];
-	    
+
 	    hess[((idx + l) * *nObs + k) * nPairs + currentPair] = weights[currentPair] *
 	      ((dAz1 * dz1loc + dAz2 * dz2loc) + ((dBz1 * dz1loc + dBz2 * dz2loc) * C +
 						  B * (dCz1 * dz1loc + dCz2 * dz2loc) +
 						  (dDz1 * dz1loc + dDz2 * dz2loc)) *
 	       iBCplusD + dE);
 	    grad[(idx + l) * *nObs + k] += hess[((idx + l) * *nObs + k) * nPairs + currentPair];
-	    
+
 	  }
-	  
+
 	  idx += *nloccoeff;
-	  
+
 	  for (l=0;l<*nscalecoeff;l++){
 	    dE = scaledsgnmat[i + *nSite * l] * (loc1 - scale1 - data[k + i * *nObs]) /
 	      (scale1 *  scale1 * R_pow(frech[k + i * *nObs], shape1)) +
@@ -234,6 +241,14 @@ void marginalPartSchlat(int *start, int *nObs, int *nSite, double *data, double 
 	for (k=*nObs;k--;){
 	  int l, idx = *start;
 
+	  if (ISNA(frech[k + i * *nObs]) || ISNA(frech[k + j * *nObs])){
+	    for (l=0;l<(*nloccoeff + *nscalecoeff + *nshapecoeff + *ntemploccoeff + *ntempscalecoeff + *ntempshapecoeff);l++)
+	      hess[((idx + l) * *nObs + k) * nPairs + currentPair] = NA_REAL;
+
+	    continue;
+	  }
+
+
 	  double frech1Square = frech[k + i * *nObs] * frech[k + i * *nObs],
 	    frech2Square = frech[k + j * *nObs] * frech[k + j * *nObs];
 
@@ -332,7 +347,7 @@ void marginalPartSchlat(int *start, int *nObs, int *nSite, double *data, double 
 	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shape1) / scale1 * tempdsgnmatloc[k + *nObs * l];
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shape2) / scale2 * tempdsgnmatloc[k + *nObs * l];
 
-	    hess[((idx + l) * *nObs + k) * nPairs + currentPair] = weights[currentPair] * 
+	    hess[((idx + l) * *nObs + k) * nPairs + currentPair] = weights[currentPair] *
 	      ((dAz1 * dz1loc + dAz2 * dz2loc) + ((dBz1 * dz1loc + dBz2 * dz2loc) +
 						  (dCz1 * dz1loc + dCz2 * dz2loc) * D +
 						  (dDz1 * dz1loc + dDz2 * dz2loc) * C) /
@@ -418,6 +433,14 @@ void marginalPartiSchlat(int *start, int *nObs, int *nSite, double *data, double
       if (weights[currentPair] != 0){
 	for (k=*nObs;k--;){
 	  int l, idx = *start;
+
+	  if (ISNA(frech[k + i * *nObs]) || ISNA(frech[k + j * *nObs])){
+	    for (l=0;l<(*nloccoeff + *nscalecoeff + *nshapecoeff + *ntemploccoeff + *ntempscalecoeff + *ntempshapecoeff);l++)
+	      hess[((idx + l) * *nObs + k) * nPairs + currentPair] = NA_REAL;
+
+	    continue;
+	  }
+
 	  double loc1 = locs[i] + trendlocs[k], loc2 = locs[j] + trendlocs[k],
 	    scale1 = scales[i] + trendscales[k], scale2 = scales[j] + trendscales[k],
 	    shape1 = shapes[i] + trendshapes[k], shape2 = shapes[j] + trendshapes[k],
@@ -608,6 +631,14 @@ void marginalPartExtremalt(int *start, int *nObs, int *nSite, double *data, doub
       if (weights[currentPair] != 0){
 	for (k=*nObs;k--;){
 	  int l, idx = *start;
+
+	  if (ISNA(frech[k + i * *nObs]) || ISNA(frech[k + j * *nObs])){
+	    for (l=0;l<(*nloccoeff + *nscalecoeff + *nshapecoeff + *ntemploccoeff + *ntempscalecoeff + *ntempshapecoeff);l++)
+	      hess[((idx + l) * *nObs + k) * nPairs + currentPair] = NA_REAL;
+
+	    continue;
+	  }
+
 	  double loc1 = locs[i] + trendlocs[k], loc2 = locs[j] + trendlocs[k],
 	    scale1 = scales[i] + trendscales[k], scale2 = scales[j] + trendscales[k],
 	    shape1 = shapes[i] + trendshapes[k], shape2 = shapes[j] + trendshapes[k],

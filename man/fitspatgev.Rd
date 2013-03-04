@@ -8,7 +8,7 @@
 fitspatgev(data, covariables, loc.form, scale.form, shape.form,
 temp.cov = NULL, temp.form.loc = NULL, temp.form.scale = NULL,
 temp.form.shape = NULL, ..., start, control = list(maxit = 10000),
-method = "Nelder", std.err.type = "score", warn = TRUE, corr = FALSE)
+method = "Nelder", warn = TRUE, corr = FALSE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -35,8 +35,6 @@ method = "Nelder", std.err.type = "score", warn = TRUE, corr = FALSE)
     procedure. Must be one of \code{BFGS}, \code{Nelder-Mead},
     \code{CG}, \code{L-BFGS-B} or \code{SANN}. See \code{\link{optim}}
     for details.}
-  \item{std.err.type}{Character string. Must be one of "score", "grad"
-    or "none". If none, no standard errors are computed.}
   \item{warn}{Logical. If \code{TRUE} (default), users will be warned if
     the starting values lie in a zero density region.}
   \item{corr}{Logical. If \code{TRUE}, the asymptotic correlation matrix

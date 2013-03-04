@@ -9,7 +9,7 @@
 shape.form, marg.cov = NULL, temp.cov = NULL, temp.form.loc = NULL,
 temp.form.scale = NULL, temp.form.shape = NULL, iso = FALSE, ...,
 fit.marge = FALSE, warn = TRUE, method = "Nelder", start, control =
-list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
+list(), weights = NULL, corr = FALSE, check.grad
 = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -25,7 +25,7 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
     geometric Gaussian and Extremal-t models with a Whittle-Matern
     correlation function can be fitted by passing respectively
     "gwhitmat" or "twhitmat". Other correlation function families are
-    considered in a similar way.} 
+    considered in a similar way.}
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
     section Details.}
@@ -68,11 +68,7 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
   \item{weights}{A numeric vector specifying the weights in the pairwise
   likelihood - and so has length the number of pairs. If \code{NULL}
   (default), no weighting scheme is used.}
-  \item{std.err.type}{Character string. Must be one of "none", "score",
-    "grad". If "none", standard errors are not computed. Otherwise,
-    standard errors are estimated using the sandwich estimates - see
-    section Details.}
-  \item{corr}{Logical. If \code{TRUE} (non default), the asymptotic
+\item{corr}{Logical. If \code{TRUE} (non default), the asymptotic
     correlation matrix is computed.}
   \item{check.grad}{Logical. If \code{TRUE} (non default), the analytic
     gradient of the pairwise likelihood will be compared to the
@@ -109,7 +105,7 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
 
   Let define \eqn{L_{i,j}(x_{i,j}, \theta)}{L_{i,j}(x_{i,j}, \theta)} the
   likelihood for site \eqn{i}{i} and \eqn{j}{j}, where \eqn{i = 1,
-  \dots, N-1}{i = 1, \dots, N-1}, \eqn{j = i+1, \dots, N}{j=i+1, \dots, 
+  \dots, N-1}{i = 1, \dots, N-1}, \eqn{j = i+1, \dots, N}{j=i+1, \dots,
   N}, \eqn{N}{N} is the number of site within the region and
   \eqn{x_{i,j}}{x_{i,j}} are the joint observations for site \eqn{i}{i}
   and \eqn{j}{j}. Then the pairwise likelihood
@@ -130,20 +126,20 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
     misspecified model) and \eqn{J} is the variance of the score
     function.
 
-  \eqn{H} is easily estimated using the observed Hessian matrix given by
-  the \code{\link{optim}} function. Estimation of \eqn{J} is much more
-  difficult. Currently, we propose two different strategies to estimate
-  \eqn{J}.
-
-  \describe{
-    \item{\code{grad}}{\eqn{J} is estimated from the gradient e.g. \eqn{J
-	= \sum_{i=1}^n \left\{ \nabla \ell_P(\hat{\theta}; y_i) \nabla
-    \ell_P(\hat{\theta},y_i)^T \right\}}{J = \sum_{i=1}^n
-    {\nabla llik_P(hat(\theta); y_i) \nabla llik_P(hat(\theta);y_i)^T}}.}
-    \item{\code{score}}{\eqn{J} is estimated directly from the variance of
-      the observed score function.}
-  }
-
+%%  \eqn{H} is easily estimated using the observed Hessian matrix given by
+%%  the \code{\link{optim}} function. Estimation of \eqn{J} is much more
+%%  difficult. Currently, we propose two different strategies to estimate
+%%  \eqn{J}.
+%%
+%%  \describe{
+%%    \item{\code{grad}}{\eqn{J} is estimated from the gradient e.g. \eqn{J
+%%	= \sum_{i=1}^n \left\{ \nabla \ell_P(\hat{\theta}; y_i) \nabla
+%%    \ell_P(\hat{\theta},y_i)^T \right\}}{J = \sum_{i=1}^n
+%%    {\nabla llik_P(hat(\theta); y_i) \nabla llik_P(hat(\theta);y_i)^T}}.}
+%%    \item{\code{score}}{\eqn{J} is estimated directly from the variance of
+%%      the observed score function.}
+%%  }
+%%
   There are two different kind of covariates : "spatial" and
   "temporal".
 
@@ -160,7 +156,7 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
 
   As a consequence note that \code{marg.cov} must have K rows (K being
   the number of sites) while \code{temp.cov} must have n rows (n being
-  the number of observations). 
+  the number of observations).
 }
 \section{Warning}{
   When using reponse surfaces to model spatially the GEV parameters, the
@@ -168,7 +164,7 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
   routines may fail. It is your responsability to check if the
   numerical optimization succeeded or not. I tried, as best as I can, to
   provide warning messages if the optimizers failed but in some cases,
-  no warning will appear!  
+  no warning will appear!
 }
 \references{
   Cox, D. R. and Reid, N. (2004) A note on pseudo-likelihood constructed
@@ -179,11 +175,11 @@ list(), weights = NULL, std.err.type = "score", corr = FALSE, check.grad
 
   Gholam--Rezaee, M. (2009) Spatial extreme value: A composite
   likelihood. PhD Thesis. Ecole Polytechnique Federale de Lausanne.
-  
+
   Kabluchko, Z., Schlather, M. and de Haan, L. (2009) Stationary
   max-stable fields associated to negative definite functions
   \emph{Annals of Probability} \bold{37}:5, 2042--2065.
-  
+
   Padoan, S. A. (2008) Computational Methods for Complex Problems in
   Extreme Value Theory. PhD Thesis. University of Padova.
 
@@ -214,7 +210,7 @@ param.loc <- -10 + 2 * locations[,2]
 param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
 param.shape <- rep(0.2, n.site)
 
-##Transform the unit Frechet margins to GEV 
+##Transform the unit Frechet margins to GEV
 for (i in 1:n.site)
   data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
 param.shape[i])
@@ -276,7 +272,7 @@ shape.form <- y ~ rb(lon, knots = knots2, degree = 3, penalty = .5)
 
 fitted <- fitmaxstab(data, locations, "gauss", loc.form, scale.form, shape.form,
                      control = list(ndeps = rep(1e-6, 24), trace = 10),
-                     std.err.type = "none", method = "BFGS")
+                     method = "BFGS")
 fitted
 op <- par(mfrow=c(1,3))
 plot(locations[,2], param.loc, col = 2, ylim = c(7, 14),

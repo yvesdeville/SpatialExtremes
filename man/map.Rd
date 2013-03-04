@@ -64,7 +64,7 @@ param.loc <- -10 - 0.04 * locations[,1] + alt / 5
 param.scale <- 5 - locations[,2] / 30 + alt / 4
 param.shape <- rep(.2, n.site)
 
-##Transform the unit Frechet margins to GEV 
+##Transform the unit Frechet margins to GEV
 for (i in 1:n.site)
   data[,i] <- frech2gev(data[,i], param.loc[i], param.scale[i],
 param.shape[i])
@@ -78,13 +78,13 @@ shape.form <- shape ~ 1
 
 ##  1- Fit a max-stable process
 schlather <- fitmaxstab(data, locations, "whitmat", loc.form, scale.form,
-                        shape.form, marg.cov = cbind(alt = alt), nugget =
-0, std.err.type = "none")
+                        shape.form, marg.cov = cbind(alt = alt), nugget
+= 0)
 
 ##  2- Produce a map of the pointwise 50-year return level
 
 ##Here we have only one covariate i.e. alt
-n.cov <- 1 
+n.cov <- 1
 covariates <- array(volcano, dim = c(n.x, n.y, n.cov), dimnames =
 list(NULL, NULL, "alt"))
 

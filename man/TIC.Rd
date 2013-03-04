@@ -51,10 +51,8 @@ colnames(locations) <- c("lon", "lat")
 data <- rmaxstab(40, locations, cov.mod = "whitmat", nugget = 0.2, range =
 30, smooth = 0.5)
 
-M0 <- fitmaxstab(data, locations, "powexp", std.err.type = "score",
-                 fit.marge = FALSE)
-M1 <- fitmaxstab(data, locations, "cauchy", std.err.type = "score",
-                 fit.marge = FALSE)
+M0 <- fitmaxstab(data, locations, "powexp", fit.marge = FALSE)
+M1 <- fitmaxstab(data, locations, "cauchy", fit.marge = FALSE)
 
 TIC(M0, M1)
 TIC(M0, M1, k = log(nrow(data)))

@@ -3,7 +3,7 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
 
   if (!(cov.mod %in% c("brown", "whitmat", "powexp", "bessel", "cauchy")))
     stop("'cov.mod' must be one of 'brown', 'whitmat', 'powexp', 'bessel' or 'cauchy'")
-  
+
   timings <- rep(NA, 3)
   if (is.null(dim(coord))){
     n.site <- length(coord)
@@ -24,7 +24,7 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
   dist <- as.matrix(dist(all.coord, diag = TRUE, upper = TRUE))
 
   n <- n.site + n.cond
-    
+
   if (cov.mod == "brown")
     model <- "Brown-Resnick"
 
@@ -40,36 +40,36 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
 
   if (range <= 0)
     stop("'range' must be positive")
-  
+
   if (model == "Brown-Resnick"){
     if ((smooth <= 0) || (smooth > 2))
       stop("smooth must belongs to (0, 2] for Brown-Resnick models")
-   
+
     ## Compute some fixed quantities once for all
     one <- rep(1, n)
     one.sub <- rep(1, n.cond)
-    
+
     if (dim == 1)
       sigma2 <- 2 * (abs(all.coord) / range)^smooth
-    
+
     else {
       h <- sqrt(rowSums(all.coord^2))
       sigma2 <- 2 * (h / range)^smooth
     }
-    
+
     sigma2.sub <- sigma2[1:n.cond]
     y <- log(cond.data)
     y.tilde <- c(y, rep(0, n.site))
-    
+
     cov <- - (dist / range)^smooth
     for (i in 1:n)
       for (j in 1:n)
         cov[i,j] <- 0.5 * (sigma2[i] + sigma2[j]) + cov[i,j]
-    
+
     cov.sub <- cov[1:n.cond, 1:n.cond]
     cov.chol <- chol(cov)
     cov.chol.sub <- chol(cov.sub)
-    
+
     icov.chol1 <- backsolve(cov.chol,  one, transpose = TRUE)
     icov.chol1.sub <- backsolve(cov.chol.sub, one.sub, transpose = TRUE)
     imahal1 <- 1 / as.numeric(t(icov.chol1) %*% icov.chol1)
@@ -89,7 +89,7 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
     y <- cond.data
     cov.fun <- covariance(nugget = 0, sill = 1, range = range, smooth = smooth,
                           cov.mod = cov.mod, plot = FALSE)
-    
+
     cov <- cov.fun(dist)
     cov.sub <- cov[1:n.cond, 1:n.cond]
     cov.chol.sub <- chol(cov.sub)
@@ -115,12 +115,12 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
                       as.integer(all.part), as.integer(all.size), as.double(cov.sub),
                       as.double(sigma2.sub), as.double(cov.chol.sub), as.double(ham.sub),
                       as.double(mean1.sub), weights = double(n.part))$weights
-      
+
       if (model == "Schlather")
         weights <- .C("computeWeightsSC", as.integer(n.cond), as.double(y), as.integer(n.part),
                       as.integer(all.part), as.integer(all.size), as.double(cov.sub),
                       weights = double(n.part))$weights
-      
+
       all.part <- matrix(all.part, n.cond, n.part)
       idx.part <- sample(1:n.part, k, replace = TRUE, prob = weights)
       parts <- all.part[,idx.part]
@@ -137,11 +137,11 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
         dummy <- .C("getStartingPartitionBR", as.integer(n.sim.start), as.integer(n.cond),
                     as.double(cond.coord), as.double(range), as.double(smooth),
                     start = integer(n.sim.start * n.cond))$start
-      
+
       if (model == "Schlather")
         dummy <- .C("getStartingPartitionSC", as.integer(n.sim.start), as.integer(n.cond),
                     as.double(cov.chol.sub), start = integer(n.sim.start * n.cond))$start
-      
+
       dummy <- matrix(dummy, n.sim.start, n.cond, byrow = TRUE)
       dummy.fact <- factor(apply(dummy, 1, paste, collapse = ""))
       start <- dummy[which.max(table(dummy.fact)),]
@@ -153,7 +153,7 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
                 as.double(sigma2.sub), as.double(cov.chol.sub), as.double(ham.sub),
                 as.double(mean1.sub), as.double(y), chain = integer(k * n.cond),
                 time1 = double(1))
-      
+
       if (model == "Schlather")
         parts <- .C("gibbsForPartSC", as.integer(k), as.integer(thin), as.integer(burnin),
                     as.integer(n.cond), as.integer(start), as.double(cov.sub),
@@ -181,7 +181,7 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
                 as.double(smooth), as.integer(dim), sim = double(k * n),
                 sub.ext.fct = double(k * n), ext.fct = double(k * n), timings = double(2))
 
-    if (model == "Schlather")    
+    if (model == "Schlather")
       ans <- .C("condsimschlather", as.integer(k), as.integer(n), as.integer(n.cond),
                 as.integer(parts), as.double(cov), as.double(y),
                 sim = double(k * n), sub.ext.fct = double(k * n),
@@ -200,7 +200,8 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
   }
 
   else
-    ans <- NULL
+    ans <- sub.ext.fct <- ext.fct <- NULL
 
-  return(list(sim = ans, sub.ext.fct = sub.ext.fct, ext.fct = ext.fct, timings = timings))
+  return(list(sim = ans, sub.ext.fct = sub.ext.fct, ext.fct = ext.fct, timings = timings,
+              parts = parts))
 }

@@ -8,11 +8,11 @@ profile.maxstab <- function(fitted, param, range, n = 10,
   if (!(square %in% c("chol", "svd")))
     stop("'square' must be one of 'chol' or 'svd'")
 
-  if (is.null(fitted$std.err.type)){
+  if (is.null(fitted$std.err)){
     warning("Profile confidence intervals cannot be computed whithout standard errors.")
     method <- "none"
   }
-  
+
   param.names <- names(fitted$fitted.values)
   n.param <- length(param.names)
   idx.prof <- which(param.names == param)
@@ -40,20 +40,20 @@ profile.maxstab <- function(fitted, param, range, n = 10,
       M <- chol(hessian)
       Madj <- chol(ivar.cov)
     }
-    
+
     C <- solve(M) %*% Madj
-    colnames(C) <- rownames(C) <- colnames(ihessian)      
+    colnames(C) <- rownames(C) <- colnames(ihessian)
   }
 
   if (method == "RJ"){
     ##Rotnitzky and Jewell approach:
     hessian <- solve(ihessian[param, param])
     var.cov <- var.cov[param, param]
-      
+
     Q <- var.cov %*% hessian
     eigen.val <- eigen(Q)$values
   }
-  
+
   start <- as.list(fitted$fitted.values)
   start <- start[-idx.prof]
 
@@ -67,7 +67,7 @@ profile.maxstab <- function(fitted, param, range, n = 10,
         body(optfun) <- parse(text = paste("nplk(", paste("p[",1:(n.param-1),"]", collapse = ","),
                                 ",", paste(fixed.names, "=", as.numeric(fixed.param),
                                            collapse = ","), ",", param, "=", fixed.val, ")"))
-      
+
       else
         body(optfun) <- parse(text = paste("nplk(", paste("p[",1:(n.param-1),"]", collapse = ","),
                                 ",", param, "=", fixed.val, ")"))
@@ -86,7 +86,7 @@ profile.maxstab <- function(fitted, param, range, n = 10,
 
   llik <- rep(NA, n)
   par <- matrix(NA, ncol = n.param - 1, nrow = n)
-  
+
   for (i in 1:n){
     fixed.val <- fixed.values[i]
 
@@ -104,7 +104,7 @@ profile.maxstab <- function(fitted, param, range, n = 10,
 
     else
       reltol <- 1e-6
-    
+
     opt <- optim(start, optfun, control = list(reltol = reltol, maxit = 10000))
     llik[i] <- -opt$value
     par[i,] <- opt$par
@@ -120,7 +120,7 @@ profile.maxstab <- function(fitted, param, range, n = 10,
 
     if (method == "none")
       plot(ans[,param], ans[,"llik"], xlab = param, ylab = "log-likelihood", ...)
-    
+
     if (method == "RJ"){
       b.conf <- llikmax - .5 * eigen.val * qchisq(conf, 1)
       plot(ans[,param], ans[,"llik"], xlab = param, ylab = "log-likelihood", ...)
@@ -136,9 +136,9 @@ profile.maxstab <- function(fitted, param, range, n = 10,
       abline(h = b.conf)
     }
   }
-  
+
   return(ans)
-  
+
 }
 
 profile2d.maxstab <- function(fitted, params, ranges, n = 10,
@@ -148,7 +148,7 @@ profile2d.maxstab <- function(fitted, params, ranges, n = 10,
   idx.prof <- which(param.names %in% params)
   fixed.param <- fitted$fixed
   fixed.names <- names(fixed.param)
-  
+
   start <- as.list(fitted$fitted.values)
   start <- start[-idx.prof]
 
@@ -158,7 +158,7 @@ profile2d.maxstab <- function(fitted, params, ranges, n = 10,
   llik <- matrix(NA, n, n)
 
   optfun <- fitted$lik.fun
-  
+
   for (i in 1:n){
     for (j in 1:n){
       fixed.val <- c(fixed.values1[i], fixed.values2[j])
@@ -168,12 +168,12 @@ profile2d.maxstab <- function(fitted, params, ranges, n = 10,
                                 ",", paste(fixed.names, "=", as.numeric(fixed.param),
                                            collapse = ","), ",",
                                 paste(params, "=", fixed.val, collapse = ","), ")"))
-      
+
       else
         body(optfun) <- parse(text = paste("nplk(", paste("p[",1:(n.param-2),"]", collapse = ","),
                                 ",", paste(params, "=", fixed.val, collapse = ","), ")"))
-      
-  
+
+
       llik[i,j] <- -optim(start, optfun)$value
     }
   }
@@ -186,5 +186,5 @@ profile2d.maxstab <- function(fitted, params, ranges, n = 10,
                    xlab = params[1], ylab = params[2], ...)
 
   return(ans)
-  
+
 }

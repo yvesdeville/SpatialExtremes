@@ -42,8 +42,7 @@
   }
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
-                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method, warn = FALSE), fixed.param.gev)
+                 scale.form = scale.form, shape.form = shape.form, method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -53,7 +52,7 @@
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
   args <- c(list(data = frech, coord = coord, fit.marge = FALSE, start = as.list(covs),
-                 iso = iso, warn = FALSE, method = method, std.err.type = "none"),
+                 iso = iso, warn = FALSE, method = method),
             fixed.param.cov)
 
   covs <- do.call("smithfull", args)
@@ -96,7 +95,7 @@
     cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$fitted
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
-                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
+                 scale.form = scale.form, shape.form = shape.form,
                  method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
@@ -107,8 +106,7 @@
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
   args <- c(list(data = frech, coord = coord, cov.mod = cov.mod, fit.marge = FALSE,
-                 start = as.list(cov.param), warn = FALSE, method = method,
-                 std.err.type = "none"), fixed.param.cov)
+                 start = as.list(cov.param), warn = FALSE, method = method), fixed.param.cov)
 
   cov.param <- do.call("schlatherfull", args)
 
@@ -150,7 +148,7 @@
                                marge = "emp")$fitted
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
-                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
+                 scale.form = scale.form, shape.form = shape.form,
                  method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
@@ -161,8 +159,7 @@
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
   args <- c(list(data = frech, coord = coord, cov.mod = cov.mod, fit.marge = FALSE,
-                 start = as.list(cov.param), warn = FALSE, method = method,
-                 std.err.type = "none"), fixed.param.cov)
+                 start = as.list(cov.param), warn = FALSE, method = method), fixed.param.cov)
 
   cov.param <- do.call("schlatherindfull", args)
 
@@ -203,7 +200,7 @@
                                marge = "emp")$fitted
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
-                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
+                 scale.form = scale.form, shape.form = shape.form,
                  method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
@@ -214,8 +211,7 @@
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
   args <- c(list(data = frech, coord = coord, cov.mod = cov.mod, fit.marge = FALSE,
-                 start = as.list(cov.param), warn = FALSE, method = method,
-                 std.err.type = "none"), fixed.param.cov)
+                 start = as.list(cov.param), warn = FALSE, method = method), fixed.param.cov)
 
   cov.param <- do.call("geomgaussfull", args)
 
@@ -256,7 +252,7 @@
                                marge = "emp")$fitted
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
-                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
+                 scale.form = scale.form, shape.form = shape.form,
                  method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
@@ -267,8 +263,7 @@
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
   args <- c(list(data = frech, coord = coord, cov.mod = cov.mod, fit.marge = FALSE,
-                 start = as.list(cov.param), warn = FALSE, method = method,
-                 std.err.type = "none"), fixed.param.cov)
+                 start = as.list(cov.param), warn = FALSE, method = method), fixed.param.cov)
 
   cov.param <- do.call("extremaltfull", args)
 
@@ -324,7 +319,7 @@
     cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$fitted
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
-                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
+                 scale.form = scale.form, shape.form = shape.form,
                  method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
@@ -339,7 +334,7 @@
 
   args <- c(list(data = frech, coord = coord, cov.mod = cov.mod, fit.marge = FALSE,
                  sigma2.form = sigma2.form, warn = FALSE, method = method, start =
-                 c(as.list(sigma2param), as.list(cov.param)), std.err.type = "none"),
+                 c(as.list(sigma2param), as.list(cov.param))),
             fixed.param.cov)
 
   cov.param <- do.call("nsgeomgaussfull", args)
@@ -380,7 +375,7 @@
     cov.param <- fitcovariance(data, coord, "brown", marge = "emp")$fitted
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
-                 scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
+                 scale.form = scale.form, shape.form = shape.form,
                  method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
@@ -391,8 +386,7 @@
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
   args <- c(list(data = frech, coord = coord, fit.marge = FALSE,
-                 start = as.list(cov.param), warn = FALSE, method = method,
-                 std.err.type = "none"), fixed.param.cov)
+                 start = as.list(cov.param), warn = FALSE, method = method), fixed.param.cov)
 
   cov.param <- do.call("brownresnickfull", args)
 

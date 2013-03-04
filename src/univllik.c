@@ -7,7 +7,7 @@ void gevlik(double *data, int *n, double *loc, double *scale,
   int i;
   double iscale = 1 / *scale,
     ishape = 1 / *shape;
-  
+
   if( (*scale <= 0) || (*shape < -1)) {
     *dns = -1e6;
     return;
@@ -17,23 +17,27 @@ void gevlik(double *data, int *n, double *loc, double *scale,
 
   if (fabs(*shape) <= 1e-16){
     for (i=*n;i--;){
-      dummy = (data[i] - *loc) * iscale;
-      *dns += log(iscale) - dummy - exp(-dummy);
+      if (!ISNA(data[i])){
+	dummy = (data[i] - *loc) * iscale;
+	*dns += log(iscale) - dummy - exp(-dummy);
+      }
     }
   }
 
   else{
     for(i=*n;i--;){
-      
-      dummy = 1 + *shape * (data[i] - *loc) * iscale;
-      
-      if (dummy <= 0) {
-	*dns = -1e6;
-	return;
+
+      if (!ISNA(data[i])){
+	dummy = 1 + *shape * (data[i] - *loc) * iscale;
+
+	if (dummy <= 0) {
+	  *dns = -1e6;
+	  return;
+	}
+
+	*dns += log(iscale) - R_pow(dummy, -ishape) -
+	  (ishape + 1) * log(dummy);
       }
-      
-      *dns += log(iscale) - R_pow(dummy, -ishape) -
-	(ishape + 1) * log(dummy);
     }
   }
 
@@ -46,7 +50,7 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
   int i;
   double iscale = 1 / *scale,
     ishape = 1 / *shape;
-  
+
   if ((*scale <= 0) || (*shape < -1)) {
     *dns = -1e6;
     return;
@@ -62,7 +66,7 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
 	*dns = -1e6;
 	return;
       }
-      
+
       *dns += log(iscale) - dummy;
     }
   }
@@ -70,22 +74,22 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
   else{
     for (i=*n;i--;) {
       dummy = (exceed[i] - *thresh) * iscale;
-      
+
       if (dummy <= 0) {
 	*dns = -1e6;
 	return;
       }
-      
+
       dummy = 1 + *shape * dummy;
-      
+
       if (dummy <= 0) {
 	*dns = -1e6;
 	return;
       }
-      
+
       *dns += log(iscale) - (ishape + 1) * log(dummy);
     }
   }
-  
+
   return;
 }

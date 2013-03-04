@@ -23,7 +23,7 @@ covariance(fitted, nugget, sill, range, smooth, smooth2 = NULL, cov.mod =
     and Generalized Cauchy models. May be missing if \code{fitted} is
     given.}
   \item{plot}{Logical. If \code{TRUE} (default) the covariance function
-    is plotted.} 
+    is plotted.}
   \item{dist}{A numeric vector corresponding to the distance at which
     the covariance function should be evaluated. May be missing.}
   \item{xlab,ylab}{The x-axis and y-axis labels. May be missing.}
@@ -85,11 +85,10 @@ colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
 data <- rmaxstab(30, locations, cov.mod = "whitmat", nugget = 0, range =
-3, smooth = 1) 
+3, smooth = 1)
 
 ##Fit a max-stable model
-fitted <- fitmaxstab(data, locations, "whitmat", std.err.type = "none",
-nugget = 0)
+fitted <- fitmaxstab(data, locations, "whitmat", nugget = 0)
 covariance(fitted, ylim = c(0, 1))
 covariance(nugget = 0, sill = 1, range = 3, smooth = 1, cov.mod = "whitmat", add =
 TRUE, col = 3)

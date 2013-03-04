@@ -8,7 +8,7 @@
 ##estimated.
 extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                           fit.marge = FALSE, warn = TRUE, method = "BFGS",
-                          control = list(), std.err.type = "none", corr = FALSE,
+                          control = list(), corr = FALSE,
                           weights = NULL, check.grad = FALSE){
     ##data is a matrix with each column corresponds to one location
     ##locations is a matrix giving the coordinates (1 row = 1 station)
@@ -68,7 +68,7 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                         paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                        "as.double(nugget), as.double(range), as.double(smooth), as.double(smooth2), as.double(DoF), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                        "as.double(nugget), as.double(range), as.double(smooth), as.double(smooth2), as.double(DoF), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
 
     fixed.param <- list(...)[names(list(...)) %in% param]
 
@@ -211,53 +211,52 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     if ((length(weights) == 1) && (weights == 0))
         weights <- NULL
 
-    if (std.err.type != "none"){
-        std.err <- .extremaltstderr(param, data, dist, cov.mod.num, as.double(0),
-                                    as.double(0), as.double(0), as.double(0), as.double(0),
-                                    as.double(0), rep(FALSE, 3), fit.marge = fit.marge,
-                                    std.err.type = std.err.type, fixed.param = names(fixed.param),
-                                    param.names = param.names, weights = weights)
+    std.err <- .extremaltstderr(param, data, dist, cov.mod.num, as.double(0),
+                                as.double(0), as.double(0), as.double(0), as.double(0),
+                                as.double(0), rep(FALSE, 3), fit.marge = fit.marge,
+                                fixed.param = names(fixed.param),
+                                param.names = param.names, weights = weights)
 
-        if (check.grad)
-          print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+    if (check.grad)
+        print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
 
-        opt$hessian <- std.err$hessian
-        var.score <- std.err$var.score
-        ihessian <- try(solve(opt$hessian), silent = TRUE)
+    opt$hessian <- std.err$hessian
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
 
-        if(!is.matrix(ihessian) || any(is.na(var.score))){
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
+        if (warn)
+            warning("Observed information matrix is singular. No standard error will be computed.")
+
+        std.err.type <- "none"
+    }
+
+    else{
+        std.err.type <- "yes"
+        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        std.err <- diag(var.cov)
+
+        std.idx <- which(std.err <= 0)
+        if(length(std.idx) > 0){
             if (warn)
-                warning("observed information matrix is singular; passing std.err.type to ''none''")
+                warning("Some (observed) standard errors are negative;\n passing them to NA")
 
-            std.err.type <- "none"
+            std.err[std.idx] <- NA
         }
 
-        else{
-            var.cov <- ihessian %*% var.score %*% ihessian
-            std.err <- diag(var.cov)
+        std.err <- sqrt(std.err)
 
-            std.idx <- which(std.err <= 0)
-            if(length(std.idx) > 0){
-                if (warn)
-                    warning("Some (observed) standard errors are negative;\n passing them to NA")
-
-                std.err[std.idx] <- NA
-            }
-
-            std.err <- sqrt(std.err)
-
-            if(corr) {
-                .mat <- diag(1/std.err, nrow = length(std.err))
-                corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
-                diag(corr.mat) <- rep(1, length(std.err))
-            }
-
-            else
-                corr.mat <- NULL
-
-            colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <-
-                rownames(ihessian) <- names(std.err) <- nm
+        if(corr) {
+            .mat <- diag(1/std.err, nrow = length(std.err))
+            corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
+            diag(corr.mat) <- rep(1, length(std.err))
         }
+
+        else
+            corr.mat <- NULL
+
+        colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <-
+            rownames(ihessian) <- names(std.err) <- nm
     }
 
     if (std.err.type == "none"){
@@ -278,7 +277,7 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     ext.coeff <- function(h)
         2 * pt(sqrt((1 - cov.fun(h)) * (param["DoF"] + 1) / (1 + cov.fun(h))), param["DoF"] + 1)
 
-    fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
+    fitted <- list(fitted.values = opt$par, std.err = std.err,
                    var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
                    deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                    counts = opt$counts, message = opt$message, est = "MPLE", data = data,
@@ -298,7 +297,7 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 extremaltform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form,
                           start, fit.marge = TRUE, marg.cov = NULL, ...,
                           warn = TRUE, method = "BFGS", control = list(),
-                          std.err.type = "none", corr = FALSE, weights = NULL,
+                          corr = FALSE, weights = NULL,
                           temp.cov = NULL, temp.form.loc = NULL, temp.form.scale = NULL,
                           temp.form.shape = NULL, check.grad = FALSE){
     ##data is a matrix with each column corresponds to one location
@@ -478,7 +477,7 @@ as.double(temp.penalty.shape),",
                         paste("as.double(c(", paste(temp.names.scale, collapse = ","), ")), "),
                         paste("as.double(c(", paste(temp.names.shape, collapse = ","), ")), "),
                         "as.double(nugget), as.double(range), as.double(smooth), as.double(smooth2),
-as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
 
     ##Define the formal arguments of the function
     form.nplk <- NULL
@@ -624,55 +623,54 @@ as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
     if ((length(weights) == 1) && (weights == 0))
         weights <- NULL
 
-    if (std.err.type != "none"){
-        std.err <- .extremaltstderr(param, data, dist, cov.mod.num, loc.dsgn.mat, scale.dsgn.mat,
-                                    shape.dsgn.mat, temp.dsgn.mat.loc, temp.dsgn.mat.scale,
-                                    temp.dsgn.mat.shape, use.temp.cov, fit.marge = fit.marge,
-                                    std.err.type = std.err.type, fixed.param = names(fixed.param),
-                                    param.names = param.names, weights = weights)
+    std.err <- .extremaltstderr(param, data, dist, cov.mod.num, loc.dsgn.mat, scale.dsgn.mat,
+                                shape.dsgn.mat, temp.dsgn.mat.loc, temp.dsgn.mat.scale,
+                                temp.dsgn.mat.shape, use.temp.cov, fit.marge = fit.marge,
+                                fixed.param = names(fixed.param),
+                                param.names = param.names, weights = weights)
 
-        if (check.grad)
-          print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+    if (check.grad)
+        print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
 
-        opt$hessian <- std.err$hessian
-        var.score <- std.err$var.score
-        ihessian <- try(solve(opt$hessian), silent = TRUE)
+    opt$hessian <- std.err$hessian
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
 
-        if(!is.matrix(ihessian) || any(is.na(var.score))){
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
+        if (warn)
+            warning("Observed information matrix is singular. No standard error will be computed.")
+
+        std.err.type <- "none"
+    }
+
+    else{
+        std.err.type <- "yes"
+        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+
+        std.err <- diag(var.cov)
+
+        std.idx <- which(std.err <= 0)
+        if(length(std.idx) > 0){
             if (warn)
-                warning("observed information matrix is singular; passing std.err.type to ''none''")
+                warning("Some (observed) standard errors are negative;\n passing them to NA")
 
-            std.err.type <- "none"
+            std.err[std.idx] <- NA
         }
 
-        else{
-            var.cov <- ihessian %*% var.score %*% ihessian
 
-            std.err <- diag(var.cov)
+        std.err <- sqrt(std.err)
 
-            std.idx <- which(std.err <= 0)
-            if(length(std.idx) > 0){
-                if (warn)
-                    warning("Some (observed) standard errors are negative;\n passing them to NA")
-
-                std.err[std.idx] <- NA
-            }
-
-
-            std.err <- sqrt(std.err)
-
-            if(corr) {
-                .mat <- diag(1/std.err, nrow = length(std.err))
-                corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
-                diag(corr.mat) <- rep(1, length(std.err))
-            }
-
-            else
-                corr.mat <- NULL
-
-            colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <-
-                rownames(ihessian) <- names(std.err) <- nm
+        if(corr) {
+            .mat <- diag(1/std.err, nrow = length(std.err))
+            corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
+            diag(corr.mat) <- rep(1, length(std.err))
         }
+
+        else
+            corr.mat <- NULL
+
+        colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <-
+            rownames(ihessian) <- names(std.err) <- nm
     }
 
     if (std.err.type == "none"){
@@ -692,7 +690,7 @@ as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
     ext.coeff <- function(h)
         2 * pt(sqrt((1 - cov.fun(h)) * (param["DoF"] + 1) / (1 + cov.fun(h))), param["DoF"] + 1)
 
-    fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
+    fitted <- list(fitted.values = opt$par, std.err = std.err,
                    var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                    deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                    counts = opt$counts, message = opt$message, data = data, est = "MPLE",

@@ -26,8 +26,11 @@ double wlplikschlather(double *data, double *rho, double *jac,
 
 	  return (0.00000005 + rho[currentPair]) * (0.00000005 + rho[currentPair]) * MINF;
 
-     
+
 	for (k=nObs;k--;){
+	  if (ISNA(data[k + i * nObs]) || ISNA(data[k + j * nObs]))
+	    continue;
+
 	  data1Square = data[k + i * nObs] * data[k + i * nObs];
 	  data2Square = data[k + j * nObs] * data[k + j * nObs];
 	  twiceData1Data2 = 2 * data[k + i * nObs] * data[k + j * nObs];
@@ -82,6 +85,9 @@ double wlpliksmith(double *data, double *mahalDist, double *jac,
 
       if (weights[currentPair] != 0){
 	for (k=nObs;k--;){
+	  if (ISNA(data[k + i * nObs]) || ISNA(data[k + j * nObs]))
+	    continue;
+
 	  idata1 = 1 / data[k + i * nObs];
 	  idata2 = 1 / data[k + j * nObs];
 	  idata1Idata2Imahal = idata1 * idata2 * imahal;
@@ -154,10 +160,13 @@ double wlplikschlatherind(double *data, double alpha, double *rho,
       for (j=i+1;j<nSite;j++){
 	currentPair++;
 	if (weights[currentPair] != 0){
-	  for (k=nObs;k--;)
+	  for (k=nObs;k--;){
+	    if (ISNA(data[k + i * nObs]) || ISNA(data[k + j * nObs]))
+	      continue;
 	    dns += weights[currentPair] * (- 1 / data[k + i * nObs] - 1 / data[k + j * nObs] -
 					   2 * log(data[k + i * nObs] * data[k + j * nObs]) +
 					   jac[k + i * nObs] + jac[k + j * nObs]);
+	  }
 	}
       }
     }
@@ -181,8 +190,11 @@ double wlplikschlatherind(double *data, double alpha, double *rho,
 
 	    return (0.00000005 + rho[currentPair]) * (0.00000005 + rho[currentPair]) * MINF;
 
-	
+
 	  for (k=nObs;k--;){
+	    if (ISNA(data[k + i * nObs]) || ISNA(data[k + j * nObs]))
+	      continue;
+
 	    data1Square = data[k + i * nObs] * data[k + i * nObs];
 	    data2Square = data[k + j * nObs] * data[k + j * nObs];
 	    twiceData1Data2 = 2 * data[k + i * nObs] * data[k + j * nObs];
@@ -248,6 +260,9 @@ double wlplikextremalt(double *data, double *rho, double df, double *jac,
 	a = sqrt(dfPlus1 / (1 - rho[currentPair] * rho[currentPair]));
 
 	for (k=nObs;k--;){
+	  if (ISNA(data[k + i * nObs]) || ISNA(data[k + j * nObs]))
+	    continue;
+
 	  idata1 = 1 / data[k + i * nObs];
 	  idata2 = 1 / data[k + j * nObs];
 
