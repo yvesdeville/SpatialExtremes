@@ -294,23 +294,25 @@ double lplikextremalt(double *data, double *rho, double df, double *jac,
 
 	if (ptc1 == 0)
 	  //The bivariate distribution degenerates
-	  dns +=  -2 * log(data[k + j * nObs]) - 1 / data[k + j * nObs] + jac[k + j * nObs];
+	  dns +=  2 * log(idata2) - idata2 + jac[k + j * nObs];
 
 	else if (ptc2 == 0)
 	  //The bivariate distribution degenerates
-	  dns += -2 * log(data[k + i * nObs]) - 1 / data[k + i * nObs] + jac[k + i * nObs];
+	  dns += 2 * log(idata1) - idata1 + jac[k + i * nObs];
 
 	else {
 	  //It's the log of the joint CDF
 	  double lFvec = -ptc1 * idata1 - ptc2 * idata2,
 
 	    //It's the partial derivative for marge 1
-	    dvecM1 = idata1 * idata1 * ptc1 + idata1 * idata1 * a * idf *
-	    data2_1 * dtc1 - idata1 * idata2 * a * idf * data1_2 * dtc2,
+	    dvecM1 = idata1 * (idata1 * ptc1 + a * idf * 
+			       (idata1 * data2_1 * dtc1 -
+				idata2 * data1_2 * dtc2)),
 
 	    //It's the partial derivative for marge 2
-	    dvecM2 = idata2 * idata2 * ptc2 + idata2 * idata2 * a * idf *
-	    data1_2 * dtc2 - idata1 * idata2 * a * idf * data2_1 * dtc1,
+	    dvecM2 = idata2 * (idata2 * ptc2 + a * idf *
+			       (idata2 * data1_2 * dtc2 -
+				idata1 * data2_1 * dtc1)),
 
 	    //Rmq: to have dvecM1 and dvecM2 we have to multiply
 	    //them by Fvec[i]. It's not done yet as dvecMixed has to be

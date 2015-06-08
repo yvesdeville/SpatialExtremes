@@ -1,8 +1,6 @@
 \name{rainfall}
 \docType{data}
 \alias{rainfall}
-\alias{rain}
-\alias{coord}
 \title{Summer annual maxima precipitation in Switzerland}
 \usage{data(rainfall)}
 \description{

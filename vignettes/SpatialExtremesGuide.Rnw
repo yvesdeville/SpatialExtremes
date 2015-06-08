@@ -5,7 +5,9 @@
 \begin{document}
 % \VignetteIndexEntry{A R Package for Modelling Spatial Extremes}
 % \VignetteDepends{SpatialExtremes}
-% \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes}
+% \VignetteKeyword{Extreme Value Theory}
+% \VignetteKeyword{Spatial Extremes}
+% \VignetteKeyword{Max-stable processes}
 % \VignettePackage{SpatialExtremes}
 \SweaveOpts{eps=FALSE,pdf=TRUE}
 

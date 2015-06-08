@@ -122,7 +122,7 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
        ans: the generated random field */
 
   int neffSite, lagi = 1, lagj = 1, oneInt = 1;
-  double sill = 1 - *nugget, one = 1, zero = 0;
+  double sill = 1 - *nugget;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);

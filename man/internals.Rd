@@ -17,6 +17,15 @@
 \alias{extremaltform}
 \alias{extremaltfull}
 \alias{getsubregions}
+\alias{logit}
+\alias{maxima.summer}
+\alias{minima.winter}
+\alias{metadata}
+\alias{coord}
+\alias{rain}
+\alias{alt.mat}
+\alias{lon.vec}
+\alias{lat.vec}
 
 \title{Internal functions and methods for the maxstable package.}
 \description{A set of functions that should not be used directly by the

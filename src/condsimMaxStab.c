@@ -2312,3 +2312,719 @@ void getStartingPartitionBR(int *nSim, int *n, double *coord, double *range, dou
 
   return;
 }
+
+
+
+/* The code below has to be updated for the extremal-t model */
+
+void computeWeightsExtt(int *nCond, double *y, int *nPart, int *allPart,
+			int *allSize, double *cov, double *nu, double *weights){
+  /* This function computes the distribution function of the random
+     partition given the conditioning values, i.e., Pr[\theta = \tau |
+     Z(x) = z]. (Extremal-t case) */
+
+  int *currentPart = malloc(*nCond * sizeof(int));
+
+  // Set the weights to one
+  for (int i=0;i<*nPart;i++)
+    weights[i] = 1;
+
+  for (int i=0;i<*nPart;i++){
+    // Loop over all the partitions
+    memcpy(currentPart, allPart + i * *nCond, *nCond * sizeof(int));
+
+    for (int j=0;j<allSize[i];j++){
+      //Loop over all sets of the current partition
+
+      int r = 0;
+      for (int k=0;k<*nCond;k++)
+	r += (currentPart[k] == j);
+
+      int nr = *nCond - r,
+	*tau = malloc(r * sizeof(int)),
+	*taubar = malloc(nr * sizeof(int));
+
+      gettau(nCond, currentPart, &j, tau);
+
+      if (r < *nCond) {
+	gettaubar(nCond, currentPart, &j, taubar);
+
+	/* Define the parameters of the distribution of the extremal
+	   function. For the Schlather case, it is a multivariate
+	   Student distribution up to a deterministic
+	   transformation. Hence below we compute the degree of
+	   freedom (DoF), the Cholesky decomposition of the scale
+	   matrix (scaleMat) and the location parameter (mu) */
+	double DoF = 0,
+	  *scaleMat = malloc(nr * nr * sizeof(double)),
+	  *mu = malloc(nr * sizeof(double));
+	getParametersExtt(tau, taubar, &r, &nr, cov, y, nu, &DoF, mu, scaleMat);
+
+	/* Compute the proba values, i.e., the probabilities that one
+	   extremal function is smaller than the hitting bounds at the
+	   remaining conditioning locations. */
+	double prob = 0;
+	computeprobaExtt(nu, &DoF, mu, scaleMat, y, &nr, taubar, &prob);
+	weights[i] *= prob;
+
+	free(scaleMat); free(mu);
+      }
+
+      /* Compute the intensity function values, i.e.,
+	 \lambda_{x_{\tau_j}}(z_{\tau_j}). */
+      double f = 0;
+      getfvaluesExtt(y, nCond, &r, tau, cov, nu, &f);
+
+      weights[i] *= exp(f);
+      free(tau); free(taubar);
+    }
+  }
+
+  /* Compute the normalizing constant and normalize the
+     distribution */
+  double isumWeights = 0;
+  for (int i=0;i<*nPart;i++)
+    isumWeights += weights[i];
+
+  isumWeights = 1 / isumWeights;
+
+  for (int i=0;i<*nPart;i++)
+    weights[i] *= isumWeights;
+
+  free(currentPart);
+  return;
+}
+
+void computeprobaExtt(double *nu, double *DoF, double *mu, double *scaleMat, double *y,
+		      int *ntaubar, int *taubar, double *prob){
+
+  *prob = 0;
+
+  double *ytaubar = malloc(*ntaubar * sizeof(double));
+  for (int i=0;i<*ntaubar;i++)
+    ytaubar[i] = R_pow(y[taubar[i]], 1 / *nu);
+
+  if (*ntaubar == 1)
+    *prob = pt(*ytaubar - *mu, *DoF, 1, 0);
+
+  else {
+    /* Computing the proba */
+    double err = 0;
+    int nMc = 0;
+
+    pmvt(ytaubar, ntaubar, DoF, mu, scaleMat, prob, &err, &nMc);
+  }
+
+  free(ytaubar);
+
+  return;
+}
+
+void getfvaluesExtt(double *y, int *n, int *ntau, int *tau, double *cov,
+		    double *nu, double *f){
+
+  /* This function computes the logarithm of the intensity
+     function, i.e., \lambda_{x_\tau_j}(z_{\tau_j}). */
+
+  /* Get the sub-matrix of cov */
+  const double logCnu = (1 - 0.5 * *nu) * M_LN2 + M_LN_SQRT_PI -
+    lgammafn(0.5 * (*nu + 1));
+  double *covjchol = malloc(*ntau * *ntau * sizeof(double));
+  getSubMatrix(cov, n, ntau, tau, ntau, tau, covjchol);
+
+  /* Get the Cholesky decomposition of this submatrix */
+  int info = 0;
+  F77_CALL(dpotrf)("U", ntau, covjchol, ntau, &info);
+
+  if (info != 0)
+    error("4. error code %d from Lapack routine '%s'", info, "dpotrf");
+
+  //Get the sub-vector of y
+  double *yj = malloc(*ntau * sizeof(double));
+  for (int k=0;k<*ntau;k++)
+    yj[k] = y[tau[k]];
+
+  /* Compute the log of the determinant of cov */
+  int oneInt = 1;
+  double det = 0;
+  for (int i=0;i<*ntau;i++)
+    det += log(covjchol[i * (1 + *ntau)]);
+
+  det *= 2;
+
+  /* Compute covjchol^{-T} %*% y */
+  double *covjCholMean = malloc(*ntau * sizeof(double));
+  for (int i=0;i<*ntau;i++)
+    covjCholMean[i] = R_pow(yj[i], 1 / *nu);
+
+  F77_CALL(dtrsv)("U", "T", "N", ntau, covjchol, ntau, covjCholMean, &oneInt);
+
+  double mahal = 0;
+for (int i=0;i<*ntau;i++){
+    mahal += covjCholMean[i] * covjCholMean[i];
+    *f += (1 / *nu -  1) * log(yj[i]);
+ }
+
+*f += logCnu + (1 - *ntau) * log(*nu) + (2 - *nu) * M_LN2 - *ntau * M_LN_SQRT_PI -
+  0.5 * det - 0.5 * (*ntau + *nu) * log(mahal) + lgammafn(0.5 * (*ntau + *nu));
+
+  free(covjCholMean);
+  return;
+}
+
+void getParametersExtt(int *tau, int *taubar, int *ntau, int *ntaubar, double *cov,
+		       double *y, double *nu, double *DoF, double *mu, double *scaleMat){
+
+  /* This function computes the parameters of distribution of the
+     extremal functions. For the Extremal-t case, it is a multivariate
+     Student distribution with degree of freedom (DoF), location
+     parameter (mu) and scale matrix (scaleMat) (but don't forget the
+     mapping see the paper). */
+
+  int oneInt = 1;
+
+  // First get the submatrices of Sigma and the subvector of y
+  int dim = *ntau + *ntaubar;
+
+  double *covCholx = malloc(*ntau * *ntau * sizeof(double));
+  getSubMatrix(cov, &dim, ntau, tau, ntau, tau, covCholx);
+
+  int info = 0;
+  F77_CALL(dpotrf)("U", ntau, covCholx, ntau, &info);
+
+  if (info != 0)
+    error("0. error code %d from Lapack routine '%s'", info, "dpotrf");
+
+  double *covs = malloc(*ntaubar * *ntaubar * sizeof(double));
+  getSubMatrix(cov, &dim, ntaubar, taubar, ntaubar, taubar, covs);
+
+  double *covsx = malloc(*ntaubar * *ntau * sizeof(double));
+  getSubMatrix(cov, &dim, ntaubar, taubar, ntau, tau, covsx);
+
+  double *yx = malloc(*ntau * sizeof(double));
+  for (int i=0;i<*ntau;i++)
+    yx[i] = y[tau[i]];
+
+  /* Get the degree of freedom parameter */
+  *DoF = *ntau + *nu;
+
+  /* Compute the location parameter:
+
+     It is given by mu = covsx %*% covx^(-1) %*% yx, so in terms of
+     the Cholesky decomposition we will compute it as follows
+
+     mu = covsx %*% (covCholx^T %*% covCholx)^(-1) %*% (yx)^(1/nu)
+        = covsx %*% covCholx^(-1) %*% covCholx^(-T) %*% (yx)^(1/nu),
+
+     i.e.,
+       a) solve the (triangular) system X %*% covCholx = covsx -->> dummy1
+       b) solve the (triangular) system covCholx^T %*% Y = (yx)^(1/nu)  -->> dummy2
+       c) Then mu = X %*% Y.
+
+     Note that Y is a vector and X is a matrix!
+
+  */
+
+  double *dummy1 = malloc(*ntaubar * *ntau * sizeof(double));
+  memcpy(dummy1, covsx, *ntaubar * *ntau * sizeof(double));
+
+  double alpha = 1;
+  F77_CALL(dtrsm)("R", "U", "N", "N", ntaubar, ntau, &alpha, covCholx, ntau,
+		  dummy1, ntaubar);
+
+  double *dummy2 = malloc(*ntau * sizeof(double));
+  for (int i=0;i<*ntau;i++)
+    dummy2[i] = R_pow(y[i], 1 / *nu);
+  F77_CALL(dtrsv)("U", "T", "N", ntau, covCholx, ntau, dummy2, &oneInt);
+
+  double beta = 0;
+  F77_CALL(dgemv)("N", ntaubar, ntau, &alpha, dummy1, ntaubar, dummy2, &oneInt,
+		  &beta, mu, &oneInt);
+
+  /* Compute the scale matrix:
+
+     It is given by
+
+     scaleMat = mahal / (k+*nu) * (covs - covsx %*% covx^(-1) %*% covsx^T),
+
+     so in terms of the Cholesky decomposition we will compute it as
+     follows
+
+     dummy3 = covsx %*% covx^(-1) %*% covsx^T
+            = covsx %*% (covCholx^T %*% covCholx)^(-1) %*% covsx^T
+	    = covsx %*% covCholx^(-1) %*% covCholx^(-T) %*% covsx^T
+	    = covsx %*% covCholx^(-1) %*% (covsx %*% covCholx^(-1))^T
+	    = dummy1 %*% dummy1^T.
+
+     dummy3 = covs - dummy3;
+
+     mahal = {(yx)^(1/nu)}^T %*% covx^(-1) %*% (yx)^(1/nu)
+           = {(yx)^(1/nu)}^T %*% (covCholx^T %*% covCholx)^(-1) %*% (yx)^(1/nu)
+	   = (covCholx^(-T) %*% (yx)^(1/nu))^T %*% covCholx^(-T) %*% (yx)^(1/nu)
+	   = dummy2^T %*% dummy2
+
+     scaleMat = mahal / (k + nu) * dummy3 = mahal / DoF * dummy3.
+
+  */
+
+  double mahal = 0;
+  for (int i=0;i<*ntau;i++)
+    mahal += dummy2[i] * dummy2[i];
+
+  mahal /= *DoF;
+
+  double minusMahal = - mahal;
+
+  memcpy(scaleMat, covs, *ntaubar * *ntaubar * sizeof(double));
+  F77_CALL(dsyrk)("U", "N", ntaubar, ntau, &minusMahal, dummy1, ntaubar,
+		  &mahal, scaleMat, ntaubar);// Watch out only the upper part is stored.
+
+  // Fill the lower triangular part
+  for (int i=0;i<*ntaubar;i++)
+    for (int j=i;j<*ntaubar;j++)
+      scaleMat[j + i * *ntaubar] = scaleMat[i + *ntaubar * j];
+
+  free(covCholx); free(covs); free(covsx); free(yx); free(dummy1); free(dummy2);
+  return;
+}
+
+void condsimextt(int *nsim, int *n, int *nCond, int *allPart, double *nu,
+		 double *cov, double *y, double *sim, double *subextfct,
+		 double *extfct, double *timings){
+
+  clock_t start, end;
+  int oneInt = 1,
+    *currentPart = malloc(*nCond * sizeof(int));
+  double *x = malloc(*n * sizeof(double)),
+    *z = malloc(*n * sizeof(double)),
+    *prop = malloc(*n * sizeof(double));
+
+  /* Get the Cholesky decomposition of the covariance matrix */
+  int info = 0;
+  double *covChol = malloc(*n * *n * sizeof(double));
+  memcpy(covChol, cov, *n * *n * sizeof(double));
+  F77_CALL(dpotrf)("U", n, covChol, n, &info);
+
+  if (info != 0)
+    error("Error code %d from Lapack routine '%s'", info, "dpotrf");
+
+  GetRNGstate();
+
+  for (int i=0;i<*nsim;i++){
+
+    /* Select the partition */
+    memcpy(currentPart, allPart + i * *nCond, *nCond * sizeof(int));
+    int size = getPartSize(currentPart, nCond);
+
+    start = clock();
+    for (int j=0;j<*n;j++)
+      z[j] = -1e6;
+
+    for (int j=0;j<size;j++){
+
+      int r = 0;
+      for (int k=0;k<*nCond;k++)
+	r += (currentPart[k] == j);
+
+      int nr = *n - r,
+	*tau = malloc(r * sizeof(int));
+
+      gettau(nCond, currentPart, &j, tau);
+
+      /* Watch out taubar typically contains some conditioning
+	 locations and the locations where we want to get conditional
+	 realizations!!! */
+      int *taubar = malloc(nr * sizeof(int));
+      for (int k=0;k<(*n - *nCond);k++)
+	taubar[*nCond - r + k] = *nCond + k;
+
+      if (r < *nCond)
+	gettaubar(nCond, currentPart, &j, taubar);
+
+      double DoF = 0,
+	*scaleMat = malloc(nr * nr * sizeof(double)),
+	*mu = malloc(nr * sizeof(double));
+      getParametersExtt(tau, taubar, &r, &nr, cov, y, nu, &DoF, mu, scaleMat);
+
+      // Compute the Cholesky decomposition of scaleMat
+      double *scaleMatChol = malloc(nr * nr * sizeof(double));
+      memcpy(scaleMatChol, scaleMat, nr * nr * sizeof(double));
+
+      int info = 0;
+      F77_CALL(dpotrf)("U", &nr, scaleMatChol, &nr, &info);
+
+      if (info != 0)
+	error("2. error code %d from Lapack routine '%s'", info, "dpotrf");
+
+      /* Simulate student processes that satisfy the upper bound
+	 constraints from iBchol */
+      for (int k=0;k<r;k++)
+	z[tau[k]] = y[tau[k]];
+
+      double *eps = malloc(nr * sizeof(double));
+      int flag = 1;
+
+      while (flag){
+	flag = *nCond - r;
+
+	double scaleFactor = sqrt(DoF / rchisq(DoF));
+
+	for (int k=0;k<nr;k++)
+	  eps[k] = norm_rand();
+
+	F77_CALL(dtrmv)("U", "T", "N", &nr, scaleMatChol, &nr, eps, &oneInt);
+
+	for (int k=0;k<nr;k++)
+	  eps[k] = R_pow(fmax2(0, mu[k] + scaleFactor * eps[k]), *nu);
+
+	for (int k=0;k<(*nCond - r);k++)
+	  flag -= (eps[k] <= y[taubar[k]]);
+      }
+
+      for (int k=0;k<nr;k++)
+	z[taubar[k]] = fmax2(z[taubar[k]], eps[k]);
+
+      free(scaleMatChol); free(tau); free(taubar); free(mu); free(scaleMat);
+      free(eps);
+    }
+
+    end = clock();
+    timings[0] = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+    /* Simulate extremal-t processes that satisfy the upper bound
+       constraints */
+    start = clock();
+    const double normCst = M_SQRT_PI * R_pow(2, 1 - 0.5 * *nu) /
+      gammafn(0.5 * (*nu + 1));
+    double poisson = 0;
+
+    for (int j=0;j<*n;j++)
+      x[j] = -1e6;
+
+    int nKO = *n;
+    while (nKO){
+
+      poisson += exp_rand();
+      double ipoisson = normCst / poisson,
+	thresh = 3.5 * normCst * ipoisson;
+
+      for (int j=0;j<*n;j++)
+	prop[j] = norm_rand();
+
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+
+      for (int j=0;j<*n;j++)
+	prop[j] = ipoisson * R_pow(fmax(0, prop[j]), *nu);
+
+      int flag = *nCond;
+      for (int j=0;j<*nCond;j++)
+	flag -= (prop[j] <= y[j]);
+
+      nKO = *n;
+      if (flag == 0){
+	for (int j=0;j<*n;j++)
+	  x[j] = fmax2(x[j], prop[j]);
+
+	//nKO--;
+	for (int j=0;j<*n;j++)
+	  nKO -= (thresh <= x[j]);
+      }
+    }
+
+    end = clock();
+    timings[1] = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+    /* Get the max between those two simulations */
+    for (int j=0;j<*n;j++){
+      sim[i * *n + j] = fmax2(x[j], z[j]);
+      subextfct[i * *n + j] = x[j];
+      extfct[i * *n + j] = z[j];
+    }
+  }
+
+  PutRNGstate();
+
+  free(currentPart); free(x); free(z); free(prop);
+  return;
+}
+
+void gibbsForPartExtt(int *nchain, int *nthin, int *burnin, int *nCond,
+		      int *currentPart, double *nu, double *cov, double *y, int *chain,
+		      double *timings){
+
+  /* This function generates a Markov chain using a Gibbs sampler
+     whose target distribution is \Pr[\theata = \tau | Z(x) = z].  The
+     update is performed by picking up randomly one conditional
+     location, compute all the weights related to moving this location
+     to another set (or even a new one), and sample the next state of
+     the chain from the conditional distribution. */
+
+  clock_t start, end;
+  start = clock();
+  int *newPart = malloc(*nCond * sizeof(int)),
+    size = getPartSize(currentPart, nCond),
+    iterThin = 0,
+    iter = 0;
+
+  GetRNGstate();
+
+  while (iterThin < *nchain){
+
+    void R_CheckUserInterrupt(void);
+
+    /* Pick up one location randomly */
+    int idxSite = *nCond * unif_rand(), currentSet = currentPart[idxSite];
+    memcpy(newPart, currentPart, *nCond * sizeof(int));
+
+    int r = 0;
+    for (int j=0;j<*nCond;j++)
+      r += (currentPart[j] == currentSet);
+
+    int ncondWeights = size + (r > 1);
+    /* Rmk: If r = 1, then we cannot have newSet = size since this
+       partition has already been considered when newSet = oldSet */
+
+    double *condWeights = malloc(ncondWeights * sizeof(double));
+
+    for (int newSet=0;newSet<ncondWeights;newSet++){
+      if (newSet == currentSet){
+	/* This means that the site is moved to the same partition set
+	   --> the partition is left unchanged */
+	condWeights[newSet] = 1;
+	continue;
+      }
+
+      newPart[idxSite] = newSet;
+
+      condWeights[newSet] = computeWeightForOneSetExtt(&newSet, nCond, newPart, nu, cov, y) /
+	computeWeightForOneSetExtt(&currentSet, nCond, currentPart, nu, cov, y);
+
+      if (r > 1)
+	condWeights[newSet] *= computeWeightForOneSetExtt(&currentSet, nCond, newPart, nu, cov, y);
+
+      int r2 = 0;
+      for (int k=0;k<*nCond;k++)
+	r2 += (currentPart[k] == newSet);
+
+      if (r2 > 0)
+	condWeights[newSet] /= computeWeightForOneSetExtt(&newSet, nCond, currentPart, nu, cov, y);
+    }
+
+    /* Compute the normalizing constant and normalize the
+       distribution. */
+    double isumCondWeights = 0;
+    for (int j=0;j<ncondWeights;j++)
+      isumCondWeights += condWeights[j];
+
+    isumCondWeights = 1 / isumCondWeights;
+
+    for (int j=0;j<ncondWeights;j++)
+      condWeights[j] *= isumCondWeights;
+
+    /* Sample from the full conditional distribution. */
+    double u = unif_rand();
+    int newSet = -1;
+    {
+      int flag = 1;
+      double cumWeight = 0;
+      while (flag){
+	newSet++;
+	cumWeight += condWeights[newSet];
+	flag = (u >= cumWeight);
+      }
+    }
+
+    /* Update the Markov chain. */
+    if (newSet != currentSet){
+      currentPart[idxSite] = newSet;
+
+      if (r == 1)
+	size--;
+
+      else
+	size += (newSet == size);
+
+      convert2rightformat(currentPart, nCond, &size);
+    }
+
+    if ((iter > *burnin) & ((iter % *nthin) == 0)){
+      memcpy(chain + iterThin * *nCond, currentPart, *nCond * sizeof(int));
+      iterThin++;
+    }
+
+    iter++;
+    free(condWeights);
+  }
+
+  PutRNGstate();
+
+  free(newPart);
+
+  end = clock();
+  *timings = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+  return;
+}
+
+double computeWeightForOneSetExtt(int *idxSet, int *nCond, int *partition,
+				  double *nu, double *cov, double *y){
+
+  /* This function computes the weights of a single set of a given
+     partition. Hence the weight of a partition is the product of
+     these single weights. (Schlather case) */
+  double weight = 1;
+  int r = 0;
+
+  for (int i=0;i<*nCond;i++)
+    r += (partition[i] == *idxSet);
+
+  int nr = *nCond - r,
+    *tau = malloc(r * sizeof(int)),
+    *taubar = malloc(nr * sizeof(int));
+
+  gettau(nCond, partition, idxSet, tau);
+
+  if (r < *nCond) {
+    gettaubar(nCond, partition, idxSet, taubar);
+
+    /* Define the parameters of the Student distribution, i.e., the
+       degree of freedom (DoF), the Cholesky decomposition of the
+       (scaleMat) scale matrix and the location parameter (mu) */
+    double DoF = 0,
+      *scaleMat = malloc(nr * nr * sizeof(double)),
+      *mu = malloc(nr * sizeof(double));
+    getParametersExtt(tau, taubar, &r, &nr, cov, y, nu, &DoF, mu, scaleMat);
+
+    /* Compute the proba values --- see the note */
+    double prob = 0;
+    computeprobaExtt(nu, &DoF, mu, scaleMat, y, &nr, taubar, &prob);
+    weight = prob;
+
+    free(scaleMat); free(mu);
+  }
+
+  /* Compute the f values --- see the note */
+  double f = 0;
+  getfvaluesExtt(y, nCond, &r, tau, cov, nu, &f);
+  // f values are OK
+
+  weight *= exp(f);
+
+  free(tau); free(taubar);
+  return weight;
+}
+
+void totoExtt(int *nsim, int *n, double *nu, double *covChol, double *ans){
+
+  int oneInt = 1;
+  const double normCst = M_SQRT_PI * R_pow(2, 1 - 0.5 * *nu) /
+    gammafn(0.5 * (*nu + 1));
+
+  double *x = malloc(*n * sizeof(double)),
+    *prop = malloc(*n * sizeof(double));
+
+  GetRNGstate();
+  for (int i=0;i<*nsim;i++){
+    for (int j=0;j<*n;j++)
+      x[j] = 0;
+
+    double poisson = 0;
+    int nKO = *n;
+
+    while(nKO){
+      poisson += exp_rand();
+
+      double ipoisson = 1 / poisson,
+	thresh = 3.5 * normCst * ipoisson;
+
+      for (int j=0;j<*n;j++)
+	prop[j] = norm_rand();
+
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+
+      for (int j=0;j<*n;j++)
+	prop[j] = normCst * ipoisson * R_pow(fmax2(0, prop[j]), *nu);
+
+      for (int j=0;j<*n;j++)
+	x[j] = fmax2(x[j], prop[j]);
+
+      nKO = *n;
+      for (int j=0;j<*n;j++)
+	nKO -= (thresh <= x[j]);
+    }
+
+    for (int j=0;j<*n;j++)
+      ans[i + j * *nsim] = x[j];
+  }
+  PutRNGstate();
+  free(x); free(prop);
+
+  return;
+}
+
+void getStartingPartitionExtt(int *nsim, int *n, double *nu, double *covChol,
+			      int *startPart){
+
+  /* This function simulates a bunch of max-stable realizations and
+     define a suitable starting values for the Gibbs sampler. */
+  int oneInt = 1,
+    *dummy = malloc(*n * sizeof(int));
+  double *x = malloc(*n * sizeof(double)),
+    *prop = malloc(*n * sizeof(double));
+
+  for (int i=0;i<*nsim;i++){
+    for (int j=0;j<*n;j++){
+      x[j] = 0;
+      dummy[j] = -1;
+    }
+
+    double poisson = 0;
+    int nKO = *n;
+
+    GetRNGstate();
+    int partSet = 0;
+    while(nKO){
+      poisson += exp_rand();
+
+      double ipoisson = 1 / poisson,
+	thresh = 3.5 * ipoisson;
+
+      for (int j=0;j<*n;j++)
+	prop[j] = norm_rand();
+
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+
+      for (int j=0;j<*n;j++)
+	prop[j] = ipoisson * R_pow(fmax2(0, prop[j]), *nu);
+
+      int hasChanged = 0;
+      for (int j=0;j<*n;j++){
+	if (prop[j] > x[j]){
+	  dummy[j] = partSet;
+	  hasChanged = 1;
+	}
+
+	x[j] = fmax2(x[j], prop[j]);
+      }
+
+      nKO = *n;
+      for (int j=0;j<*n;j++)
+	nKO -= (thresh <= x[j]);
+
+      if (hasChanged){
+	partSet++;
+	convert2rightformat(dummy, n, &partSet);
+	partSet = getPartSize(dummy, n);
+      }
+    }
+
+    for (int j=0;j<*n;j++)
+      startPart[i * *n + j] = dummy[j];
+  }
+  
+  PutRNGstate();
+
+  free(x); free(prop);
+
+  return;
+}

@@ -98,7 +98,7 @@ ans <- condrmaxstab(n.sim, coord, cond.coord, cond.data, range = range,
                     smooth = smooth, cov.mod = "powexp")
 
 idx <- order(all.coord)
-matplot(all.coord[idx], t(log(ans$sim)[,idx]), type = "l", col = "grey", lty = 1,
+matplot(coord, t(log(ans$sim)), type = "l", col = "grey", lty = 1,
         xlab = expression(x), ylab = expression(Z(x)))
 lines(all.coord[idx], log(all.cond.data)[idx])
 points(cond.coord, log(cond.data), pch = 15, col = 2)

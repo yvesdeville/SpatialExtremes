@@ -158,7 +158,7 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 
     for (int i=0; i<*nObs; i++){
       double poisson = 0;
-      int nKO = neffSite, iter = 0;
+      int iter = 0;
       
       while (iter < *maxSim){
 	iter++;
@@ -169,7 +169,7 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 	F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
 	
 	poisson += exp_rand();
-	double ipoisson = -log(poisson), thresh = *uBound + ipoisson;
+	double ipoisson = -log(poisson);
 	
 	for (int j=0; j<neffSite; j++)
 	  ans[j * lagj + i * lagi] = fmax2(gp[j] - vario[j] + ipoisson,

@@ -131,7 +131,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 
   int i, j, neffSite, lagi = 1, lagj = 1, oneInt = 1;
   const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
-  double sigma = sqrt(*sigma2), sill = 1 - *nugget, one = 1, zero = 0;
+  double sigma = sqrt(*sigma2), sill = 1 - *nugget;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);

@@ -3,24 +3,24 @@ TIC.default <- function(object, ..., k = 2){
   all.objects <- c(list(object), list(...))
   n.models <- length(all.objects)
   tic <- rep(NA, n.models)
-  
+
   for (i in 1:n.models){
 
     object <- all.objects[[i]]
     ihessian <- object$ihessian
     var.score <- object$var.score
-    
+
     if (!is.null(ihessian) && !is.null(var.score)){
       penalty <- var.score %*% ihessian
       tic[i] <- deviance(object) + k * sum(diag(penalty))
     }
-    
+
   }
 
   names(tic) <- as.character(sys.call())[2:(n.models + 1)]
   tic <- tic[order(tic)]
-  
-  return(tic)  
+
+  return(tic)
 }
 
 anova.maxstab <- function(object, object2, method = "RJ",
@@ -34,14 +34,14 @@ anova.maxstab <- function(object, object2, method = "RJ",
 
   if (!(square %in% c("chol", "svd")))
     stop("'square' must be one of 'chol' or 'svd'")
-  
+
   ##Check if object and object2 are nested
   n.estim <- length(fitted(object))
   n.estim2 <- length(fitted(object2))
 
   if (object$cov.mod != object2$cov.mod)
     stop("Models are not nested.")
-  
+
   if (n.estim == n.estim2)
     stop("Models are not nested.")
 
@@ -86,7 +86,7 @@ anova.maxstab <- function(object, object2, method = "RJ",
   removed.param <- which(!(names(M1$fitted.values) %in%
                              names(M0$fitted.values)))
   removed.param <- names(M1$fitted.values)[removed.param]
-      
+
   if (method == "RJ")
     Dev <- c(deviance(M0), deviance(M1))
 
@@ -101,7 +101,7 @@ anova.maxstab <- function(object, object2, method = "RJ",
     if (is.matrix(ijac) && is.matrix(hessian)){
 
       ivar.cov <- hessian %*% ijac %*% hessian
-      
+
       if (square == "svd"){
         svd.hessian <- svd(hessian)
         svd.ivar.cov <- svd(ivar.cov)
@@ -117,21 +117,21 @@ anova.maxstab <- function(object, object2, method = "RJ",
       }
 
       if (is.matrix(M) && is.matrix(Madj)){
-        C <- solve(M) %*% Madj      
+        C <- solve(M) %*% Madj
         colnames(C) <- rownames(C) <- colnames(ihessian)
-        
+
         theta0.adj <- as.numeric(fitted(M1) + C %*% (theta0 - fitted(M1)))
         names(theta0.adj) <- colnames(C)
         theta0.adj <- c(list(p = theta0.adj), M1$fixed)
         Dev <- c(2 * do.call(M1$nllh, theta0.adj), deviance(M1))
-        
+
         c <- (M1$param[removed.param] - M0$fixed[removed.param])  %*%
           solve(var.cov[removed.param, removed.param]) %*%
             (M1$param[removed.param] - M0$fixed[removed.param]) /
               ((fitted(M1) - theta0) %*% ivar.cov %*%
              (fitted(M1) - theta0))
         Dev <- Dev * c
-        
+
       }
 
       else{
@@ -139,13 +139,13 @@ anova.maxstab <- function(object, object2, method = "RJ",
         Dev <- c(NA, deviance(M1))
       }
     }
-    
+
     else{
       warning("Matrices H or/and J are singular")
       Dev <- c(NA, deviance(M1))
     }
   }
-  
+
   diffDev <- Dev[1] - Dev[2]
   MDf <- c(length(fitted(M0)), length(fitted(M1)))
   Df <- diff(MDf)
@@ -156,10 +156,10 @@ anova.maxstab <- function(object, object2, method = "RJ",
     ihessian <- M1$ihessian
     hessian <- solve(ihessian[removed.param,removed.param])
     var.cov <- var.cov[removed.param,removed.param]
-    
+
     Q <- var.cov %*% hessian
     eigen.val <- eigen(Q)$values
-    
+
     pvalue <- pchisq(Df * diffDev / sum(eigen.val), df = Df, lower.tail = FALSE)
   }
 
@@ -167,7 +167,7 @@ anova.maxstab <- function(object, object2, method = "RJ",
     eigen.val <- rep(1, Df)
     pvalue <- pchisq(diffDev, Df, lower.tail = FALSE)
   }
-    
+
 
   table <- data.frame(MDf, Dev, c(NA, Df), c(NA, diffDev),
                       c(NA, pvalue))
@@ -176,8 +176,8 @@ anova.maxstab <- function(object, object2, method = "RJ",
                                     "Chisq", "Pr(> sum lambda Chisq)"))
 
   if (method == "RJ")
-    structure(table, heading = c("Eigenvalue(s):", round(eigen.val, 2),
-                       "\nAnalysis of Variance Table"),
+    structure(table, heading = paste(c("Eigenvalue(s):", round(eigen.val, 2),
+                       "\n\nAnalysis of Variance Table"), collapse = " "),
               class = c("anova", "data.frame"))
 
   else
@@ -188,7 +188,7 @@ anova.maxstab <- function(object, object2, method = "RJ",
 
 anova.spatgev <- function(object, object2, method = "RJ",
                           square = "chol", ...){
-  
+
   if (is.null(object$var.cov) || is.null(object2$var.cov))
     return("Standard errors must be available for both fitted models.")
 
@@ -197,7 +197,7 @@ anova.spatgev <- function(object, object2, method = "RJ",
 
   if (!(square %in% c("chol", "svd")))
     stop("'square' must be one of 'chol' or 'svd'")
-  
+
   ##Check if object and object2 are nested
   n.estim <- length(fitted(object))
   n.estim2 <- length(fitted(object2))
@@ -225,11 +225,11 @@ anova.spatgev <- function(object, object2, method = "RJ",
 
   ihessian <- M1$ihessian
   var.cov <- M1$var.cov
-  
+
   removed.param <- which(!(names(M1$fitted.values) %in%
                              names(M0$fitted.values)))
   removed.param <- names(M1$fitted.values)[removed.param]
-      
+
   if (method == "RJ")
     Dev <- c(deviance(M0), deviance(M1))
 
@@ -237,14 +237,14 @@ anova.spatgev <- function(object, object2, method = "RJ",
     theta0 <- M0$param
     theta0 <- theta0[colnames(ihessian)]
 
-    jac <- M1$var.score    
+    jac <- M1$var.score
     ijac <- try(solve(jac), silent = TRUE)
     hessian <- try(solve(ihessian), silent = TRUE)
 
     if (is.matrix(ijac) && is.matrix(hessian)){
 
       ivar.cov <- hessian %*% ijac %*% hessian
-      
+
       if (square == "svd"){
         svd.hessian <- svd(hessian)
         svd.ivar.cov <- svd(ivar.cov)
@@ -260,21 +260,21 @@ anova.spatgev <- function(object, object2, method = "RJ",
       }
 
       if (is.matrix(M) && is.matrix(Madj)){
-        C <- solve(M) %*% Madj      
+        C <- solve(M) %*% Madj
         colnames(C) <- rownames(C) <- colnames(ihessian)
-        
+
         theta0.adj <- as.numeric(fitted(M1) + C %*% (theta0 - fitted(M1)))
         names(theta0.adj) <- colnames(C)
         theta0.adj <- c(list(p = theta0.adj), M1$fixed)
         Dev <- c(2 * do.call(M1$nllh, theta0.adj), deviance(M1))
-        
+
         c <- (M1$param[removed.param] - M0$fixed[removed.param])  %*%
           solve(var.cov[removed.param, removed.param]) %*%
             (M1$param[removed.param] - M0$fixed[removed.param]) /
               ((fitted(M1) - theta0) %*% ivar.cov %*%
              (fitted(M1) - theta0))
         Dev <- Dev * c
-        
+
       }
 
       else{
@@ -282,13 +282,13 @@ anova.spatgev <- function(object, object2, method = "RJ",
         Dev <- c(NA, deviance(M1))
       }
     }
-    
+
     else{
       warning("Matrices H or/and J are singular")
       Dev <- c(NA, deviance(M1))
     }
   }
-  
+
   diffDev <- Dev[1] - Dev[2]
   MDf <- c(length(fitted(M0)), length(fitted(M1)))
   Df <- diff(MDf)
@@ -299,10 +299,10 @@ anova.spatgev <- function(object, object2, method = "RJ",
     ihessian <- M1$ihessian
     hessian <- solve(ihessian[removed.param,removed.param])
     var.cov <- var.cov[removed.param,removed.param]
-    
+
     Q <- var.cov %*% hessian
     eigen.val <- eigen(Q)$values
-    
+
     pvalue <- pchisq(Df * diffDev / sum(eigen.val), df = Df, lower.tail = FALSE)
   }
 
@@ -310,7 +310,7 @@ anova.spatgev <- function(object, object2, method = "RJ",
     eigen.val <- rep(1, Df)
     pvalue <- pchisq(diffDev, Df, lower.tail = FALSE)
   }
-    
+
 
   table <- data.frame(MDf, Dev, c(NA, Df), c(NA, diffDev),
                       c(NA, pvalue))
@@ -319,8 +319,8 @@ anova.spatgev <- function(object, object2, method = "RJ",
                                     "Chisq", "Pr(> sum lambda Chisq)"))
 
   if (method == "RJ")
-    structure(table, heading = c("Eigenvalue(s):", round(eigen.val, 2),
-                       "\nAnalysis of Variance Table"),
+    structure(table, heading = paste(c("Eigenvalue(s):", round(eigen.val, 2),
+                         "\n\nAnalysis of Variance Table"), collapse = " "),
               class = c("anova", "data.frame"))
 
   else

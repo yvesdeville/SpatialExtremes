@@ -232,7 +232,7 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
         std.err <- diag(var.cov)
 
         std.idx <- which(std.err <= 0)
@@ -643,7 +643,7 @@ as.double(temp.penalty.shape),",
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
 
         std.err <- diag(var.cov)
 

@@ -1,8 +1,9 @@
 condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp",
                          ...,  do.sim = TRUE, thin = n.cond, burnin = 50, parts){
 
-  if (!(cov.mod %in% c("brown", "whitmat", "powexp", "bessel", "cauchy")))
-    stop("'cov.mod' must be one of 'brown', 'whitmat', 'powexp', 'bessel' or 'cauchy'")
+  if (!(cov.mod %in% c("brown", "whitmat", "powexp", "bessel", "cauchy",
+                       "twhitmat", "tpowexp", "tbessel", "tcauchy")))
+    stop("'cov.mod' must be one of 'brown', '(t)whitmat', '(t)powexp', '(t)bessel' or '(t)cauchy'")
 
   timings <- rep(NA, 3)
   if (is.null(dim(coord))){
@@ -28,10 +29,18 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
   if (cov.mod == "brown")
     model <- "Brown-Resnick"
 
+  else if (substr(cov.mod, 1, 1) == "t"){
+      model <- "extremal-t"
+      cov.mod <- substr(cov.mod, 2, 10)
+  }
+
   else
-    model <- "Schlather"
+      model <- "Schlather"
 
   ## Get the parameters
+  if (model == "extremal-t")
+      DoF <- list(...)$DoF
+
   range <- list(...)$range
   smooth <- list(...)$smooth
 
@@ -85,7 +94,7 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
         imahal1.sub * icov.chol1.sub
   }
 
-  if (model == "Schlather"){
+  if (model %in% c("Schlather", "extremal-t")){
     y <- cond.data
     cov.fun <- covariance(nugget = 0, sill = 1, range = range, smooth = smooth,
                           cov.mod = cov.mod, plot = FALSE)
@@ -121,6 +130,11 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
                       as.integer(all.part), as.integer(all.size), as.double(cov.sub),
                       weights = double(n.part))$weights
 
+      if (model == "extremal-t")
+          weights <- .C("computeWeightsExtt", as.integer(n.cond), as.double(y), as.integer(n.part),
+                      as.integer(all.part), as.integer(all.size), as.double(cov.sub), as.double(DoF),
+                      weights = double(n.part))$weights
+
       all.part <- matrix(all.part, n.cond, n.part)
       idx.part <- sample(1:n.part, k, replace = TRUE, prob = weights)
       parts <- all.part[,idx.part]
@@ -142,6 +156,10 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
         dummy <- .C("getStartingPartitionSC", as.integer(n.sim.start), as.integer(n.cond),
                     as.double(cov.chol.sub), start = integer(n.sim.start * n.cond))$start
 
+      if (model == "extremal-t")
+          dummy <- .C("getStartingPartitionExtt", as.integer(n.sim.start), as.integer(n.cond),
+                    as.double(DoF), as.double(cov.chol.sub), start = integer(n.sim.start * n.cond))$start
+
       dummy <- matrix(dummy, n.sim.start, n.cond, byrow = TRUE)
       dummy.fact <- factor(apply(dummy, 1, paste, collapse = ""))
       start <- dummy[which.max(table(dummy.fact)),]
@@ -157,6 +175,12 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
       if (model == "Schlather")
         parts <- .C("gibbsForPartSC", as.integer(k), as.integer(thin), as.integer(burnin),
                     as.integer(n.cond), as.integer(start), as.double(cov.sub),
+                    as.double(y), chain = integer(k * n.cond),
+                    time1 = double(1))
+
+      if (model == "extremal-t")
+        parts <- .C("gibbsForPartExtt", as.integer(k), as.integer(thin), as.integer(burnin),
+                    as.integer(n.cond), as.integer(start), as.double(DoF), as.double(cov.sub),
                     as.double(y), chain = integer(k * n.cond),
                     time1 = double(1))
 
@@ -187,6 +211,12 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
                 sim = double(k * n), sub.ext.fct = double(k * n),
                 ext.fct = double(k * n), timings = double(2))
 
+    if (model == "extremal-t")
+      ans <- .C("condsimextt", as.integer(k), as.integer(n), as.integer(n.cond),
+                as.integer(parts), as.double(DoF), as.double(cov), as.double(y),
+                sim = double(k * n), sub.ext.fct = double(k * n),
+                ext.fct = double(k * n), timings = double(2))
+
     timings[2:3] <- ans$timings
     sub.ext.fct <- matrix(ans$sub.ext.fct, k, n, byrow = TRUE)
     ext.fct <- matrix(ans$ext.fct, k, n, byrow = TRUE)
@@ -196,7 +226,7 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
     ##conditionning locations!!! If you don't want them then you need
     ##to uncomment the next line...
 
-    ##ans <- ans[,-(1:n.cond)]
+    ans <- ans[,-(1:n.cond)]
   }
 
   else

@@ -208,7 +208,7 @@ brownresnickfull <- function(data, coord, start, fit.marge = FALSE, ...,
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
         std.err <- diag(var.cov)
 
         std.idx <- which(std.err <= 0)
@@ -243,6 +243,19 @@ brownresnickfull <- function(data, coord, start, fit.marge = FALSE, ...,
     ext.coeff <- function(h)
         2 * pnorm((h / param["range"])^(0.5 * param["smooth"]) / sqrt(2))
 
+    conc.prob <- function(h){
+        n.sim <- 1000
+        semivario <- matrix((h / param["range"])^param["smooth"], 2 * n.sim, length(h), byrow = TRUE)
+        eps <- rnorm(n.sim)
+        u1 <- pnorm(eps)
+        eps <- c(eps, -eps)## antithetic
+        u1 <- c(u1, 1 - u1)
+                    
+        colMeans(1 / (u1 + exp(semivario - sqrt(2 * semivario) * eps) *
+                          pnorm(sqrt(2 * semivario) - eps)))
+
+    }
+
     fitted <- list(fitted.values = opt$par, std.err = std.err,
                    var.cov = var.cov, param = param, cov.fun = NA, fixed = unlist(fixed.param),
                    deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -250,7 +263,8 @@ brownresnickfull <- function(data, coord, start, fit.marge = FALSE, ...,
                    logLik = -opt$value, opt.value = opt$value, model = "Brown-Resnick",
                    cov.mod = "brown", fit.marge = fit.marge, ext.coeff = ext.coeff, iso = TRUE,
                    hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                   var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted)
+                   var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted,
+                   conc.prob = conc.prob)
 
     class(fitted) <- c(fitted$model, "maxstab")
     return(fitted)
@@ -584,7 +598,7 @@ PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
 
         std.err <- diag(var.cov)
 
@@ -621,6 +635,19 @@ PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
     ext.coeff <- function(h)
         2 * pnorm((h / param["range"])^(0.5 * param["smooth"]) / sqrt(2))
 
+    conc.prob <- function(h){
+        n.sim <- 1000
+        semivario <- matrix((h / param["range"])^param["smooth"], 2 * n.sim, length(h), byrow = TRUE)
+        eps <- rnorm(n.sim)
+        u1 <- pnorm(eps)
+        eps <- c(eps, -eps)## antithetic
+        u1 <- c(u1, 1 - u1)
+                    
+        colMeans(1 / (u1 + exp(semivario - sqrt(2 * semivario) * eps) *
+                          pnorm(sqrt(2 * semivario) - eps)))
+
+    }
+
     fitted <- list(fitted.values = opt$par, std.err = std.err,
                    var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                    deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -630,7 +657,7 @@ PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
                    loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                    lik.fun = nllh, loc.type = loc.type, scale.type = scale.type, iso = TRUE,
                    shape.type = shape.type, ihessian = ihessian, var.score = var.score,
-                   marg.cov = marg.cov, nllh = nllh, weighted = weighted)
+                   marg.cov = marg.cov, nllh = nllh, weighted = weighted, conc.prob = conc.prob)
 
     class(fitted) <- c(fitted$model, "maxstab")
     return(fitted)

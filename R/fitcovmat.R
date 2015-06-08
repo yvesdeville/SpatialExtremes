@@ -455,13 +455,13 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
             start <- c(list(sigma2 = 9), start)
 
         if (model == "Extremal-t"){
-          start <- list(nugget = 0.1, range = 2 * max(dist), smooth = 1, DoF = 4.5)
-          
+          start <- list(nugget = 0.1, range = max(dist) / 2.33, smooth = 1, DoF = 1)
+
           if (cov.mod == "caugen")
-            start <- list(nugget = 0.1, range = 2 * max(dist), smooth = 1, smooth2 = 1, DoF = 4.5)
+            start <- list(nugget = 0.1, range = 2 * max(dist), smooth = 1, smooth2 = 1, DoF = 1)
 
           if (cov.mod == "cauchy")
-            start <- list(nugget = 0.1, range = 0.07 * max(dist), smooth = 0.1, DoF = 4.5)
+            start <- list(nugget = 0.1, range = 0.07 * max(dist), smooth = 0.1, DoF = 1)
         }
 
         start <- start[!(param %in% names(list(...)))]

@@ -926,7 +926,7 @@ swiss <- function(city = FALSE, add = FALSE, axes = FALSE, km = TRUE,
                                             712979.0625000,90324.5078125,
                                             711197.9375000,90662.2656250), ncol = 2, byrow = TRUE)
 
-  ## Flüsse
+  ## Flusse
   ## ----------------------------------------------------------------------------
   ch.fluesse.01 <- matrix(c(555534.3125000,138282.9531250,
                             557653.5625000,135307.5156250,
@@ -1881,7 +1881,7 @@ swiss <- function(city = FALSE, add = FALSE, axes = FALSE, km = TRUE,
                          704180.0000000,111280.4062500,
                          705114.4375000,112266.4453125), ncol = 2, byrow = TRUE)
 
-  ## Schweizergrenze: Städte
+  ## Schweizergrenze: Stadte
   ## ----------------------------------------------------------------------------
   ch.stadt <- matrix(c(782783, 185993,
                        600000, 200000,
@@ -1898,7 +1898,7 @@ swiss <- function(city = FALSE, add = FALSE, axes = FALSE, km = TRUE,
     xlim <- c(480000, 840000) * scale
     ylim <- c(58000, 300000) * scale
     plot(ch.grenze.land.teilstueck.1 * scale, type = "n", xlim = xlim, ylim = ylim,
-         axes = axes, xlab = xlab, ylab = ylab, ...)
+         axes = axes, xlab = xlab, ylab = ylab, asp = 1, ...)
   }
 
   lines(ch.grenze.land.teilstueck.1 * scale)

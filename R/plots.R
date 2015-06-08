@@ -474,7 +474,6 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
 
   else {
     for (i in 1:n.chain){
-      print(i)
       loc <- matrix(loc.dsgn.mat %*% fitted$chain.loc[i, 1:n.loccoeff], n.x, n.y,
                     byrow = TRUE)
       res <- as.numeric(fitted$chain.loc[i,-(1:(n.loccoeff+3))] -

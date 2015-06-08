@@ -125,14 +125,8 @@
     if (any(is.na(grad)))
         return(list(var.score = NA, hessian = NA, gradient = NA))
 
-    var.score <- var(grad)
-    hessian <- matrix(0, nrow(var.score), ncol(var.score))
-
-    for (i in 1:n.pairs){
-        idx <- seq(i, n.pairs * n.obs, by = n.pairs)
-        hessian <- hessian + var(hess[idx,], na.rm = TRUE) / weights[i]
-    }
-
+    var.score <- var(grad) * n.obs
+    hessian <- var(hess, na.rm = TRUE) * n.obs * n.pairs
     gradient <- as.double(colSums(grad))
     names(gradient) <- colnames(hessian)
 
@@ -227,14 +221,8 @@
     if (any(is.na(grad)))
         return(list(var.score = NA, hessian = NA, gradient = NA))
 
-    var.score <- var(grad)
-    hessian <- matrix(0, nrow(var.score), ncol(var.score))
-
-    for (i in 1:n.pairs){
-        idx <- seq(i, n.pairs * n.obs, by = n.pairs)
-        hessian <- hessian + var(hess[idx,], na.rm = TRUE) / weights[i]
-    }
-
+    var.score <- var(grad) * n.obs
+    hessian <- var(hess, na.rm = TRUE) * n.obs * n.pairs
     gradient <- as.double(colSums(grad))
     names(gradient) <- colnames(hessian)
 
@@ -330,14 +318,8 @@
     if (any(is.na(grad)))
         return(list(var.score = NA, hessian = NA, gradient = NA))
 
-    var.score <- var(grad)
-    hessian <- matrix(0, nrow(var.score), ncol(var.score))
-
-    for (i in 1:n.pairs){
-        idx <- seq(i, n.pairs * n.obs, by = n.pairs)
-        hessian <- hessian + var(hess[idx,], na.rm = TRUE) / weights[i]
-    }
-
+    var.score <- var(grad) * n.obs
+    hessian <- var(hess, na.rm = TRUE) * n.obs * n.pairs
     gradient <- as.double(colSums(grad))
     names(gradient) <- colnames(hessian)
 
@@ -434,14 +416,8 @@
     if (any(is.na(grad)))
         return(list(var.score = NA, hessian = NA, gradient = NA))
 
-    var.score <- var(grad)
-    hessian <- matrix(0, nrow(var.score), ncol(var.score))
-
-    for (i in 1:n.pairs){
-        idx <- seq(i, n.pairs * n.obs, by = n.pairs)
-        hessian <- hessian + var(hess[idx,], na.rm = TRUE) / weights[i]
-    }
-
+    var.score <- var(grad) * n.obs
+    hessian <- var(hess, na.rm = TRUE) * n.obs * n.pairs
     gradient <- as.double(colSums(grad))
     names(gradient) <- colnames(hessian)
 
@@ -528,14 +504,8 @@
     if (any(is.na(grad)))
         return(list(var.score = NA, hessian = NA, gradient = NA))
 
-    var.score <- var(grad)
-    hessian <- matrix(0, nrow(var.score), ncol(var.score))
-
-    for (i in 1:n.pairs){
-        idx <- seq(i, n.pairs * n.obs, by = n.pairs)
-        hessian <- hessian + var(hess[idx,], na.rm = TRUE) / weights[i]
-    }
-
+    var.score <- var(grad) * n.obs
+    hessian <- var(hess, na.rm = TRUE) * n.obs * n.pairs
     gradient <- as.double(colSums(grad))
     names(gradient) <- colnames(hessian)
 
@@ -601,13 +571,8 @@
     if (any(is.na(grad)))
         return(list(gradient = NA, var.score = NA, hessian = NA))
 
-    var.score <- var(grad)
-    hessian <- matrix(0, nrow(var.score), ncol(var.score))
-
-    for (i in 1:n.site){
-        idx <- seq(i, n.site * n.obs, by = n.site)
-        hessian <- hessian + var(hess[idx,], na.rm = TRUE)
-    }
+    var.score <- var(grad) * n.obs
+    hessian <- var(hess, na.rm = TRUE) * n.obs * n.site
 
     gradient <- as.double(colSums(grad))
     names(gradient) <- colnames(hessian)
@@ -704,14 +669,8 @@
     if (any(is.na(grad)))
         return(list(var.score = NA, hessian = NA, gradient = NA))
 
-    var.score <- var(grad)
-    hessian <- matrix(0, nrow(var.score), ncol(var.score))
-
-    for (i in 1:n.pairs){
-        idx <- seq(i, n.pairs * n.obs, by = n.pairs)
-        hessian <- hessian + var(hess[idx,], na.rm = TRUE) / weights[i]
-    }
-
+    var.score <- var(grad) * n.obs
+    hessian <- var(hess, na.rm = TRUE) * n.obs * n.pairs
     gradient <- as.double(colSums(grad))
     names(gradient) <- colnames(hessian)
 

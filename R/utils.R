@@ -21,25 +21,25 @@ distance <- function(coord, vec = FALSE){
     dist <- matrix(dist, ncol = dist.dim, nrow = n.pairs)
   }
 
-  else    
+  else
     dist <- .C("distance", as.double(coord), as.integer(dist.dim),
                as.integer(n.site), vec, dist = double(n.pairs),
                PACKAGE = "SpatialExtremes")$dist
-  
+
   return(dist)
 }
 
 gev2frech <- function(x, loc, scale, shape, emp = FALSE){
 
   if (emp){
-    probs <- rank(x) / (length(x) + 1)
+    probs <- rank(x, na.last = "keep") / (length(x) + 1)
     x <- - 1 / log(probs)
     return(x)
   }
-  
+
   if (shape == 0)
     exp((x - loc)/scale)
-  
+
   else
     pmax(1 + shape * (x - loc) / scale, 0)^(1/shape)
 }
@@ -54,16 +54,16 @@ frech2gev <- function(x, loc, scale, shape){
 
 .qgev <- function(p, loc = 1, scale = 1, shape = 1,
                   lower.tail = TRUE){
-  
+
     if ((min(p, na.rm = TRUE) <= 0) || (max(p, na.rm = TRUE) >=1))
       stop("'p' must contain probabilities in (0,1)")
-    
+
     if (min(scale) < 0)
       warning("There are some invalid scale GEV parameters")
-    
+
     if (length(p) != 1)
       stop("invalid p")
-    
+
     if (!lower.tail)
       p <- 1 - p
 
@@ -72,7 +72,7 @@ frech2gev <- function(x, loc, scale, shape){
     ans <- .C("gev", as.double(p), as.integer(n), as.double(loc),
               as.double(scale), as.double(shape), quant = double(n),
               PACKAGE = "SpatialExtremes")$quant
-    
+
     return(ans)
 }
 
@@ -116,4 +116,15 @@ frech2gev <- function(x, loc, scale, shape){
     names <- c("Intercept", names)
 
   return(names)
+}
+
+logit <- function(p, rep_one_by = 0.999, rep_zero_by = 10^-3, inv = FALSE){
+
+    if (inv)
+        return(1 / (1 + exp(-p)))
+    
+    p[p > rep_one_by] <- rep_one_by
+    p[p<rep_zero_by] <- rep_zero_by
+
+    return(log(p / (1-p)))
 }

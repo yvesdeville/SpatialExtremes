@@ -231,7 +231,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
         std.err <- diag(var.cov)
 
         std.idx <- which(std.err <= 0)
@@ -275,6 +275,23 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     ext.coeff <- function(h)
         1 + sqrt(0.5 - 0.5 * cov.fun(h))
 
+    conc.prob <- function(h){
+        n.sim <- 20000
+        n.site <- length(h)
+        rho <- cov.fun(h)
+        rho <- matrix(rho, 2 * n.sim, n.site, byrow = TRUE)
+        
+        Y <- sqrt(2 * pi) * rgp(n.sim, h, cov.mod, nugget = param["nugget"], sill = 1 - param["nugget"],
+                                range = param["range"], smooth = param["smooth"])
+        Y <- rbind(pmax(Y, 0), pmax(-Y, 0))##antithetic
+        
+        dummy <- 1 / (0.5 * (1/Y[,1] + 1 / Y) * (1 + sqrt(1 - 2 * (1 + rho) *
+                                                              Y[,1] * Y / (Y[,1] + Y)^2)))
+        
+        dummy <- replace(dummy, is.na(dummy), 0)
+        colMeans(dummy)
+    }          
+
     fitted <- list(fitted.values = opt$par, std.err = std.err,
                    var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
                    deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -282,7 +299,8 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                    logLik = -opt$value, opt.value = opt$value, model = "Schlather", iso = TRUE,
                    cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                    hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                   var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted)
+                   var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted,
+                   conc.prob = conc.prob)
 
     class(fitted) <- c(fitted$model, "maxstab")
     return(fitted)
@@ -641,7 +659,7 @@ dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
 
         std.err <- diag(var.cov)
 
@@ -687,6 +705,23 @@ dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
     ext.coeff <- function(h)
         1 + sqrt(0.5 - 0.5 * cov.fun(h))
 
+    conc.prob <- function(h){
+        n.sim <- 20000
+        n.site <- length(h)
+        rho <- cov.fun(h)
+        rho <- matrix(rho, 2 * n.sim, n.site, byrow = TRUE)
+        
+        Y <- sqrt(2 * pi) * rgp(n.sim, h, cov.mod, nugget = param["nugget"], sill = 1 - param["nugget"],
+                                range = param["range"], smooth = param["smooth"])
+        Y <- rbind(pmax(Y, 0), pmax(-Y, 0))##antithetic
+        
+        dummy <- 1 / (0.5 * (1/Y[,1] + 1 / Y) * (1 + sqrt(1 - 2 * (1 + rho) *
+                                                              Y[,1] * Y / (Y[,1] + Y)^2)))
+        
+        dummy <- replace(dummy, is.na(dummy), 0)
+        colMeans(dummy)
+    }          
+
     fitted <- list(fitted.values = opt$par, std.err = std.err,
                    var.cov = var.cov, fixed = unlist(fixed.param), param = param, iso = TRUE,
                    deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -696,7 +731,7 @@ dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
                    loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                    lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                    shape.type = shape.type, ihessian = ihessian, var.score = var.score,
-                   marg.cov = marg.cov, nllh = nllh, weighted = weighted)
+                   marg.cov = marg.cov, nllh = nllh, weighted = weighted, conc.prob = conc.prob)
 
     class(fitted) <- c(fitted$model, "maxstab")
     return(fitted)

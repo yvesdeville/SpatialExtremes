@@ -1,9 +1,6 @@
 \name{swissalt}
 \docType{data}
 \alias{swissalt}
-\alias{alt.mat}
-\alias{lon.vec}
-\alias{lat.vec}
 \title{Elevation in Switzerland}
 \usage{data(swissalt)}
 \description{

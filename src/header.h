@@ -566,7 +566,7 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
 ///////////////////////////////////
 //  From latentVariable.c
 //
-void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod, 
+void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	       int *dim, double *distMat, double *dsgnMat, int *nBeta, double *beta,
 	       double *sills, double *ranges, double *smooths, double *gevParams,
 	       double *hyperSill, double *hyperRange, double *hyperSmooth,
@@ -689,6 +689,27 @@ void gibbsForPartBR(int *nchain, int *nthin, int *burnin, int *nCond,
 		    double *covChol, double *ham, double *mean1, double *y,
 		    int *chain, double *timing);
 
+// Functions for conditional simulations of extremal-t processes
+void computeWeightsExtt(int *nCond, double *y, int *nPart, int *allPart,
+			int *allSize, double *cov, double *nu, double *weights);
+void computeprobaExtt(double *nu, double *DoF, double *mu, double *scaleMat, double *y,
+		      int *ntaubar, int *taubar, double *prob);
+void getfvaluesExtt(double *y, int *n, int *ntau, int *tau, double *cov,
+		    double *nu, double *f);
+void getParametersExtt(int *tau, int *taubar, int *ntau, int *ntaubar, double *cov,
+		       double *y, double *nu, double *DoF, double *mu, double *scaleMat);
+void condsimextt(int *nsim, int *n, int *nCond, int *allPart, double *nu,
+		 double *cov, double *y, double *sim, double *subextfct,
+		 double *extfct, double *timings);
+void gibbsForPartExtt(int *nchain, int *nthin, int *burnin, int *nCond,
+		      int *currentPart, double *nu, double *cov, double *y, int *chain,
+		      double *timings);
+double computeWeightForOneSetExtt(int *idxSet, int *nCond, int *partition,
+				  double *nu, double *cov, double *y);
+void totoExtt(int *nsim, int *n, double *nu, double *covChol, double *ans);
+void getStartingPartitionExtt(int *nsim, int *n, double *nu, double *covChol,
+			      int *startPart);
+
 ///////////////////////////////////
 //  From fft.c
 //
@@ -698,3 +719,23 @@ static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
 void fft_factor(int n, int *pmaxf, int *pmaxp);
 Rboolean fft_work(double *a, double *b, int nseg, int n, int nspn, int isn,
 		  double *work, int *iwork);
+
+
+///////////////////////////////////
+//  From completedLogLik.c
+//
+void completellik(int *nObs, int *nSite, double *data, int *parts, int *partSizes,
+		  double *cov, double *weights);
+void pschlather(double *q, int *dim, double *cov, double *prob, int *nMC);
+
+
+
+
+///////////////////////////////////
+//  From concurrence.c
+//
+void empiricalConcProb(double *data, int *nSite, int *nObs, int *blockSize,
+		       int *nBlock, double *concProb);
+void empiricalBootConcProb(double *data, int *nSite, int *nObs, int *blockSize,
+			   double *concProb);
+void concProbKendall(double *data, int *nSite, int *nObs, double *concProb);

@@ -54,9 +54,9 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     covMatPropChol[i] = 0;
 
   /*----------------------------------------------------*/
-  //                                                    \\
-  //           Compute some initial objects             \\
-  //                                                    \\
+  /*                                                    */
+  /*           Compute some initial objects             */
+  /*                                                    */
   /*----------------------------------------------------*/
 
   // a. The inverse of the covariance matrices
@@ -131,18 +131,18 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 		    &oneInt);
 
   /*----------------------------------------------------*/
-  //                                                    \\
-  //               Starting the MCMC algo               \\
-  //                                                    \\
+  /*                                                    */
+  /*               Starting the MCMC algo               */
+  /*                                                    */
   /*----------------------------------------------------*/
 
   GetRNGstate();
   while (iterThin<*n){
 
     /*----------------------------------------------------*/
-    //                                                    \\
-    //           Updating the GEV parameters              \\
-    //                                                    \\
+    /*                                                    */
+    /*           Updating the GEV parameters              */
+    /*                                                    */
     /*----------------------------------------------------*/
 
     for (idxSite=0;idxSite<*nSite;idxSite++){
@@ -203,10 +203,10 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     }
 
     /*----------------------------------------------------*/
-    //                                                    \\
-    //        Updating the regression parameters          \\
-    //                (conjugate prior)                   \\
-    //                                                    \\
+    /*                                                    */
+    /*        Updating the regression parameters          */
+    /*                (conjugate prior)                   */
+    /*                                                    */
     /*----------------------------------------------------*/
 
     for (idxMarge=0;idxMarge<3;idxMarge++){
@@ -310,9 +310,9 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     }
 
     /*----------------------------------------------------*/
-    //                                                    \\
-    //        Updating the sills (conjugate prior)        \\
-    //                                                    \\
+    /*                                                    */
+    /*        Updating the sills (conjugate prior)        */
+    /*                                                    */
     /*----------------------------------------------------*/
 
     for (idxMarge=0;idxMarge<3;idxMarge++){
@@ -381,9 +381,9 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
 
     /*----------------------------------------------------*/
-    //                                                    \\
-    //          Updating the ranges (M.-H. step)          \\
-    //                                                    \\
+    /*                                                    */
+    /*          Updating the ranges (M.-H. step)          */
+    /*                                                    */
     /*----------------------------------------------------*/
 
     for (idxMarge=0;idxMarge<3;idxMarge++){
@@ -477,9 +477,9 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     }
 
     /*----------------------------------------------------*/
-    //                                                    \\
-    //         Updating the smooths (M.-H. step)          \\
-    //                                                    \\
+    /*                                                    */
+    /*         Updating the smooths (M.-H. step)          */
+    /*                                                    */
     /*----------------------------------------------------*/
 
     for (idxMarge=0;idxMarge<3;idxMarge++){

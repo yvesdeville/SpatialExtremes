@@ -243,20 +243,20 @@ predict.copula <- function(object, newdata, ret.per = NULL,
   return(ans)
 }
 
-predict.pspline <- function(object, new.data, ...){
+predict.pspline <- function(object, newdata, ...){
 
-  if (missing(new.data))
+  if (missing(newdata))
     new.data <- object$x
 
   degree <- object$degree
   knots <- object$knots
   beta <- object$beta
   
-  dsgn.mat <- rb(new.data, degree = degree, knots = knots,
+  dsgn.mat <- rb(newdata, degree = degree, knots = knots,
                  penalty = NULL)$dsgn.mat
 
   y <- dsgn.mat %*% beta
-  ans <- cbind(new.data, y)
+  ans <- cbind(newdata, y)
   colnames(ans) <- c("x", "y.hat")
   
   return(ans)

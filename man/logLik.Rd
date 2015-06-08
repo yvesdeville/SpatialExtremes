@@ -2,6 +2,7 @@
 \alias{logLik}
 \alias{logLik.maxstab}
 \alias{logLik.copula}
+
 \title{Extracts Log-Likelihood}
 \description{Extract the pairwise log-likelihood for objects of class
   ``maxstab'' and ``copula''}

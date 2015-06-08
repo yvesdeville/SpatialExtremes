@@ -108,8 +108,7 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
 	    double *nugget, double *sill, double *range, double *smooth,
 	    double *ans){
 
-  int neffSite = *nSite, i, j, k, lagi = 1, lagj = 1;
-  double one = 1, zero = 0;
+  int neffSite = *nSite, lagi = 1, lagj = 1;
 
   if (*grid){
     neffSite = R_pow_di(neffSite, *dim);
@@ -134,8 +133,8 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
   /* Simulation part */
   GetRNGstate();
 
-  for (i=0;i<*n;i++){
-    for (j=0;j<neffSite;j++)
+  for (int i=0;i<*n;i++){
+    for (int j=0;j<neffSite;j++)
       ans[j * lagj + i * lagi] = norm_rand();
 
     F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite,

@@ -233,7 +233,7 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
         std.err <- diag(var.cov)
 
         std.idx <- which(std.err <= 0)
@@ -277,6 +277,25 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     ext.coeff <- function(h)
         2 * pt(sqrt((1 - cov.fun(h)) * (param["DoF"] + 1) / (1 + cov.fun(h))), param["DoF"] + 1)
 
+    conc.prob <- function(h){
+        n.sim <- 20000
+        n.site <- length(h)
+        rho <- cov.fun(h)
+        rho <- matrix(rho, 2 * n.sim, n.site, byrow = TRUE)
+        b <- sqrt((1 - rho^2) / (param["DoF"] + 1))
+        
+        normCst <- sqrt(pi) * 2^(-(param["DoF"] - 2)/2) / gamma(0.5 * (param["DoF"] + 1))
+        Y <- rgp(n.sim, h, cov.mod, nugget = param["nugget"], sill = 1 - param["nugget"],
+                 range = param["range"], smooth = param["smooth"])
+        Y <- normCst * rbind(pmax(Y,0), pmax(-Y, 0))^param["DoF"]##antithetic
+        dummy <- 1 / (1/Y[,1] * pt(-rho / b + (Y / Y[,1])^(1/param["DoF"]) / b, param["DoF"] + 1) +
+                          1/Y * pt(-rho / b + (Y / Y[,1])^(-1/param["DoF"]) / b, param["DoF"] + 1))
+        
+        dummy <- replace(dummy, is.na(dummy), 0)
+        dummy[,1] <- 1 ## Fix conflict in NaN handling at the origin
+        colMeans(dummy)
+    }
+    
     fitted <- list(fitted.values = opt$par, std.err = std.err,
                    var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
                    deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -284,7 +303,8 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                    logLik = -opt$value, opt.value = opt$value, model = "Extremal-t",
                    cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff, iso = TRUE,
                    hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                   var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted)
+                   var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted,
+                   conc.prob = conc.prob)
 
     class(fitted) <- c(fitted$model, "maxstab")
     return(fitted)
@@ -645,7 +665,7 @@ as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns")
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
 
         std.err <- diag(var.cov)
 
@@ -690,6 +710,25 @@ as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns")
     ext.coeff <- function(h)
         2 * pt(sqrt((1 - cov.fun(h)) * (param["DoF"] + 1) / (1 + cov.fun(h))), param["DoF"] + 1)
 
+    conc.prob <- function(h){
+        n.sim <- 20000
+        n.site <- length(h)
+        rho <- cov.fun(h)
+        rho <- matrix(rho, 2 * n.sim, n.site, byrow = TRUE)
+        b <- sqrt((1 - rho^2) / (param["DoF"] + 1))
+        
+        normCst <- sqrt(pi) * 2^(-(param["DoF"] - 2)/2) / gamma(0.5 * (param["DoF"] + 1))
+        Y <- rgp(n.sim, h, cov.mod, nugget = param["nugget"], sill = 1 - param["nugget"],
+                 range = param["range"], smooth = param["smooth"])
+        Y <- normCst * rbind(pmax(Y,0), pmax(-Y, 0))^param["DoF"]##antithetic
+        dummy <- 1 / (1/Y[,1] * pt(-rho / b + (Y / Y[,1])^(1/param["DoF"]) / b, param["DoF"] + 1) +
+                          1/Y * pt(-rho / b + (Y / Y[,1])^(-1/param["DoF"]) / b, param["DoF"] + 1))
+        
+        dummy <- replace(dummy, is.na(dummy), 0)
+        dummy[,1] <- 1 ## Fix conflict in NaN handling at the origin
+        colMeans(dummy)
+    }
+
     fitted <- list(fitted.values = opt$par, std.err = std.err,
                    var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                    deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -699,7 +738,7 @@ as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns")
                    loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                    lik.fun = nllh, loc.type = loc.type, scale.type = scale.type, iso = TRUE,
                    shape.type = shape.type, ihessian = ihessian, var.score = var.score,
-                   marg.cov = marg.cov, nllh = nllh, weighted = weighted)
+                   marg.cov = marg.cov, nllh = nllh, weighted = weighted, conc.prob = conc.prob)
 
     class(fitted) <- c(fitted$model, "maxstab")
     return(fitted)

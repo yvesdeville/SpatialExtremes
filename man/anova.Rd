@@ -2,15 +2,14 @@
 \alias{anova}
 \alias{anova.maxstab}
 \alias{anova.spatgev}
+
 \title{Anova Tables}
 \description{
-  Computes analysis of deviance for objects of class ''maxstab''
+  Computes analysis of deviance for objects of class 'maxstab' or 'spatgev'.
 }
 \usage{
-\method{anova}{maxstab}(object, object2, method = "RJ", square = "chol",
-...)
-\method{anova}{spatgev}(object, object2, method = "RJ", square = "chol",
-...)
+\method{anova}{maxstab}(object, object2, method = "RJ", square = "chol", \dots)
+\method{anova}{spatgev}(object, object2, method = "RJ", square = "chol", \dots)
 }
 \arguments{
   \item{object, object2}{Two objects of class 'maxstab' or 'spatgev'.}

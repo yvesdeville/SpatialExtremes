@@ -1,6 +1,6 @@
 print.spatgev <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
-  cat("            Model: Spatial GEV model\n")
+  cat("      Model: Spatial GEV model\n")
   cat("   Deviance:", x$deviance, "\n")
   cat("        TIC:", TIC(x), "\n\n")
 

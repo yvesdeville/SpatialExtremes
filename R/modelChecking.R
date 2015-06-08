@@ -98,7 +98,7 @@ plot.copula <- function(x, ..., sites){
   layout(matrix(c(1,6,7,9,13,2,8,10,5,5,3,11,5,5,12,4), 4))
   par(mar = c(4,4,1,0.5))
   on.exit(par(op))
-  
+
   ## Return level plots
   ##covariates <- cbind(x$coord[sites,], x$marg.cov[sites,,drop=FALSE])
   ##gev.param <- predict(x, covariates, std.err = FALSE)[,c("loc", "scale", "shape")]
@@ -110,7 +110,7 @@ plot.copula <- function(x, ..., sites){
     scale <- gev.param[i,2]
     shape <- gev.param[i,3]
     probs <- 1:n.obs / (n.obs + 1)
-    
+
     for (j in 1:1000)
       boot[j,] <- sort(rgev(n.obs, loc, scale, shape))
 
@@ -120,7 +120,7 @@ plot.copula <- function(x, ..., sites){
     fun <- function(T) qgev(1 - 1/T, loc, scale, shape)
     curve(fun, from = 1.001, to = 100, add = TRUE)
     points(1 / (1 - probs), sort(x$data[,sites[i]]))
-    
+
   }
 
   ##F-madogram
@@ -138,7 +138,7 @@ plot.copula <- function(x, ..., sites){
                         nugget = nugget, range = range, smooth = smooth, DoF = DoF)
 
   sim.copula <- array(log(sim.copula), c(n.obs, 1000, 4))
-    
+
   gumb <- log(apply(x$data[,sites], 2, gev2frech, emp = TRUE))
   ##Plot of the pairwise maxima
   for (i in 1:3){
@@ -173,12 +173,11 @@ plot.copula <- function(x, ..., sites){
   plot(x$coord, type = "n")
   points(x$coord[-sites,])
   points(x$coord[sites,], pch = c("1", "2", "3", "4"), col = "blue")
-  
+
 }
 
 plot.maxstab <- function(x, ..., sites){
   n.site <- ncol(x$data)
-  n.obs <- nrow(x$data)
 
   ##The graph is as follows :
   ## The diagonal are return level plots
@@ -195,19 +194,22 @@ plot.maxstab <- function(x, ..., sites){
   layout(matrix(c(1,6,7,9,13,2,8,10,5,5,3,11,5,5,12,4), 4))
   par(mar = c(4,4,1,0.5))
   on.exit(par(op))
-  
+
   ## Return level plots
   ##covariates <- cbind(x$coord[sites,], x$marg.cov[sites,,drop=FALSE])
   ##gev.param <- predict(x, covariates, std.err = FALSE)[,c("loc", "scale", "shape")]
   gev.param <- predict(x, std.err = FALSE)[sites, c("loc", "scale", "shape")]
 
   for (i in 1:4){
+    n.obs <- length(na.omit(x$data[,sites[i]]))## usefull since
+                                               ## missing values are
+                                               ## now allowed
     boot <- matrix(NA, nrow = 1000, ncol = n.obs)
     loc <- gev.param[i,1]
     scale <- gev.param[i,2]
     shape <- gev.param[i,3]
     probs <- 1:n.obs / (n.obs + 1)
-    
+
     for (j in 1:1000)
       boot[j,] <- sort(rgev(n.obs, loc, scale, shape))
 
@@ -217,7 +219,7 @@ plot.maxstab <- function(x, ..., sites){
     fun <- function(T) qgev(1 - 1/T, loc, scale, shape)
     curve(fun, from = 1.001, to = 100, add = TRUE)
     points(1 / (1 - probs), sort(x$data[,sites[i]]))
-    
+
   }
 
   ##F-madogram
@@ -225,6 +227,7 @@ plot.maxstab <- function(x, ..., sites){
   fmadogram(fitted = x, which = "ext", add = TRUE, n.bins = n.site)
 
   ##Pairwise maxima on the Gumbel scale
+  n.obs <- nrow(x$data[,sites])
   model <- x$model
   notimplemented <- FALSE
   if (model == "Smith"){
@@ -242,7 +245,7 @@ plot.maxstab <- function(x, ..., sites){
     sim.maxstab <- rmaxstab(n.obs * 1000, x$coord[sites,], x$cov.mod,
                             nugget = nugget, range = range, smooth = smooth)
   }
-  
+
   else if (model == "Geometric"){
     sigma2 <- x$par["sigma2"]
     nugget <- x$par["nugget"]
@@ -253,7 +256,7 @@ plot.maxstab <- function(x, ..., sites){
                             sigma2 = sigma2, nugget = nugget, range = range,
                             smooth = smooth)
   }
-  
+
   else if (model == "Brown-Resnick"){
     range <- x$par["range"]
     smooth <- x$par["smooth"]
@@ -278,10 +281,15 @@ plot.maxstab <- function(x, ..., sites){
       text(0, 0, "Not implemented")
     }
   }
-  
+
   else {
     sim.maxstab <- array(log(sim.maxstab), c(n.obs, 1000, 4))
-    
+
+    for (i in 1:4){
+        idx.na <- which(is.na(x$data[,sites[i]]))
+        sim.maxstab[idx.na,,i] <- NA
+    }
+
     gumb <- log(apply(x$data[,sites], 2, gev2frech, emp = TRUE))
     ##Plot of the pairwise maxima
     for (i in 1:3){
@@ -300,12 +308,13 @@ plot.maxstab <- function(x, ..., sites){
     }
 
     ##Plot of the blockwise maxima
-    block.max <- sort(apply(gumb, 1, max))
+    block.max <- sort(apply(gumb, 1, max, na.rm = TRUE))
+    ##block.max[!is.finite(block.max)] <- NA
     sim.block.max <- sim.maxstab[,,1]
     for (i in 2:4)
-      sim.block.max <- pmax(sim.block.max, sim.maxstab[,,i])
+      sim.block.max <- pmax(sim.block.max, sim.maxstab[,,i], na.rm = TRUE)
 
-    sim.block.max <- apply(sim.block.max, 2, sort)
+    sim.block.max <- apply(sim.block.max, 2, sort, na.last = NA)
     dummy <- rowMeans(sim.block.max)
     ci <- apply(sim.block.max, 1, quantile, c(0.025, 0.975))
     matplot(dummy, t(ci), pch = "-", col = 1, xlab = "Model", ylab = "Observed")
@@ -317,8 +326,8 @@ plot.maxstab <- function(x, ..., sites){
   plot(x$coord, type = "n")
   points(x$coord[-sites,])
   points(x$coord[sites,], pch = c("1", "2", "3", "4"), col = "blue")
-  
+
 }
-  
-  
-  
+
+
+
