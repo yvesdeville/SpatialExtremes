@@ -5,20 +5,19 @@ void brownresnickfull(double *data, double *dist, int *nSite, int *nObs, int *we
 		      double *range, double *smooth, int *fitmarge, double *dns){
   /*This is the Brown-Resnick model. It computes the pairwise
     log-likelihood */
-  
+
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i;
-  
+
   //Some preliminary steps: Valid points?
   if (*fitmarge){
-    for (i=0;i<*nSite;i++){
+    for (int i=0;i<*nSite;i++){
       if ((scales[i] <= 0) || (shapes[i] <= -1)){
 	*dns = MINF;
 	return;
       }
     }
   }
-   
+
   //Stage 0: Compute the covariance at each location
   double *rho = malloc(nPairs * sizeof(double));
   *dns = brownResnick(dist, nPairs, *range, *smooth, rho);
@@ -27,7 +26,7 @@ void brownresnickfull(double *data, double *dist, int *nSite, int *nObs, int *we
     free(rho);
     return;
   }
-    
+
   //Stage 1: Transformation to unit Frechet
   double *jac = malloc(*nSite * *nObs * sizeof(double)),
     *frech = malloc(*nSite * *nObs * sizeof(double));
@@ -39,25 +38,25 @@ void brownresnickfull(double *data, double *dist, int *nSite, int *nObs, int *we
       free(rho); free(jac); free(frech);
       return;
     }
-    
+
     if (*weighted)
       *dns = wlpliksmith(frech, rho, jac, *nObs, *nSite, weights);
 
     else
       *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
   }
-    
+
   else {
-    for (i=(*nSite * *nObs);i--;)
+    for (int i=0;i<(*nSite * *nObs);i++)
       jac[i] = 0;
-   
+
     if (*weighted)
       *dns = wlpliksmith(data, rho, jac, *nObs, *nSite, weights);
 
     else
       *dns = lpliksmith(data, rho, jac, *nObs, *nSite);
-  }  
-  
+  }
+
   if (!R_FINITE(*dns))
     *dns = MINF;
 
@@ -80,7 +79,7 @@ void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs, int 
 			 double *tempcoeffshape,double *range, double *smooth, double *dns){
   /* This is the Brown-Resnick model The GEV parameters are defined
      using a polynomial response surface */
-  
+
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
 
@@ -92,7 +91,7 @@ void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs, int 
     free(rho);
     return;
   }
-    
+
   //Stage 2: Compute the GEV parameters using the design matrix
   double *locs = malloc(*nSite * sizeof(double)),
     *scales = malloc(*nSite * sizeof(double)),
@@ -108,8 +107,8 @@ void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs, int 
 		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
 		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
 
-    for (int i=*nSite;i--;)
-      for (int j=*nObs;j--;)
+    for (int i=0;i<*nSite;i++)
+      for (int j=0;j<*nObs;j++)
 	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
 	  *dns = MINF;
 	  free(rho); free(locs); free(scales); free(shapes); free(trendlocs);
@@ -131,7 +130,7 @@ void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs, int 
   if (flag)
     *dns = gev2frechTrend(data, *nObs, *nSite, locs, scales, shapes, trendlocs, trendscales,
 			  trendshapes, jac, frech);
-  
+
   else
     *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes, jac, frech);
 
@@ -140,7 +139,7 @@ void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs, int 
     free(trendscales); free(trendshapes); free(jac); free(frech);
     return;
   }
-    
+
   if (*weighted)
     *dns = wlpliksmith(frech, rho, jac, *nObs, *nSite, weights);
 
@@ -150,11 +149,11 @@ void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs, int 
   // 1- For the location parameter
   if (*locpenalty > 0)
     *dns -= penalization(locpenmat, loccoeff, *locpenalty, *nloccoeff, *npparloc);
-  
+
   // 2- For the scale parameter
-  if (*scalepenalty > 0)    
+  if (*scalepenalty > 0)
     *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty, *nscalecoeff, *npparscale);
-  
+
   // 3- For the shape parameter
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty, *nshapecoeff, *npparshape);
@@ -176,5 +175,5 @@ void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs, int 
   free(trendlocs); free(trendscales); free(trendshapes);
 
   return;
-  
+
 }

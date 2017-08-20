@@ -15,16 +15,14 @@ distance <- function(coord, vec = FALSE){
   n.pairs <- n.site * (n.site - 1) / 2
 
   if (vec){
-    dist <- .C("distance", as.double(coord), as.integer(dist.dim),
-               as.integer(n.site), vec, dist = double(dist.dim * n.pairs),
-               PACKAGE = "SpatialExtremes")$dist
+    dist <- .C(C_distance, as.double(coord), as.integer(dist.dim),
+               as.integer(n.site), vec, dist = double(dist.dim * n.pairs))$dist
     dist <- matrix(dist, ncol = dist.dim, nrow = n.pairs)
   }
 
   else
-    dist <- .C("distance", as.double(coord), as.integer(dist.dim),
-               as.integer(n.site), vec, dist = double(n.pairs),
-               PACKAGE = "SpatialExtremes")$dist
+    dist <- .C(C_distance, as.double(coord), as.integer(dist.dim),
+               as.integer(n.site), vec, dist = double(n.pairs))$dist
 
   return(dist)
 }
@@ -32,7 +30,7 @@ distance <- function(coord, vec = FALSE){
 gev2frech <- function(x, loc, scale, shape, emp = FALSE){
 
   if (emp){
-    probs <- rank(x, na.last = "keep") / (length(x) + 1)
+    probs <- rank(x, na.last = "keep") / (sum(!is.na(x)) + 1)
     x <- - 1 / log(probs)
     return(x)
   }
@@ -69,9 +67,8 @@ frech2gev <- function(x, loc, scale, shape){
 
     n <- length(loc)
 
-    ans <- .C("gev", as.double(p), as.integer(n), as.double(loc),
-              as.double(scale), as.double(shape), quant = double(n),
-              PACKAGE = "SpatialExtremes")$quant
+    ans <- .C(C_gev, as.double(p), as.integer(n), as.double(loc),
+              as.double(scale), as.double(shape), quant = double(n))$quant
 
     return(ans)
 }
@@ -122,7 +119,7 @@ logit <- function(p, rep_one_by = 0.999, rep_zero_by = 10^-3, inv = FALSE){
 
     if (inv)
         return(1 / (1 + exp(-p)))
-    
+
     p[p > rep_one_by] <- rep_one_by
     p[p<rep_zero_by] <- rep_zero_by
 

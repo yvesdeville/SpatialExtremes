@@ -77,9 +77,9 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
 
   data <- qgev(data, gev.param[1], gev.param[2], gev.param[3])
 
-  mado <- .C("madogram", as.double(data), as.integer(n.obs),
+  mado <- .C(C_madogram, as.double(data), as.integer(n.obs),
              as.integer(n.site), mado = double(n.pairs),
-             PACKAGE = "SpatialExtremes", NAOK = TRUE)$mado
+             NAOK = TRUE)$mado
 
   if (!missing(n.bins)){
     bins <- c(0, quantile(dist, 1:n.bins/(n.bins + 1)), max(dist))
@@ -267,9 +267,9 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
       data[,i] <- pgev(data[,i], param[i,"loc"], param[i,"scale"], param[i,"shape"])
   }
 
-  fmado <- .C("madogram", as.double(data), as.integer(n.obs),
+  fmado <- .C(C_madogram, as.double(data), as.integer(n.obs),
               as.integer(n.site), mado = double(n.pairs),
-              PACKAGE = "SpatialExtremes", NAOK = TRUE)$mado
+              NAOK = TRUE)$mado
 
   if (!missing(n.bins)){
     bins <- c(0, quantile(dist, 1:n.bins/(n.bins + 1)), max(dist))
@@ -393,10 +393,9 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
     }
   }
 
-  lmado <- .C("lmadogram", as.double(data), as.integer(n.obs),
+  lmado <- .C(C_lmadogram, as.double(data), as.integer(n.obs),
               as.integer(n.site), as.double(lambda), as.integer(n.lambda),
-              lmado = double(n.pairs * n.lambda),
-              PACKAGE = "SpatialExtremes")$lmado
+              lmado = double(n.pairs * n.lambda))$lmado
   lmado <- matrix(lmado, nrow = n.lambda, ncol = n.pairs)
 
   if (anyDuplicated(dist)){
@@ -490,9 +489,8 @@ variogram <- function(data, coord, n.bins, xlab, ylab, angles = NULL,
     }
   }
 
-  vario <- .C("variogram", as.double(data), as.integer(n.obs),
-             as.integer(n.site), vario = double(n.pairs),
-             PACKAGE = "SpatialExtremes")$vario
+  vario <- .C(C_variogram, as.double(data), as.integer(n.obs),
+             as.integer(n.site), vario = double(n.pairs))$vario
 
   if (!missing(n.bins)){
     bins <- c(0, quantile(dist, 1:n.bins/(n.bins + 1)), max(dist))

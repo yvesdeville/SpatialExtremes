@@ -1,4 +1,4 @@
-rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0, 
+rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
                 sill = 1, range = 1, smooth = 1, grid = FALSE,
                 control = list()){
 
@@ -11,7 +11,7 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
 
   else
     n.site <- nrow(coord)
-  
+
   if (grid && is.null(dim(coord)))
     stop("'grid' cannot be 'TRUE' if you specify univariate coordinates")
 
@@ -42,19 +42,19 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
 
   else
     reg.grid <- FALSE
-    
+
   if (is.null(control$method)){
     ##Identify the most accurate method for simulation if not specified
 
     if (reg.grid)
       method <- "circ"
-    
+
     else if (grid && (n.site^dist.dim > 500))
       method <- "tbm"
-    
+
     else if ((n.site > 500) && (dist.dim > 1))
       method <- "tbm"
-    
+
     else
       method <- "exact"
   }
@@ -94,22 +94,21 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
   else
     n.effsite <- n.site
 
-  gp <- .C("direct", as.integer(n), as.integer(n.site), grid, as.integer(cov.mod), 
-           as.double(coord), as.integer(dist.dim), as.double(nugget), 
-           as.double(sill), as.double(range), as.double(smooth), ans = double(n.effsite * n), 
-           PACKAGE = "SpatialExtremes")$ans
-  
+  gp <- .C(C_direct, as.integer(n), as.integer(n.site), grid, as.integer(cov.mod),
+           as.double(coord), as.integer(dist.dim), as.double(nugget),
+           as.double(sill), as.double(range), as.double(smooth), ans = double(n.effsite * n))$ans
+
   if (grid){
     if ((n == 1) && (dist.dim == 2))
       gp <- matrix(gp, n.site, n.site)
-    
+
     else
       gp <- array(gp, c(rep(n.site, dist.dim), n))
   }
 
   else
     gp <- matrix(gp, ncol = n.site, nrow = n)
-  
+
   return(gp)
 }
 
@@ -124,16 +123,16 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
 
   else
     ans <- double(n.site * n)
-  
-  gp <- .C("tbm", as.integer(n), as.integer(n.site), as.integer(dim),
+
+  gp <- .C(C_tbm, as.integer(n), as.integer(n.site), as.integer(dim),
            as.integer(cov.mod), grid, as.double(coord), as.double(nugget),
            as.double(sill), as.double(range), as.double(smooth),
-           as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
+           as.integer(nlines), ans = ans)$ans
 
   if (grid){
     if ((n == 1) && (dim == 2))
       gp <- matrix(gp, n.site, n.site)
-    
+
     else
       gp <- array(gp, c(rep(n.site, dim), n))
   }
@@ -145,11 +144,11 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
 }
 
 .circgp <- function(n, n.grid, steps, dim, cov.mod, nugget, sill, range, smooth){
-  
-  gp <- .C("circemb", as.integer(n), as.integer(n.grid), as.double(steps),
+
+  gp <- .C(C_circemb, as.integer(n), as.integer(n.grid), as.double(steps),
            as.integer(dim), as.integer(cov.mod), as.double(nugget),
            as.double(sill), as.double(range), as.double(smooth),
-           ans = double(n * n.grid^2), PACKAGE = "SpatialExtremes")$ans
+           ans = double(n * n.grid^2))$ans
 
   if (n == 1)
     return(matrix(gp, n.grid, n.grid))

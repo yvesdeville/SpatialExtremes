@@ -57,14 +57,13 @@
     \code{\link[=profile2d.maxstab]{profile2d}}: computes the profile
     composite likelihood,
     \item \code{\link{covariance}}, \code{\link{variogram}}: computes
-  the covariance/semivariogram function. 
+  the covariance/semivariogram function.
   }
 }
 \section{Acknowledgement}{
   The development of the package has been financially supported by the
   Competence Center Environment and Sustainability (CCES) and more
-  precisely within the EXTREMES project
-  (\url{http://www.cces.ethz.ch/projects/hazri/EXTREMES}).
+  precisely within the EXTREMES project.
 }
 \author{Mathieu Ribatet}
 \keyword{spatial}

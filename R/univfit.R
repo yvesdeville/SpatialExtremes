@@ -4,10 +4,10 @@ gevmle <- function(x, ..., method = "Nelder"){
     param <- c("loc", "scale", "shape")
 
     nlgev <- function(loc, scale, shape)
-        -.C("gevlik", as.double(x), as.integer(n),
+        -.C(C_gevlik, as.double(x), as.integer(n),
             as.double(loc), as.double(scale),
             as.double(shape), dns = double(1),
-            PACKAGE = "SpatialExtremes", NAOK = TRUE)$dns
+            NAOK = TRUE)$dns
 
     start <- c(loc = 0, scale = 0, shape = 0)
     start["scale"] <- sqrt(6 * var(x, na.rm = TRUE)) / pi
@@ -46,9 +46,9 @@ gpdmle <- function(x, threshold, ..., method = "Nelder"){
     param <- c("scale", "shape")
 
     nlgpd <- function(scale, shape)
-        -.C("gpdlik", as.double(exceed), as.integer(nat), as.double(threshold),
+        -.C(C_gpdlik, as.double(exceed), as.integer(nat), as.double(threshold),
             as.double(scale), as.double(shape), dns = double(1),
-            PACKAGE = "SpatialExtremes", NAOK = TRUE)$dns
+            NAOK = TRUE)$dns
 
     high <- (x > threshold) & !is.na(x)
     exceed <- as.double(x[high])

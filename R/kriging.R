@@ -25,7 +25,7 @@ kriging <- function(data, data.coord, krig.coord, cov.mod = "whitmat",
   if (grid){
     if (is.null(dim(krig.coord)) || (ncol(krig.coord) != 2))
       stop("''grid'' can be 'TRUE' only with 2 dimensional locations")
-    
+
     new.krig.coord <- NULL
     for (i in 1:nrow(krig.coord))
       new.krig.coord <- rbind(new.krig.coord, cbind(krig.coord[,1],
@@ -40,14 +40,14 @@ kriging <- function(data, data.coord, krig.coord, cov.mod = "whitmat",
 
   else
     n.krig <- nrow(new.krig.coord)
-  
+
   if (!is.vector(data)){
     n.obs <- nrow(data)
 
     if (ncol(data) != n.site)
       stop("''data'' and ''data.coord'' don't match")
   }
-    
+
   else {
     n.obs <- 1
 
@@ -56,7 +56,7 @@ kriging <- function(data, data.coord, krig.coord, cov.mod = "whitmat",
   }
 
   distMat <- as.matrix(dist(data.coord, diag = TRUE, upper = TRUE))
-  
+
   icovMat <- covariance(nugget = 0, sill = sill, range = range, smooth = smooth,
                         smooth2 = smooth2, cov.mod = cov.mod, plot = FALSE,
                         dist = distMat)$cov.val
@@ -78,35 +78,34 @@ kriging <- function(data, data.coord, krig.coord, cov.mod = "whitmat",
   if (cov.mod != "caugen")
     smooth2 <- 0
 
-  weights <- .C("skriging", as.integer(n.site), as.integer(n.krig),
+  weights <- .C(C_skriging, as.integer(n.site), as.integer(n.krig),
                 as.integer(cov.mod.num), as.integer(dist.dim), as.double(icovMat),
                 as.double(data.coord), as.double(new.krig.coord), as.double(data),
                 as.double(sill), as.double(range), as.double(smooth),
-                as.double(smooth2), weights = double(n.krig * n.site),
-                PACKAGE = "SpatialExtremes")$weights
+                as.double(smooth2), weights = double(n.krig * n.site))$weights
 
   weights <- matrix(weights, n.site, n.krig)
 
   if (!only.weights){
     if (grid && (n.obs > 1)){
       krig <- array(NA, c(nrow(krig.coord), nrow(krig.coord), n.obs))
-      
+
       for (i in 1:n.obs)
         krig[,,i] <- matrix(data[i,] %*% weights, nrow(krig.coord))
     }
-    
+
     else {
       krig <- data %*% weights
-      
+
       if (grid)
         krig <- matrix(krig, nrow(krig.coord))
-      
+
     }
   }
 
   else
     krig <- NULL
-  
+
   return(list(coord = krig.coord, krig.est = krig, grid = grid,
               weights = weights))
 }

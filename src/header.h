@@ -1,3 +1,6 @@
+#ifdef _OPENMP
+# include <omp.h>
+#endif
 #include <R.h>
 #include <Rmath.h>
 #include <Rinternals.h>
@@ -388,6 +391,9 @@ void rschlathertbm(double *coord, int *nObs, int *nSites, int *dim,
 void rschlatherdirect(double *coord, int *nObs, int *nSites, int *dim,
 		      int *covmod, int *grid, double *nugget, double *range,
 		      double *smooth, double *uBound, double *ans);
+void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
+		    int *covmod, double *nugget, double *range,
+		    double *smooth, double *uBound, double *ans);
 void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	     int *grid, double *coord, double *nugget, double *sill,
 	     double *range, double *smooth, int *nlines, double *lines,
@@ -713,9 +719,9 @@ void getStartingPartitionExtt(int *nsim, int *n, double *nu, double *covChol,
 ///////////////////////////////////
 //  From fft.c
 //
-static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
-		  int m, int kt, double *at, double *ck, double *bt, double *sk,
-		  int *np, int *nfac);
+//static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
+//		  int m, int kt, double *at, double *ck, double *bt, double *sk,
+//		  int *np, int *nfac);
 void fft_factor(int n, int *pmaxf, int *pmaxp);
 Rboolean fft_work(double *a, double *b, int nseg, int n, int nspn, int isn,
 		  double *work, int *iwork);
@@ -738,4 +744,12 @@ void empiricalConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 		       int *nBlock, double *concProb);
 void empiricalBootConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 			   double *concProb);
-void concProbKendall(double *data, int *nSite, int *nObs, double *concProb);
+void concProbKendall(double *data, int *nSite, int *nObs, double *concProb,
+		     double *jackKnife, int *computeStdErr);
+
+///////////////////////////////////
+//  From maxStableExactSim.c
+//
+void rbrownexact(double *coord, int *nObs, int *nSite, int *dim,
+		 int *grid, double *range, double *smooth,
+		 double *ans);

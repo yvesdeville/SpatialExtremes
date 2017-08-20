@@ -42,20 +42,18 @@ fitcovmat <- function(data, coord, marge = "emp", iso = FALSE, control = list(),
             param <- "cov"
 
             fun2diso <- function(cov)
-                .C("fitcovmat2d", as.double(cov), as.double(0.0),
+                .C(C_fitcovmat2d, as.double(cov), as.double(0.0),
                    as.double(cov), as.integer(n.pairs), as.double(dist),
-                   as.double(extcoeff), as.double(weights), ans = double(1),
-                   PACKAGE = "SpatialExtremes")$ans
+                   as.double(extcoeff), as.double(weights), ans = double(1))$ans
         }
 
         else{
             param <- c("cov11", "cov12", "cov22")
 
             fun2d <- function(cov11, cov12, cov22)
-                .C("fitcovmat2d", as.double(cov11), as.double(cov12),
+                .C(C_fitcovmat2d, as.double(cov11), as.double(cov12),
                    as.double(cov22), as.integer(n.pairs), as.double(dist),
-                   as.double(extcoeff), as.double(weights), ans = double(1),
-                   PACKAGE = "SpatialExtremes")$ans
+                   as.double(extcoeff), as.double(weights), ans = double(1))$ans
         }
     }
 
@@ -65,20 +63,20 @@ fitcovmat <- function(data, coord, marge = "emp", iso = FALSE, control = list(),
             param <- "cov"
 
             fun3diso <- function(cov)
-                .C("fitcovmat3d", as.double(cov), as.double(0.0), as.double(0.0),
+                .C(C_fitcovmat3d, as.double(cov), as.double(0.0), as.double(0.0),
                    as.double(cov), as.double(0.0), as.double(cov),
                    as.integer(n.pairs), as.double(dist), as.double(extcoeff),
-                   as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+                   as.double(weights), ans = double(1))$ans
         }
 
         else{
             param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33")
 
             fun3d <- function(cov11, cov12, cov13, cov22, cov23, cov33)
-                .C("fitcovmat3d", as.double(cov11), as.double(cov12), as.double(cov13),
+                .C(C_fitcovmat3d, as.double(cov11), as.double(cov12), as.double(cov13),
                    as.double(cov22), as.double(cov23), as.double(cov33),
                    as.integer(n.pairs), as.double(dist), as.double(extcoeff),
-                   as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+                   as.double(weights), ans = double(1))$ans
         }
     }
 
@@ -340,70 +338,66 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
     if (model == "Schlather"){
         if (cov.mod == "caugen")
             funS2 <- function(nugget, range, smooth, smooth2)
-                .C("fitcovariance", as.integer(cov.mod.num), as.double(nugget), as.double(range),
+                .C(C_fitcovariance, as.integer(cov.mod.num), as.double(nugget), as.double(range),
                    as.double(smooth), as.double(smooth2), as.integer(n.pairs), as.integer(dist.dim),
-                   as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
-                   PACKAGE = "SpatialExtremes")$ans
+                   as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1))$ans
 
         else
             funS1 <- function(nugget, range, smooth)
-                .C("fitcovariance", as.integer(cov.mod.num), as.double(nugget), as.double(range),
+                .C(C_fitcovariance, as.integer(cov.mod.num), as.double(nugget), as.double(range),
                    as.double(smooth), double(1), as.integer(n.pairs), as.integer(dist.dim),
-                   as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
-                   PACKAGE = "SpatialExtremes")$ans
+                   as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1))$ans
     }
 
     else if (model == "iSchlather"){
         if (cov.mod == "caugen")
             funI2 <- function(alpha, nugget, range, smooth, smooth2)
-                .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(nugget),
+                .C(C_fiticovariance, as.integer(cov.mod.num), as.double(alpha), as.double(nugget),
                    as.double(range), as.double(smooth), as.double(smooth2), as.integer(n.pairs),
                    as.integer(dist.dim), as.double(dist), as.double(extcoeff), as.double(weights),
-                   ans = double(1), PACKAGE = "SpatialExtremes")$ans
+                   ans = double(1))$ans
 
         else
             funI1 <- function(alpha, nugget, range, smooth)
-                .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(nugget),
+                .C(C_fiticovariance, as.integer(cov.mod.num), as.double(alpha), as.double(nugget),
                    as.double(range), as.double(smooth), double(1), as.integer(n.pairs), as.integer(dist.dim),
-                   as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
-                   PACKAGE = "SpatialExtremes")$ans
+                   as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1))$ans
     }
 
     else if (model == "Geometric"){
         if (cov.mod == "caugen")
             funG2 <- function(sigma2, nugget, range, smooth, smooth2)
-                .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sigma2Bound),
+                .C(C_fitgcovariance, as.integer(cov.mod.num), as.double(sigma2), as.double(sigma2Bound),
                    as.double(nugget), as.double(range), as.double(smooth), as.double(smooth2),
                    as.integer(n.pairs), as.integer(dist.dim), as.double(dist), as.double(extcoeff),
-                   as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+                   as.double(weights), ans = double(1))$ans
 
         else
             funG1 <- function(sigma2, nugget, range, smooth)
-                .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sigma2Bound),
+                .C(C_fitgcovariance, as.integer(cov.mod.num), as.double(sigma2), as.double(sigma2Bound),
                    as.double(nugget), as.double(range), as.double(smooth), double(1), as.integer(n.pairs),
                    as.integer(dist.dim), as.double(dist), as.double(extcoeff), as.double(weights),
-                   ans = double(1), PACKAGE = "SpatialExtremes")$ans
+                   ans = double(1))$ans
     }
 
     else if (model == "Extremal-t") {
         if (cov.mod == "caugen")
             funT2 <- function(nugget, range, smooth, smooth2, DoF)
-                .C("fittcovariance", as.integer(cov.mod.num), as.double(nugget), as.double(range), as.double(smooth),
+                .C(C_fittcovariance, as.integer(cov.mod.num), as.double(nugget), as.double(range), as.double(smooth),
                    as.double(smooth2), as.double(DoF), as.integer(n.pairs), as.integer(dist.dim), as.double(dist),
-                   as.double(extcoeff), as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+                   as.double(extcoeff), as.double(weights), ans = double(1))$ans
 
         else
             funT1 <- function(nugget, range, smooth, DoF)
-                .C("fittcovariance", as.integer(cov.mod.num), as.double(nugget), as.double(range), as.double(smooth),
+                .C(C_fittcovariance, as.integer(cov.mod.num), as.double(nugget), as.double(range), as.double(smooth),
                    double(1), as.double(DoF), as.integer(n.pairs), as.integer(dist.dim), as.double(dist),
-                   as.double(extcoeff), as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+                   as.double(extcoeff), as.double(weights), ans = double(1))$ans
     }
 
     else
         funBR <- function(range, smooth)
-            .C("fitbrcovariance", as.double(range), as.double(smooth), as.integer(n.pairs),
-               as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1),
-               PACKAGE = "SpatialExtremes")$ans
+            .C(C_fitbrcovariance, as.double(range), as.double(smooth), as.integer(n.pairs),
+               as.double(dist), as.double(extcoeff), as.double(weights), ans = double(1))$ans
 
     fixed.param <- list(...)[names(list(...)) %in% param]
 

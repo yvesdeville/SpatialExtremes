@@ -39,11 +39,11 @@ brownresnickfull <- function(data, coord, start, fit.marge = FALSE, ...,
 
     ##And define the "body" of the function as the number of parameters
     ##to estimate depends on n.site
-    body(nplk) <- parse(text = paste("-.C('brownresnickfull', as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
+    body(nplk) <- parse(text = paste("-.C(C_brownresnickfull, as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
                         paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                        "as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
+                        "as.double(range), as.double(smooth), fit.marge, dns = double(1), NAOK = TRUE)$dns"))
 
     fixed.param <- list(...)[names(list(...)) %in% param]
 
@@ -250,7 +250,7 @@ brownresnickfull <- function(data, coord, start, fit.marge = FALSE, ...,
         u1 <- pnorm(eps)
         eps <- c(eps, -eps)## antithetic
         u1 <- c(u1, 1 - u1)
-                    
+
         colMeans(1 / (u1 + exp(semivario - sqrt(2 * semivario) * eps) *
                           pnorm(sqrt(2 * semivario) - eps)))
 
@@ -412,7 +412,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form, star
 
     ##And define the "body" of the function as the number of parameters
     ##to estimate depends on n.site
-    body(nplk) <- parse(text = paste("-.C('brownresnickdsgnmat', as.double(data), as.double(dist),
+    body(nplk) <- parse(text = paste("-.C(C_brownresnickdsgnmat, as.double(data), as.double(dist),
 as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),
 as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc),
 as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat),
@@ -430,8 +430,7 @@ as.integer(n.tempcoeff.shape), as.integer(n.ppartemp.shape), as.double(temp.pena
                         paste("as.double(c(", paste(temp.names.loc, collapse = ","), ")), "),
                         paste("as.double(c(", paste(temp.names.scale, collapse = ","), ")), "),
                         paste("as.double(c(", paste(temp.names.shape, collapse = ","), ")), "),
-                        "as.double(range), as.double(smooth), dns = double(1),
-PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
+                        "as.double(range), as.double(smooth), dns = double(1), NAOK = TRUE)$dns"))
 
     ##Define the formal arguments of the function
     form.nplk <- NULL
@@ -642,7 +641,7 @@ PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
         u1 <- pnorm(eps)
         eps <- c(eps, -eps)## antithetic
         u1 <- c(u1, 1 - u1)
-                    
+
         colMeans(1 / (u1 + exp(semivario - sqrt(2 * semivario) * eps) *
                           pnorm(sqrt(2 * semivario) - eps)))
 

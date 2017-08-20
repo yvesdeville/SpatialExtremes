@@ -113,7 +113,7 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
     chain.scale <- double(n * (n.scalecoeff + 3 + n.site))
     chain.shape <- double(n * (n.shapecoeff + 3 + n.site))
 
-    temp <- .C("latentgev", as.integer(n), as.double(data), as.integer(n.site),
+    temp <- .C(C_latentgev, as.integer(n), as.double(data), as.integer(n.site),
                as.integer(n.obs), as.integer(cov.mod.num), as.integer(dist.dim),
                as.double(distMat), as.double(c(loc.dsgn.mat, scale.dsgn.mat, shape.dsgn.mat)),
                as.integer(n.beta), as.double(unlist(start$beta)), as.double(start$sills),
@@ -124,7 +124,7 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
                as.double(prop$gev), as.double(prop$ranges), as.double(prop$smooths),
                chain.loc = chain.loc, chain.scale = chain.scale,  chain.shape = chain.shape,
                acc.rates = double(9), ext.rates = double(9), as.integer(thin),
-               burn.in = as.integer(burn.in), PACKAGE = "SpatialExtremes", NAOK = TRUE)
+               burn.in = as.integer(burn.in), NAOK = TRUE)
 
     chain.loc <- matrix(temp$chain.loc, n, byrow = TRUE)
     chain.scale <- matrix(temp$chain.scale, n, byrow = TRUE)
@@ -186,12 +186,12 @@ DIC <- function(object, ..., fun = "mean"){
     post.scale <- apply(chain.scale, 2, fun)
     post.shape <- apply(chain.shape, 2, fun)
 
-    temp <- .C("DIC", as.integer(n.chain), as.integer(n.site), as.integer(n.obs),
+    temp <- .C(C_DIC, as.integer(n.chain), as.integer(n.site), as.integer(n.obs),
                as.double(object$data), as.double(chain.loc),
                as.double(chain.scale), as.double(chain.shape),
                as.double(post.loc), as.double(post.scale), as.double(post.shape),
                dic = double(1), effNpar = double(1), dbar = double(1),
-               PACKAGE = "SpatialExtremes", NAOK = TRUE)
+               NAOK = TRUE)
 
     return(c(DIC = temp$dic, eNoP = temp$effNpar, Dbar = temp$dbar))
 }

@@ -114,7 +114,7 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
 
     nllik <- function(x) x
 
-    body(nllik) <- parse(text = paste("-.C('spatgevlik', as.double(data), as.double(covariables),
+    body(nllik) <- parse(text = paste("-.C(C_spatgevlik, as.double(data), as.double(covariables),
  as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat),
  as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty),
  as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff),
@@ -132,7 +132,7 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
                          paste("as.double(c(", paste(temp.names.loc, collapse = ","), ")), "),
                          paste("as.double(c(", paste(temp.names.scale, collapse = ","), ")), "),
                          paste("as.double(c(", paste(temp.names.shape, collapse = ","), ")), "),
-                         "dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
+                         "dns = double(1), NAOK = TRUE)$dns"))
 
 
     ##Define the formal arguments of the function

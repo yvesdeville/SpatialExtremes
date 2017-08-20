@@ -22,7 +22,7 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
     *dns = (*nugget * *nugget) * MINF;
     return;
   }
-    
+
   double *trendlocs = malloc(*nObs * sizeof(double)),
     *trendscales = malloc(*nObs * sizeof(double)),
     *trendshapes = malloc(*nObs * sizeof(double)),
@@ -35,7 +35,7 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
     *unif = malloc(*nSite * *nObs * sizeof(double)),
     sill = 1 - *nugget;
 
-  for (int i=(*nSite * *nSite);i--;)
+  for (int i=0;i<(*nSite * *nSite);i++)
     covMat[i] = 0;
 
   //Stage 1: Compute the covariance at each location
@@ -76,15 +76,15 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
     *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat, loccoeff,
 			 scalecoeff, shapecoeff, *nSite, *nloccoeff, *nscalecoeff,
 			 *nshapecoeff, locs, scales, shapes);
-    
+
     if (flag){
       dsgnmat2temptrend(tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape,
 			tempcoeffloc, tempcoeffscale, tempcoeffshape, *nSite,
 			*nObs, usetempcov, *ntempcoeffloc, *ntempcoeffscale,
 			*ntempcoeffshape, trendlocs, trendscales, trendshapes);
-      
-      for (int i=*nSite;i--;)
-	for (int j=*nObs;j--;)
+
+      for (int i=0;i<*nSite;i++)
+	for (int j=0;j<*nObs;j++)
 	  if (((scales[i] + trendscales[j]) <= 0) ||
 	      ((shapes[i] + trendshapes[j]) <= -1)){
 	    *dns = MINF;
@@ -97,7 +97,7 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
   }
 
   else
-    for (int i=*nSite;i--;)
+    for (int i=0;i<*nSite;i++)
       locs[i] = scales[i] = shapes[i] = 1;
 
   //Stage 3: Transformation to unit Frechet
@@ -115,7 +115,7 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
 
   // First the "dependence" log-likelihood
   if (*copula == 1){
-    for (int i=(*nSite * *nObs);i--;)
+    for (int i=0;i<(*nSite * *nObs);i++)
       unif[i] = qnorm(unif[i], 0, 1, 1, 0);
 
     *dns = gaussianCopula(unif, 1, covMat, *nObs, *nSite);
@@ -132,8 +132,8 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
       *dns = (*DoF - 34) * (*DoF - 34) * MINF;
       return;
     }
-      
-    for (int i=(*nSite * *nObs);i--;)
+
+    for (int i=0;i<(*nSite * *nObs);i++)
       unif[i] = qt(unif[i], *DoF, 1, 0);
 
     *dns = studentCopula(unif, *DoF, covMat, *nObs, *nSite);
@@ -144,7 +144,7 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
 
   /* Second the "marginal" log-likelihood i.e., log of the GEV
   densities */
-  for (int i=(*nSite * *nObs);i--;)
+  for (int i=0;i<(*nSite * *nObs);i++)
     *dns += logdens[i];
 
   //Stage 5: Removing the penalizing terms (if any)
@@ -152,12 +152,12 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
   if (*locpenalty > 0)
     *dns -= penalization(locpenmat, loccoeff, *locpenalty, *nloccoeff,
 			 *npparloc);
-  
+
   // 2- For the scale parameter
-  if (*scalepenalty > 0)    
+  if (*scalepenalty > 0)
     *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty, *nscalecoeff,
 			 *npparscale);
-  
+
   // 3- For the shape parameter
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty, *nshapecoeff,
@@ -182,12 +182,12 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
 
   free(trendlocs); free(trendscales); free(trendshapes); free(logdens); free(covariances);
   free(covMat); free(locs); free(scales); free(shapes); free(unif);
-  return;  
+  return;
 }
 
 double gaussianCopula(double *data, double sd, double *covMat, int nObs,
 		      int nSite){
-  // This function computes the log-likelihood for the Gaussian copula 
+  // This function computes the log-likelihood for the Gaussian copula
 
   int info = 0, oneInt = 1;
   double ans = 0, logDet = 0, one = 1;
@@ -197,30 +197,30 @@ double gaussianCopula(double *data, double sd, double *covMat, int nObs,
 
   if (info != 0)
     return MINF;
-  
+
   // Compute the log of the determinant from this Cholesky decomp
-  for (int i=nSite;i--;)
+  for (int i=0;i<nSite;i++)
     logDet += log(covMat[i * (nSite + 1)]);
-  
+
   logDet *= 2;
 
   ans = - 0.5 * nObs * (logDet + nSite * log(M_2PI));
 
   // Compupte the log of the multivariate Gaussian density
   double *dummy = malloc(nSite * sizeof(double));
-  for (int i=nObs;i--;){
-    for (int j=nSite;j--;)
+  for (int i=0;i<nObs;i++){
+    for (int j=0;j<nSite;j++)
       dummy[j] = data[i + j * nObs];
 
     F77_CALL(dtrsm)("L", "U", "T", "N", &nSite, &oneInt, &one, covMat,
 		    &nSite, dummy, &nSite);
 
-    for (int j=nSite;j--;)
+    for (int j=0;j<nSite;j++)
       ans -= 0.5 * dummy[j] * dummy[j];
   }
 
   //Jacobian part of the gaussian copula
-  for (int i=(nSite * nObs);i--;)
+  for (int i=0;i<(nSite * nObs);i++)
     ans -= dnorm(data[i], 0, sd, 1);
 
   free(dummy);
@@ -230,7 +230,7 @@ double gaussianCopula(double *data, double sd, double *covMat, int nObs,
 
 double studentCopula(double *data, double DoF, double *covMat, int nObs,
 		     int nSite){
-  // This function computes the log-likelihood for the Student copula 
+  // This function computes the log-likelihood for the Student copula
 
   int info = 0, oneInt = 1;
   double logDet = 0, one = 1, iDoF = 1 / DoF;
@@ -240,27 +240,27 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
 
   if (info != 0)
     return MINF;
-  
+
   // Compute the log of the determinant from this Cholesky decomp
-  for (int i=nSite;i--;)
+  for (int i=0;i<nSite;i++)
     logDet += log(covMat[i * (nSite + 1)]);
-  
+
   logDet *= 2;
 
   // Compupte the log of the multivariate Student density
   double *dummy = malloc(nSite * sizeof(double)),
     ans = 0;
 
-  for (int i=nObs;i--;){
+  for (int i=0;i<nObs;i++){
     double dummy2 = 0;
 
-    for (int j=nSite;j--;)
+    for (int j=0;j<nSite;j++)
       dummy[j] = data[i + j * nObs];
 
     F77_CALL(dtrsm)("L", "U", "T", "N", &nSite, &oneInt, &one, covMat,
 		    &nSite, dummy, &nSite);
 
-    for (int j=nSite;j--;)
+    for (int j=0;j<nSite;j++)
       dummy2 += dummy[j] * dummy[j];
 
     ans += log1p(dummy2 * iDoF);
@@ -271,7 +271,7 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
     (DoF + nSite) * ans;
 
   //Jacobian part of the Student copula
-  for (int i=(nSite * nObs);i--;)
+  for (int i=0;i<(nSite * nObs);i++)
     ans -= dt(data[i], DoF, 1);
 
   free(dummy);

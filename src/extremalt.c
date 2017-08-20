@@ -10,7 +10,6 @@ void extremaltfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
   //each locations.
 
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i;
 
   double *jac = malloc(*nSite * *nObs * sizeof(double)),
     *rho = malloc(nPairs * sizeof(double)),
@@ -18,7 +17,7 @@ void extremaltfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
 
   //Some preliminary steps: Valid points?
   if (*fitmarge){
-    for (i=0;i<*nSite;i++){
+    for (int i=0;i<*nSite;i++){
       if ((scales[i] <= 0) || (shapes[i] <= -1)){
 	*dns = MINF;
 	return;
@@ -78,7 +77,7 @@ void extremaltfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
   }
 
   else {
-    for (i=(*nSite * *nObs);i--;)
+    for (int i=0;i<(*nSite * *nObs);i++)
       jac[i] = 0;
 
     if (*weighted)
@@ -170,8 +169,8 @@ void extremaltdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
 		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
 
-    for (int i=*nSite;i--;)
-      for (int j=*nObs;j--;)
+    for (int i=0;i<*nSite;i++)
+      for (int j=0;j<*nObs;j++)
 	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
 	  *dns = MINF;
 	  return;

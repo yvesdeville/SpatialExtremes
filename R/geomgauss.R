@@ -70,11 +70,11 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     ##And define the "body" of the function as the number of parameters
     ##to estimate depends on n.site
 
-    body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.integer(weighted), as.double(weights),",
+    body(nplk) <- parse(text = paste("-.C(C_geomgaussfull, as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.integer(weighted), as.double(weights),",
                         paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                        "as.double(sigma2), as.double(sigma2Bound), as.double(nugget), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
+                        "as.double(sigma2), as.double(sigma2Bound), as.double(nugget), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), NAOK = TRUE)$dns"))
 
     fixed.param <- list(...)[names(list(...)) %in% param]
 
@@ -467,7 +467,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
     ##And define the "body" of the function as the number of parameters
     ##to estimate depends on n.site
-    body(nplk) <- parse(text = paste("-.C('geomgaussdsgnmat', as.integer(cov.mod.num),
+    body(nplk) <- parse(text = paste("-.C(C_geomgaussdsgnmat, as.integer(cov.mod.num),
 as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),
 as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat),
 as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat),
@@ -487,8 +487,7 @@ as.double(temp.penalty.shape),",
                         paste("as.double(c(", paste(temp.names.scale, collapse = ","), ")), "),
                         paste("as.double(c(", paste(temp.names.shape, collapse = ","), ")), "),
                         "as.double(sigma2), as.double(sigma2Bound), as.double(nugget),
- as.double(range), as.double(smooth), as.double(smooth2), dns = double(1),
- PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
+ as.double(range), as.double(smooth), as.double(smooth2), dns = double(1), NAOK = TRUE)$dns"))
 
     ##Define the formal arguments of the function
     form.nplk <- NULL

@@ -7,8 +7,8 @@
 \usage{
 concprob(data, coord, fitted, n.bins, add = FALSE, xlim = c(0,
 max(dist)), ylim = c(min(0, concProb), max(1, concProb)), col = 1:2,
-which = "kendall", block.size = floor(sqrt(nrow(data))), plot = TRUE,
-...)
+which = "kendall", xlab, ylab, block.size = floor(nrow(data)^(1/3)),
+plot = TRUE, compute.std.err = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,11 +27,15 @@ which = "kendall", block.size = floor(sqrt(nrow(data))), plot = TRUE,
   \item{which}{A character string specifying which estimator should be
     used. Should be one of "emp" (empirical), "boot" (bootstrap version)
     and "kendall" (kendall based).}
+  \item{xlab,ylab}{The labels for the x/y-axis (may be missing).}
   \item{add}{Logical. If \code{TRUE}, the plot is added to the current
     figure; otherwhise (default) a new plot is computed.}
   \item{block.size}{Integer specifying the block size for the empirical
     and bootstrap estimator.}
   \item{plot}{Logical. If \code{TRUE} (default) a plot is produced.}
+  \item{compute.std.err}{Logical. If \code{TRUE}, standard errors are
+    estimated using a jackknife procedure. It is currently only
+    available for the Kendall estimator.}
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.}
 }

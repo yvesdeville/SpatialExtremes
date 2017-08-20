@@ -8,7 +8,7 @@ rmaxlin <- function(n, coord, cov.mod = "gauss", dsgn.mat, grid = FALSE,
 
     if (missing(coord))
       stop("You must supply either a design matrix or 'cov.mod' and 'coord'")
-    
+
     if (is.null(dim(coord))){
       dim <- 1
       n.site <- length(coord)
@@ -22,18 +22,18 @@ rmaxlin <- function(n, coord, cov.mod = "gauss", dsgn.mat, grid = FALSE,
 
       param <- "var"
     }
-  
+
     else {
       dim <- ncol(coord)
-      
+
       if (grid){
         dummy <- list()
         for (i in 1:dim)
           dummy <- c(dummy, list(coord[,i]))
-      
+
         coord <- as.matrix(expand.grid(dummy))
       }
-    
+
       n.site <- nrow(coord)
       param <- c("cov11", "cov12", "cov22")
     }
@@ -55,7 +55,7 @@ rmaxlin <- function(n, coord, cov.mod = "gauss", dsgn.mat, grid = FALSE,
       bounds <- apply(coord, 2, range) + 4.1 * dummy * c(-1, 1)
       p <- ceiling(sqrt(p))
       delta <- (bounds[2,] - bounds[1,]) / (p - 1)
-      
+
       coord.grid <- cbind(seq(bounds[1,1], bounds[2,1], length = p) + 0.5 * delta[1],
                           seq(bounds[1,2], bounds[2,2], length = p) + 0.5 * delta[2])
       coord.grid <- as.matrix(expand.grid(coord.grid[,1], coord.grid[,2]))
@@ -66,10 +66,9 @@ rmaxlin <- function(n, coord, cov.mod = "gauss", dsgn.mat, grid = FALSE,
 
     ## Compute the "design matrix" for the max-linear model (only
     ## based on the conditionning points)
-    dsgn.mat <- .C("maxLinDsgnMat", as.double(coord), as.double(coord.grid),
+    dsgn.mat <- .C(C_maxLinDsgnMat, as.double(coord), as.double(coord.grid),
                    as.integer(n.site), as.integer(p), as.double(areaPixel),
-                   as.integer(dim), as.double(param), dsgnMat = double(p * n.site),
-                   PACKAGE = "SpatialExtremes")$dsgnMat
+                   as.integer(dim), as.double(param), dsgnMat = double(p * n.site))$dsgnMat
   }
 
   else {
@@ -83,9 +82,9 @@ rmaxlin <- function(n, coord, cov.mod = "gauss", dsgn.mat, grid = FALSE,
 
   Z <- rgev(n * p, 1, 1, 1)
 
-  ans <- .C("maxLinear", as.integer(n), as.double(dsgn.mat), as.double(Z),
+  ans <- .C(C_maxLinear, as.integer(n), as.double(dsgn.mat), as.double(Z),
             as.integer(n.site), as.integer(p), as.integer(grid),
-            sim = double(n.site * n), PACKAGE = "SpatialExtremes")$sim
+            sim = double(n.site * n))$sim
 
   if (grid){
     if (n == 1)
@@ -97,6 +96,6 @@ rmaxlin <- function(n, coord, cov.mod = "gauss", dsgn.mat, grid = FALSE,
 
   else
     ans <- matrix(ans, nrow = n, ncol = n.site)
-  
+
   return(ans)
 }

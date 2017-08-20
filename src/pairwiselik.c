@@ -26,10 +26,10 @@ double lplikschlather(double *data, double *rho, double *jac,
 	  continue;
 
 	if (data[k + i * nObs] >= data[k + j * nObs])
-	  dns += -2 * log(data[k + j * nObs]) - 1 / data[k + j * nObs] + jac[k + j * nObs];
+	  dns += -2 * log(data[k + j * nObs]) - 1 / data[k + j * nObs] + jac[k + i * nObs] + jac[k + j * nObs];
 
 	else
-	  dns += -2 * log(data[k + i * nObs]) - 1 / data[k + i * nObs] + jac[k + i * nObs];
+	  dns += -2 * log(data[k + i * nObs]) - 1 / data[k + i * nObs] + jac[k + i * nObs] + jac[k + j * nObs];
       }
     }
 
@@ -80,7 +80,7 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
   const int nPairs = nSite * (nSite - 1) / 2;
   double dns = 0.0;
 
-  //#pragma parallel for reduction(+:dns)
+  //#pragma omp parallel for reduction(+:dns)
   for (int currentPair=0;currentPair<nPairs;currentPair++){
 
     int i, j;
@@ -99,19 +99,26 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	c1 = log(data[k + j * nObs] * idata1) * imahal + 0.5 * mahalDist[currentPair],
 	c2 = mahalDist[currentPair] - c1;
 
-      if ((fabs(c1) > 38) && (fabs(c2) > 38)){
-	/* This means that only data1 or data2 contributes to the
-	   log-likelihood.
+      if ((c1 > 38) && (c2 < -38)){
+	// Contribution of site 1 only
+	dns += 2 * log(idata1) - idata1 + jac[k + i * nObs] + jac[k + j * nObs];
+	//printf("case 1: mahal = %f\n", mahalDist[currentPair]);
+      }
 
-	   Rmq: 38 is the limiting accuracy for dnorm */
-	if (data[k + i * nObs ] >= data[k + j * nObs])
-	  dns += -2 * log(data[k + j * nObs]) - 1 / data[k + j * nObs] + jac[k + j * nObs];
+      else if ((c1 < -38) && (c2 > 38)){
+	// Contribution of site 2 only
+	dns += 2 * log(idata2) - idata2 + jac[k + i * nObs] + jac[k + j * nObs];
+	//printf("case 2: mahal = %f\n", mahalDist[currentPair]);
+      }
 
-	else
-	  dns += -2 * log(data[k + i * nObs]) - 1 / data[k + i * nObs] + jac[k + i * nObs];
+      else if ((c1 > 38) && (c2 > 38)){
+	// site 1 and site 2 are independent
+	dns += 2 * log(idata1 * idata2) - idata1 - idata2 + jac[k + i * nObs] + jac[k + j * nObs];
+	//printf("case 3: mahal = %f\n", mahalDist[currentPair]);
       }
 
       else {
+	// regular case (since the case c1 < -38 and c2 < -38 is impossible)
 	double dnormc1 = dnorm(c1, 0, 1, 0),
 	  dnormc2 = dnorm(c2, 0, 1, 0),
 	  pnormc1 = pnorm(c1, 0, 1, 1, 0),
@@ -195,10 +202,10 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 	    continue;
 
 	  if (data[k + i * nObs ] >= data[k + j * nObs])
-	    dns += -2 * log(data[k + j * nObs]) - 1 / data[k + j * nObs] + jac[k + j * nObs];
+	    dns += -2 * log(data[k + j * nObs]) - 1 / data[k + j * nObs] + jac[k + i * nObs] + jac[k + j * nObs];
 
 	  else
-	    dns += -2 * log(data[k + i * nObs]) - 1 / data[k + i * nObs] + jac[k + i * nObs];
+	    dns += -2 * log(data[k + i * nObs]) - 1 / data[k + i * nObs] + jac[k + i * nObs] + jac[k + j * nObs];
 	}
       }
 
@@ -267,10 +274,10 @@ double lplikextremalt(double *data, double *rho, double df, double *jac,
 	  continue;
 
 	if (data[k + i * nObs ] >= data[k + j * nObs])
-	  dns += -2 * log(data[k + j * nObs]) - 1 / data[k + j * nObs] + jac[k + j * nObs];
+	  dns += -2 * log(data[k + j * nObs]) - 1 / data[k + j * nObs] + jac[k + i * nObs] + jac[k + j * nObs];
 
 	else
-	  dns += -2 * log(data[k + i * nObs]) - 1 / data[k + i * nObs] + jac[k + i * nObs];
+	  dns += -2 * log(data[k + i * nObs]) - 1 / data[k + i * nObs] + jac[k + i * nObs] + jac[k + j * nObs];
       }
     }
 
@@ -305,7 +312,7 @@ double lplikextremalt(double *data, double *rho, double df, double *jac,
 	  double lFvec = -ptc1 * idata1 - ptc2 * idata2,
 
 	    //It's the partial derivative for marge 1
-	    dvecM1 = idata1 * (idata1 * ptc1 + a * idf * 
+	    dvecM1 = idata1 * (idata1 * ptc1 + a * idf *
 			       (idata1 * data2_1 * dtc1 -
 				idata2 * data1_2 * dtc2)),
 

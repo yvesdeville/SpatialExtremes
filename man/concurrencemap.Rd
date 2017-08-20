@@ -6,7 +6,8 @@
   concurrence cell areas.}
 \usage{
 concurrencemap(data, coord, which = "kendall", type = "cell", n.grid =
-100, col = cm.colors(64), plot = TRUE, plot.border = NULL, ...)
+100, col = cm.colors(64), plot = TRUE, plot.border = NULL,
+compute.std.err = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -21,11 +22,15 @@ concurrencemap(data, coord, which = "kendall", type = "cell", n.grid =
     the number of locations specifying which site should be used as
     reference location---see Details.}
   \item{n.grid}{Integer specifying the size of the prediction grid.}
-   \item{col}{The colors used to produce the map.}  
+   \item{col}{The colors used to produce the map.}
    \item{plot}{Logical. If \code{TRUE} (default), a map is produced;
      otherwise results are invisibly returned.}
   \item{plot.border}{The name of an R function that can be used to plot
-    the border of the study region. If \code{NULL}, no border are plotted.}
+    the border of the study region. If \code{NULL}, no border are
+    plotted.}
+  \item{compute.std.err}{Logical. If \code{TRUE}, a map of standard
+    errors is also produced. It is currently only available for
+    concurrence probability maps.}
   \item{\dots}{Additional options to be passed to the
     \code{\link{image}} function.}
 }
@@ -61,7 +66,7 @@ border <- function(add = FALSE) maps::map("usa", add = add)
 
 par(mar = rep(0, 4))
 ## Produce a pairwise concurrence probability map w.r.t. station number 15
-concurrencemap(maxima.summer, coord, type = 15, plot.border = border)
+concurrencemap(maxima.summer, coord, type = 15, plot.border = border, compute.std.err = TRUE)
 
 ## Produce the expected concurrence cell area
 concurrencemap(maxima.summer, coord, plot.border = border)

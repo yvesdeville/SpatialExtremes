@@ -210,11 +210,11 @@ plot.maxstab <- function(x, ..., sites){
     shape <- gev.param[i,3]
     probs <- 1:n.obs / (n.obs + 1)
 
-    for (j in 1:1000)
-      boot[j,] <- sort(rgev(n.obs, loc, scale, shape))
+    boot <- matrix(rgev(n.obs * 1000, loc, scale, shape), nrow = 1000, ncol = n.obs)
+    boot <- apply(boot, 1, sort)
+    ci <- apply(boot, 1, quantile, prob = c(0.025, 0.975))
 
-    ci <- apply(boot, 2, quantile, c(0.025, 0.975))
-    matplot(1 / (1 - probs), t(ci), pch ="-", col = 1,
+    matplot(1 / (1 - probs), t(ci), pch = "-", col = 1,
             xlab = "Return Period", ylab = "Return level", log = "x")
     fun <- function(T) qgev(1 - 1/T, loc, scale, shape)
     curve(fun, from = 1.001, to = 100, add = TRUE)
@@ -294,7 +294,7 @@ plot.maxstab <- function(x, ..., sites){
     ##Plot of the pairwise maxima
     for (i in 1:3){
       for (j in (i+1):4){
-        pair.max <- sort(apply(gumb[,c(i, j)], 1, max))
+        pair.max <- sort(apply(gumb[,c(i, j)], 1, max))##NA are discarded
         sim.pair.max <- apply(pmax(sim.maxstab[,,i], sim.maxstab[,,j]), 2, sort)
         dummy <- rowMeans(sim.pair.max)
         ci <- apply(sim.pair.max, 1, quantile, c(0.025, 0.975))

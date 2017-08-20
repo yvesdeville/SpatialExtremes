@@ -10,16 +10,16 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
 
   else if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
-  
+
   if (!(estim %in% c("ST", "Smith")))
     stop("'estim' must be one of 'ST' or 'Smith'")
-  
+
   if (!(marge %in% c("emp", "mle", "frech")))
     stop("'marge' must be one of 'emp', 'mle' or 'frech'")
-  
+
   if ((prob < 0) || (prob >= 1))
     stop("'prob' must be in [0,1)")
-  
+
   n.site <- ncol(data)
   n.obs <- nrow(data)
   dist <- distance(coord)
@@ -41,7 +41,7 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
 
   else
     col <- 1
-  
+
   if (marge == "mle"){
     frech <- data
     for (i in 1:n.site){
@@ -51,18 +51,18 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
                              marg.param["shape"])
     }
   }
-  
+
   if (marge == "emp") {
-    frech <- apply(data, 2, rank) / (n.obs  +1)    
+    frech <- apply(data, 2, rank) / (n.obs  +1)
     frech <- - 1 / log(frech)
-    
+
   }
 
   if (marge == "frech")
     frech <- data
 
   ext.coeff <- rep(NA, n.pairs)
-  
+
   if (estim == "ST"){
     std.err <- FALSE
     if (prob == 0)
@@ -70,16 +70,15 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
 
     else
       z <- - 1 / log(prob)
-    
+
     x.bar <- colMeans(1/frech)
-    
+
     lik.fun <- function(theta)
-      .C("extCoeffST", as.double(frech[,pair]), as.double(x.bar[pair]), as.double(z),
-         as.double(theta), as.integer(n.obs), dns = double(1),
-         PACKAGE = "SpatialExtremes")$dns
-    
+      .C(C_extCoeffST, as.double(frech[,pair]), as.double(x.bar[pair]), as.double(z),
+         as.double(theta), as.integer(n.obs), dns = double(1))$dns
+
     k <- 1
-    
+
     for (i in 1:(n.site - 1)){
       for (j in (i+1):n.site){
         pair <- c(i,j)
@@ -88,28 +87,26 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
       }
     }
   }
-  
+
   if (estim == "Smith") {
     ##The Smith approach needs Exponential margins instead of Frechet ones
-    frech <- 1 / frech    
-    
-    ext.coeff <- .C("extCoeffSmith", as.double(frech), as.integer(n.obs),
-                    as.integer(n.site), extCoeff = double(n.pairs),
-                    PACKAGE = "SpatialExtremes")$extCoeff
+    frech <- 1 / frech
+
+    ext.coeff <- .C(C_extCoeffSmith, as.double(frech), as.integer(n.obs),
+                    as.integer(n.site), extCoeff = double(n.pairs))$extCoeff
 
     if (std.err){
 
       ext.coeff.std.err <- matrix(NA, ncol = n.site * (n.site - 1) / 2,
                                   nrow = n.obs)
-      
+
       if (marge == "frech"){
         for (year in 1:n.obs){
           frech.jack <- 1 / data[-year,]
-    
-          ext.coeff.std.err[year,] <- .C("extCoeffSmith", as.double(frech.jack),
+
+          ext.coeff.std.err[year,] <- .C(C_extCoeffSmith, as.double(frech.jack),
                                          as.integer(n.obs-1), as.integer(n.site),
-                                         extCoeff = double(n.pairs),
-                                         PACKAGE = "SpatialExtremes")$extCoeff
+                                         extCoeff = double(n.pairs))$extCoeff
         }
       }
 
@@ -124,11 +121,10 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
           }
 
           frech.jack <- 1 / frech.jack
-          
-          ext.coeff.std.err[year,] <- .C("extCoeffSmith", as.double(frech.jack),
+
+          ext.coeff.std.err[year,] <- .C(C_extCoeffSmith, as.double(frech.jack),
                                          as.integer(n.obs-1), as.integer(n.site),
-                                         extCoeff = double(n.pairs),
-                                         PACKAGE = "SpatialExtremes")$extCoeff
+                                         extCoeff = double(n.pairs))$extCoeff
         }
       }
 
@@ -137,14 +133,13 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
         for (year in 1:n.obs){
           frech.jack <- apply(data[-year,], 2, rank) / n.obs
           frech.jack <- - log(frech.jack)
-          
-          ext.coeff.std.err[year,] <- .C("extCoeffSmith", as.double(frech.jack),
+
+          ext.coeff.std.err[year,] <- .C(C_extCoeffSmith, as.double(frech.jack),
                                          as.integer(n.obs-1), as.integer(n.site),
-                                         extCoeff = double(n.pairs),
-                                         PACKAGE = "SpatialExtremes")$extCoeff
+                                         extCoeff = double(n.pairs))$extCoeff
         }
       }
-      
+
       ext.coeff.std.err <- sqrt(apply(ext.coeff.std.err, 2, var) * (n.obs - 2) *
                                 (n.obs - 1) / n.obs)
     }
@@ -163,7 +158,7 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
     else
       loess.fit <- loess(ext.coeff ~ dist)
   }
-  
+
   if (plot){
 
     if (missing(xlab))
@@ -174,9 +169,9 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
 
     if (identify)
       par(mfrow=c(1,2))
-    
+
     plot(dist, ext.coeff, xlab = xlab, ylab = ylab, col = col, pch = col, ...)
-    
+
     if (loess){
       h <- seq(0, max(dist), length = 200)
 
@@ -193,7 +188,7 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
       labels <- NULL
       for (i in 1:(n.site-1))
         labels <- c(labels, paste(i, "-", (i+1):n.site, sep = ""))
-      
+
       id.points <- identify(dist, ext.coeff, labels = labels,
                             plot = FALSE)
       id.stations <- unlist(strsplit(labels[id.points], "-"))
@@ -201,9 +196,9 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
       points(coord[as.numeric(id.stations),], col = 2)
     }
   }
-  
+
   ans <- cbind(distance = dist, ext.coeff = ext.coeff)
-  
+
   if (std.err)
     ans <- cbind(ans, std.err = ext.coeff.std.err)
 
@@ -212,6 +207,6 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
 
   if (identify)
     ans <- c(ans, select.pairs = labels[id.points])
-  
+
   return(ans)
 }

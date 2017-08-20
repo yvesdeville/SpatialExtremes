@@ -111,8 +111,8 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
     if (n.cond <= 7){
       ## List all possible partitions
       start <- proc.time()
-      n.part <- .C("bell", as.integer(n.cond), n.part = integer(1))$n.part
-      all.part <- .C("listAllPartOfASet", as.integer(n.cond), as.integer(n.part),
+      n.part <- .C(C_bell, as.integer(n.cond), n.part = integer(1))$n.part
+      all.part <- .C(C_listAllPartOfASet, as.integer(n.cond), as.integer(n.part),
                      all.part = integer(n.part * n.cond), all.size = integer(n.part))
       all.size <- all.part$all.size
       all.part <- all.part$all.part
@@ -120,18 +120,18 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
       ## Compute the weight for each single partition
 
       if (model == "Brown-Resnick")
-        weights <- .C("computeWeightsBR", as.integer(n.cond), as.double(y), as.integer(n.part),
+        weights <- .C(C_computeWeightsBR, as.integer(n.cond), as.double(y), as.integer(n.part),
                       as.integer(all.part), as.integer(all.size), as.double(cov.sub),
                       as.double(sigma2.sub), as.double(cov.chol.sub), as.double(ham.sub),
                       as.double(mean1.sub), weights = double(n.part))$weights
 
       if (model == "Schlather")
-        weights <- .C("computeWeightsSC", as.integer(n.cond), as.double(y), as.integer(n.part),
+        weights <- .C(C_computeWeightsSC, as.integer(n.cond), as.double(y), as.integer(n.part),
                       as.integer(all.part), as.integer(all.size), as.double(cov.sub),
                       weights = double(n.part))$weights
 
       if (model == "extremal-t")
-          weights <- .C("computeWeightsExtt", as.integer(n.cond), as.double(y), as.integer(n.part),
+          weights <- .C(C_computeWeightsExtt, as.integer(n.cond), as.double(y), as.integer(n.part),
                       as.integer(all.part), as.integer(all.size), as.double(cov.sub), as.double(DoF),
                       weights = double(n.part))$weights
 
@@ -148,16 +148,16 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
       n.sim.start <- 250
 
       if (model == "Brown-Resnick")
-        dummy <- .C("getStartingPartitionBR", as.integer(n.sim.start), as.integer(n.cond),
+        dummy <- .C(C_getStartingPartitionBR, as.integer(n.sim.start), as.integer(n.cond),
                     as.double(cond.coord), as.double(range), as.double(smooth),
                     start = integer(n.sim.start * n.cond))$start
 
       if (model == "Schlather")
-        dummy <- .C("getStartingPartitionSC", as.integer(n.sim.start), as.integer(n.cond),
+        dummy <- .C(C_getStartingPartitionSC, as.integer(n.sim.start), as.integer(n.cond),
                     as.double(cov.chol.sub), start = integer(n.sim.start * n.cond))$start
 
       if (model == "extremal-t")
-          dummy <- .C("getStartingPartitionExtt", as.integer(n.sim.start), as.integer(n.cond),
+          dummy <- .C(C_getStartingPartitionExtt, as.integer(n.sim.start), as.integer(n.cond),
                     as.double(DoF), as.double(cov.chol.sub), start = integer(n.sim.start * n.cond))$start
 
       dummy <- matrix(dummy, n.sim.start, n.cond, byrow = TRUE)
@@ -166,20 +166,20 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
 
       cat("Starting partitiion is: ", start, "\n")
       if (model == "Brown-Resnick")
-        parts <- .C("gibbsForPartBR", as.integer(k), as.integer(thin), as.integer(burnin),
+        parts <- .C(C_gibbsForPartBR, as.integer(k), as.integer(thin), as.integer(burnin),
                 as.integer(n.cond), as.integer(start), as.double(cov.sub),
                 as.double(sigma2.sub), as.double(cov.chol.sub), as.double(ham.sub),
                 as.double(mean1.sub), as.double(y), chain = integer(k * n.cond),
                 time1 = double(1))
 
       if (model == "Schlather")
-        parts <- .C("gibbsForPartSC", as.integer(k), as.integer(thin), as.integer(burnin),
+        parts <- .C(C_gibbsForPartSC, as.integer(k), as.integer(thin), as.integer(burnin),
                     as.integer(n.cond), as.integer(start), as.double(cov.sub),
                     as.double(y), chain = integer(k * n.cond),
                     time1 = double(1))
 
       if (model == "extremal-t")
-        parts <- .C("gibbsForPartExtt", as.integer(k), as.integer(thin), as.integer(burnin),
+        parts <- .C(C_gibbsForPartExtt, as.integer(k), as.integer(thin), as.integer(burnin),
                     as.integer(n.cond), as.integer(start), as.double(DoF), as.double(cov.sub),
                     as.double(y), chain = integer(k * n.cond),
                     time1 = double(1))
@@ -199,20 +199,20 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
   if (do.sim){
     ## Simulation
     if (model == "Brown-Resnick")
-      ans <- .C("condsimbrown", as.integer(k), as.integer(n), as.integer(n.cond),
+      ans <- .C(C_condsimbrown, as.integer(k), as.integer(n), as.integer(n.cond),
                 as.integer(parts), as.double(cov.chol), as.double(sigma2), as.double(ham),
                 as.double(mean1), as.double(y.tilde), as.double(all.coord), as.double(range),
                 as.double(smooth), as.integer(dim), sim = double(k * n),
                 sub.ext.fct = double(k * n), ext.fct = double(k * n), timings = double(2))
 
     if (model == "Schlather")
-      ans <- .C("condsimschlather", as.integer(k), as.integer(n), as.integer(n.cond),
+      ans <- .C(C_condsimschlather, as.integer(k), as.integer(n), as.integer(n.cond),
                 as.integer(parts), as.double(cov), as.double(y),
                 sim = double(k * n), sub.ext.fct = double(k * n),
                 ext.fct = double(k * n), timings = double(2))
 
     if (model == "extremal-t")
-      ans <- .C("condsimextt", as.integer(k), as.integer(n), as.integer(n.cond),
+      ans <- .C(C_condsimextt, as.integer(k), as.integer(n), as.integer(n.cond),
                 as.integer(parts), as.double(DoF), as.double(cov), as.double(y),
                 sim = double(k * n), sub.ext.fct = double(k * n),
                 ext.fct = double(k * n), timings = double(2))

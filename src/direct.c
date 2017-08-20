@@ -4,7 +4,7 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 		 double *nugget, double *sill, double *range,
 		 double *smooth, double *covMat){
 
-  int currentPair, nPairs, effnSite = *nSite, zero = 0;
+  int nPairs, effnSite = *nSite, zero = 0;
   const double one = 1, dzero = 0;
   double flag = 0;
 
@@ -54,47 +54,46 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 
     break;
   }
-  
+
   if (flag != 0.0)
     error("The covariance parameters seem to be ill-defined. Please check\n");
-  
+
   //Fill the non-diagonal elements of the covariance matrix
-  currentPair = -1;
-  for (int i = 0; i < (effnSite-1); i++){
-    for (int j = i + 1; j < effnSite; j++){
-      currentPair++;
-      covMat[effnSite * i + j] = covMat[effnSite * j + i] =*sill * rho[currentPair];
-    }
+  //#pragma omp parallel for
+  for (int currentPair=0;currentPair<nPairs;currentPair++){
+    int i = 0, j = 0;
+    getSiteIndex(currentPair, effnSite, &i, &j);
+    covMat[effnSite * i + j] = covMat[effnSite * j + i] = *sill * rho[currentPair];
   }
-  
+
   //Fill the diagonal elements of the covariance matrix
   if (*covmod == 6){
     //Fractional brownian
-    double irange = 1 / *range;
+    double irange2 = 1 / (*range * *range);
 
     if (*grid){
       for (int i = 0; i < effnSite;i++){
 	covMat[i * (effnSite + 1)] = 0;
-	
+
 	for (int j= 0; j < *dim; j++)
 	  covMat[i * (effnSite + 1)] += coordGrid[i + j * effnSite] * coordGrid[i + j * effnSite];
-	
-	covMat[i * (effnSite + 1)] = 2 * R_pow(sqrt(covMat[i * (effnSite + 1)]) * irange, *smooth);
+
+	covMat[i * (effnSite + 1)] = 2 * pow(covMat[i * (effnSite + 1)] * irange2, 0.5 * *smooth);
       }
     }
 
     else {
       for (int i = 0; i < effnSite; i++){
 	covMat[i * (effnSite + 1)] = 0;
-	
+
 	for (int j = 0; j < *dim; j++)
 	  covMat[i * (effnSite + 1)] += coord[i + j * effnSite] * coord[i + j * effnSite];
-	
-	covMat[i * (effnSite + 1)] = 2 * R_pow(sqrt(covMat[i * (effnSite + 1)]) * irange, *smooth);
+
+	covMat[i * (effnSite + 1)] = 2 * pow(covMat[i * (effnSite + 1)] * irange2, 0.5 * *smooth);
       }
     }
   }
-  
+
   else
     for (int i = 0; i < effnSite; i++)
       covMat[i * (effnSite + 1)] = *sill + *nugget;
@@ -103,7 +102,7 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
   free(dist); free(rho); free(coordGrid);
   return;
 }
-  
+
 void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
 	    double *nugget, double *sill, double *range, double *smooth,
 	    double *ans){
@@ -115,11 +114,11 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
     lagi = neffSite;
   }
 
-  else 
+  else
     lagj = *n;
 
   double *covmat = malloc(neffSite * neffSite * sizeof(double));
-  
+
   buildcovmat(nSite, grid, covmod, coord, dim, nugget, sill, range,
 	      smooth, covmat);
 
@@ -129,7 +128,7 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
 
   if (info != 0)
     error("error code %d from Lapack routine '%s'", info, "dpotrf");
-  
+
   /* Simulation part */
   GetRNGstate();
 
@@ -140,11 +139,11 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
     F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite,
 		    ans + i * lagi, &lagj);
   }
-    
+
   PutRNGstate();
 
   free(covmat);
   return;
 }
 
-    
+

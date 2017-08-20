@@ -14,7 +14,7 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
 
   *ans = - mahalDistFct(distVec, *nPairs, cov11, cov12, cov22,
 			mahalDist);
-  
+
   if (*ans != 0.0){
     *ans = 1e50;
     return;
@@ -146,7 +146,7 @@ void fittcovariance(int *covmod, double *nugget, double *range, double *smooth,
     return;
   }
 
-  //#pragma omp parallel for private(res) reduction(+:dummy)
+  ////#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pt(sqrt((1 - rho[i]) * (*DoF + 1) / (1 + rho[i])), *DoF + 1, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -209,7 +209,7 @@ void fiticovariance(int *covmod, double *alpha, double *nugget, double *range,
     res = 2 * *alpha + (1 - *alpha) * (1 + sqrt(0.5 - 0.5 * rho[i])) - extcoeff[i];
     dummy +=  res * res / (weights[i] * weights[i]);
   }
-  
+
   *ans = dummy;
 
   free(rho);

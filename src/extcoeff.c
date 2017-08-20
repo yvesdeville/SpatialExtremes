@@ -7,18 +7,15 @@
 
 void extCoeffSmith(double *frech, int *nObs, int *nSite,
 		   double *extCoeff){
-  int i, j, k, currentPair = 0;
+  const int nPair = *nSite * (*nSite - 1) / 2;
 
-  for (i=0;i<(*nSite - 1);i++){
-    for (j=i+1;j<*nSite;j++){
-      for (k=0;k<*nObs;k++){
-	extCoeff[currentPair] = extCoeff[currentPair] + 
-	  fmin2(frech[i * *nObs + k], frech[j * *nObs + k]);
-      }
-      extCoeff[currentPair] = *nObs / extCoeff[currentPair];
+  for (int currentPair=0;currentPair<nPair;currentPair++){
+    int i, j;
+    getSiteIndex(currentPair, *nSite, &i, &j);
+    for (int k=0;k<*nObs;k++)
+      extCoeff[currentPair] +=  fmin2(frech[i * *nObs + k], frech[j * *nObs + k]);
 
-      currentPair++;
-    }
+    extCoeff[currentPair] = *nObs / extCoeff[currentPair];
   }
 
   return;
@@ -27,27 +24,22 @@ void extCoeffSmith(double *frech, int *nObs, int *nSite,
 void extCoeffST(double *frech, double *xbar, double *z, double *theta,
 		int *nObs, double *dns){
 
-  int i;
-  double frechScaled;
-
-  for (i=0;i<*nObs;i++){
-    frechScaled = fmax2(frech[i] * xbar[0], 
-			frech[i + *nObs] * xbar[1]);
+  for (int i=0;i<*nObs;i++){
+    double frechScaled = fmax2(frech[i] * xbar[0], frech[i + *nObs] * xbar[1]);
 
     if (frechScaled > *z)
-      *dns =  *dns - log(*theta) + *theta / frechScaled;
+      *dns +=  -log(*theta) + *theta / frechScaled;
 
     else
-      *dns = *dns + *theta / *z;
-
+      *dns += *theta / *z;
   }
 
   return;
 }
 
-  
 
-  
-  
-  
+
+
+
+
 

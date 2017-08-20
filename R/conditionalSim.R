@@ -4,7 +4,7 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
 
   if (cov.mod == "caugen")
     stop("The generalized Cauchy covariance family isn't implemented")
-  
+
   if (is.null(coord) & !is.null(data.coord))
     stop("'coord' and 'data.coord' don't match")
 
@@ -22,14 +22,14 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
   if (grid){
     if (is.null(dim(coord)))
       stop("You cannot use 'grid = TRUE' for 1 dimensional processes")
-    
+
     dummy <- NULL
     for (i in 1:nrow(new.coord))
       dummy <- rbind(dummy, cbind(new.coord[,1], new.coord[i,2]))
 
     new.coord <- dummy
   }
-  
+
   if (is.null(dim(coord))){
     n.cond <- length(data.coord)
     n.loc <- length(new.coord)
@@ -41,7 +41,7 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
     n.loc <- nrow(coord)
     new.coord <- rbind(data.coord, new.coord)
   }
-    
+
   uncond <- rgp(n, new.coord, cov.mod = cov.mod, mean = mean, nugget = 0,
                 sill = sill, range = range, smooth = smooth, control = control)
 
@@ -54,19 +54,19 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
 
   else
     ans <- matrix(NA, n, n.loc)
-  
+
   res <- data - t(uncond[,1:n.cond])
 
   if (!grid)
     res <- t(res)
-  
+
   ans[] <- uncond[,-(1:n.cond)] + res %*% weights
 
   if (grid & (n == 1))
     ans <- matrix(ans, n.loc)
 
   return(list(coord = coord, cond.sim = ans, data.coord = data.coord,
-              data = data, cov.mod = cov.mod, grid = grid))  
+              data = data, cov.mod = cov.mod, grid = grid))
 }
 
 condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
@@ -76,7 +76,7 @@ condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
 
   if (cov.mod != "gauss")
     stop("Currently only the 'discrete' Smith model is implemented")
-  
+
   if (is.null(dim(data.coord))){
     dim <- 1
     n.cond.site <- length(data.coord)
@@ -105,10 +105,10 @@ condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
       dummy <- list()
       for (i in 1:dim)
         dummy <- c(dummy, list(coord[,i]))
-      
+
       coord <- as.matrix(expand.grid(dummy))
     }
-    
+
     n.sim.site <- nrow(coord)
   }
 
@@ -141,7 +141,7 @@ condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
     bounds <- apply(coord, 2, range) + 4.1 * dummy * c(-1, 1)
     p <- ceiling(sqrt(p))
     delta <- (bounds[2,] - bounds[1,]) / (p - 1)
-        
+
     coord.grid <- cbind(seq(bounds[1,1], bounds[2,1], length = p) + 0.5 * delta[1],
                         seq(bounds[1,2], bounds[2,2], length = p) + 0.5 * delta[2])
     coord.grid <- as.matrix(expand.grid(coord.grid[,1], coord.grid[,2]))
@@ -152,20 +152,19 @@ condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
 
   ## Compute the "design matrix" for the max-linear model (only based
   ## on the conditionning points)
-  dsgn.mat.cond <- .C("maxLinDsgnMat", as.double(data.coord), as.double(coord.grid),
+  dsgn.mat.cond <- .C(C_maxLinDsgnMat, as.double(data.coord), as.double(coord.grid),
                       as.integer(n.cond.site), as.integer(p), as.double(areaPixel),
                       as.integer(dim), as.double(param),
-                      dsgnMat = double(p * n.cond.site), PACKAGE = "SpatialExtremes")$dsgnMat
+                      dsgnMat = double(p * n.cond.site))$dsgnMat
 
   ## Get the realisation of the Zs (from the conditional distribution)
-  Z <- .C("rcondMaxLin", as.double(data), as.double(dsgn.mat.cond),
-          as.integer(p), as.integer(n.cond.site), as.integer(n), Z = double(p * n),
-          PACKAGE = "SpatialExtremes")$Z
+  Z <- .C(C_rcondMaxLin, as.double(data), as.double(dsgn.mat.cond),
+          as.integer(p), as.integer(n.cond.site), as.integer(n), Z = double(p * n))$Z
 
   ## Check if the conditional observation are honored
-  sim.cond <- .C("maxLinear", as.integer(1), as.double(dsgn.mat.cond), as.double(Z),
+  sim.cond <- .C(C_maxLinear, as.integer(1), as.double(dsgn.mat.cond), as.double(Z),
                  as.integer(n.cond.site), as.integer(p), as.integer(FALSE),
-                 sim = double(n.cond.site), PACKAGE = "SpatialExtremes")$sim
+                 sim = double(n.cond.site))$sim
 
   honored <- all.equal(data, sim.cond)
   if (!isTRUE(honored))
@@ -174,15 +173,15 @@ condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
 
   ## Compute the "design matrix" for the max-linear model (only for
   ## the points where we want our simulation)
-  dsgn.mat.sim <- .C("maxLinDsgnMat", as.double(coord), as.double(coord.grid),
+  dsgn.mat.sim <- .C(C_maxLinDsgnMat, as.double(coord), as.double(coord.grid),
                      as.integer(n.sim.site), as.integer(p), as.double(areaPixel),
                      as.integer(dim), as.double(param),
-                     dsgnMat = double(p * n.sim.site), PACKAGE = "SpatialExtremes")$dsgnMat
+                     dsgnMat = double(p * n.sim.site))$dsgnMat
 
   ## Get the realisations at the desired locations
-  ans <- .C("maxLinear", as.integer(n), as.double(dsgn.mat.sim), as.double(Z),
+  ans <- .C(C_maxLinear, as.integer(n), as.double(dsgn.mat.sim), as.double(Z),
             as.integer(n.sim.site), as.integer(p), as.integer(grid),
-            sim = double(n.sim.site * n), PACKAGE = "SpatialExtremes")$sim
+            sim = double(n.sim.site * n))$sim
 
   if (grid){
     if (n == 1)
@@ -194,6 +193,6 @@ condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
 
   else
     ans <- matrix(ans, nrow = n, ncol = n.sim.site)
-  
+
   return(ans)
 }

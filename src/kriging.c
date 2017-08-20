@@ -1,5 +1,5 @@
 # include "header.h"
-    
+
 void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
 	      double *icovMat, double *coord, double *coordKrig, double *obs,
 	      double *sill, double *range, double *smooth, double *smooth2,
@@ -10,19 +10,19 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
 
   double zero = 0, one = 1,
     *dist = malloc(*nSite * *nSiteKrig * sizeof(double)),
-    *covariances = malloc(*nSite * *nSiteKrig * sizeof(double));    
+    *covariances = malloc(*nSite * *nSiteKrig * sizeof(double));
 
-  for (int i=(*nSite * *nSiteKrig);i--;)
+  for (int i=0;i<(*nSite * *nSiteKrig);i++)
     dist[i] = 0;
 
   /* 1. Compute the distances between the kriging locations and the
      locations where we got data */
-  for (int i=*nSiteKrig;i--;){       
-    for (int j=*nSite;j--;){
-      for (int k=*dim;k--;)
+  for (int i=0;i<*nSiteKrig;i++){
+    for (int j=0;j<*nSite;j++){
+      for (int k=0;k<*dim;k++)
 	dist[j + i * *nSite] += (coord[j + k * *nSite] - coordKrig[i + k * *nSiteKrig]) *
 	  (coord[j + k * *nSite] - coordKrig[i + k * *nSiteKrig]);
-      
+
       dist[j + i * *nSite] = sqrt(dist[j + i * *nSite]);
 
     }
@@ -57,6 +57,6 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
   F77_CALL(dsymm)("L", "U", nSite, nSiteKrig, &one, icovMat, nSite,
 		  covariances, nSite, &zero, weights, nSite);
 
-  free(dist); free(covariances);  
+  free(dist); free(covariances);
   return;
 }

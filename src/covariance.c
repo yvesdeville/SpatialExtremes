@@ -28,6 +28,7 @@ double whittleMatern(double *dist, int n, double nugget, double sill, double ran
   if (nugget < 0)
     return (1 - nugget) * (1 - nugget) * MINF;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++){
     double cst2 = dist[i] * irange;
 
@@ -66,6 +67,7 @@ double cauchy(double *dist, int n, double nugget, double sill, double range,
   if (nugget < 0)
     return (1 - nugget) * (1 - nugget) * MINF;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++){
 
     if (dist[i] == 0)
@@ -106,6 +108,7 @@ double caugen(double *dist, int n, double nugget, double sill, double range,
   if (nugget < 0)
     return (1 - nugget) * (1 - nugget) * MINF;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++){
     if (dist[i] == 0)
       rho[i] = nugget + sill;
@@ -140,6 +143,7 @@ double powerExp(double *dist, int n, double nugget, double sill, double range,
   if (nugget < 0)
     return (1 - nugget) * (1 - nugget) * MINF;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++){
     if (dist[i] == 0)
       rho[i] = nugget + sill;
@@ -176,6 +180,7 @@ double bessel(double *dist, int n, int dim, double nugget, double sill,
   if (nugget < 0)
     return (1 - nugget) * (1 - nugget) * MINF;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++){
     double cst2 = dist[i] * irange;
 
@@ -218,6 +223,7 @@ double mahalDistFct(double *distVec, int n, double *cov11,
   if (det <= 0)
     return (1 - det) * (1 - det) * MINF;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++)
     mahal[i] = sqrt((*cov11 * distVec[n + i] * distVec[n + i] -
 		     2 * *cov12 * distVec[i] * distVec[n + i] +
@@ -251,6 +257,7 @@ double mahalDistFct3d(double *distVec, int n, double *cov11,
   if (detMin <= 0)
     return (1 - detMin) * (1 - detMin) * MINF;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++){
 
     mahal[i] = ((*cov22 * *cov33 - *cov23 * *cov23) * distVec[i] * distVec[i] +
@@ -304,6 +311,7 @@ double geomCovariance(double *dist, int n, int dim, int covmod,
   if (ans != 0.0)
     return ans;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++)
     rho[i] = sqrt(twiceSigma2 * (1 - rho[i]));
 
@@ -318,6 +326,7 @@ double brownResnick(double *dist, int n, double range, double smooth,
   if ((smooth <= 0) || (smooth > 2))
     return (smooth - 1) * (smooth - 1) * MINF;
 
+  //#pragma omp parallel for
   for (int i=0;i<n;i++)
     rho[i] = M_SQRT2 * R_pow(dist[i] * irange, halfSmooth);
 
@@ -352,15 +361,17 @@ double fbm(double *coord, double *dist, int dim, int nSite, double sill, double 
 
   /* Rmk: 0.5 Var[Z(x)] = \gamma(||x||) as Z(o) = 0, where \gamma is
      the semi-variogram */
+  //#pragma omp parallel for
   for (int i=0;i<nSite;i++)
-    distOrig[i] = R_pow(distOrig[i] * irange, smooth);
+    distOrig[i] = pow(distOrig[i] * irange, smooth);
 
+  //#pragma omp parallel for
   for (int currentPair=0;currentPair<nPairs;currentPair++){
     int i, j;
     getSiteIndex(currentPair, nSite, &i, &j);
-    
+
     rho[currentPair] = sill * (distOrig[i] + distOrig[j] -
-			       R_pow(dist[currentPair] * irange, smooth));
+			       pow(dist[currentPair] * irange, smooth));
   }
 
   free(distOrig);

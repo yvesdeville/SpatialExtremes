@@ -6,31 +6,30 @@ void distance(double *coord, int *nDim, int *nSite,
   //This function computes either the euclidean distance or the
   //distance vector between each pair of locations
   const int nPair = *nSite * (*nSite - 1) / 2;
-  int i, j, k, currentPair = 0;
 
   if (*vec){
-    for (i=0;i<(*nSite-1);i++){
-      for (j=i+1;j<*nSite;j++){
-	for (k=0;k<*nDim;k++)
-	  dist[k * nPair + currentPair] = coord[k * *nSite + j] -
-	    coord[k * *nSite + i];
+    // #pragma omp parallel for
+    for (int pair=0;pair<nPair;pair++){
+      int i, j;
+      getSiteIndex(pair, *nSite, &i, &j);
 
-	currentPair++;
-      }
+      for (int k=0;k<*nDim;k++)
+	dist[k * nPair + pair] = coord[k * *nSite + j] - coord[k * *nSite + i];
     }
   }
 
   else{
-    for (i=0;i<(*nSite-1);i++){
-      for (j=i+1;j<*nSite;j++){
-	dist[currentPair] = 0;
-	for (k=0;k<*nDim;k++)
-	  dist[currentPair] += (coord[i + k * *nSite] -	coord[j + k * *nSite]) *
-	    (coord[i + k * *nSite] - coord[j + k * *nSite]);
+    //#pragma omp parallel for
+    for (int pair=0;pair<nPair;pair++){
+      int i, j;
+      getSiteIndex(pair, *nSite, &i, &j);
+      dist[pair] = 0;
 
-	dist[currentPair] = sqrt(dist[currentPair]);
-	currentPair++;
-      }
+      for (int k=0;k<*nDim;k++)
+	dist[pair] += (coord[i + k * *nSite] -	coord[j + k * *nSite]) *
+	  (coord[i + k * *nSite] - coord[j + k * *nSite]);
+
+      dist[pair] = sqrt(dist[pair]);
     }
   }
 }
@@ -71,13 +70,11 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
   //and computes the log of the jacobian of each transformation
   //When ans > 0.0, the GEV parameters are invalid.
 
-  int i, j;
-
-  for (i=nSite;i--;){
+  for (int i=0;i<nSite;i++){
     double iscale = 1 / scales[i], logScale = log(scales[i]);
 
     if (shapes[i] == 0.0){
-      for (j=nObs;j--;){
+      for (int j=0;j<nObs;j++){
 	if (ISNA(data[i * nObs + j])){
 	  frech[i * nObs + j] = jac[i * nObs + j] = NA_REAL;
 	}
@@ -92,7 +89,7 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
 
     else {
       double ishape = 1 / shapes[i];
-      for (j=nObs;j--;){
+      for (int j=0;j<nObs;j++){
 	if (ISNA(data[i * nObs + j])){
 	  frech[i * nObs + j] = jac[i * nObs + j] = NA_REAL;
 	}
@@ -122,10 +119,8 @@ double gev2frechTrend(double *data, int nObs, int nSite, double *locs, double *s
 
      When ans > 0.0, the GEV parameters are invalid. */
 
-  int i, j;
-
-  for (i=nSite;i--;){
-    for (j=nObs;j--;){
+  for (int i=0;i<nSite;i++){
+    for (int j=0;j<nObs;j++){
       double loc = locs[i] + trendlocs[j], scale = scales[i] + trendscales[j],
 	shape = shapes[i] + trendshapes[j], iscale = 1 / scale, logScale = log(scale),
 	ishape = 1 / shape;
@@ -170,22 +165,20 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat, double *shapedsgn
 
   //This function computes the GEV parameters from the design matrix
   //when ans > 0.0, the GEV parameters are invalid
-  int i, j;
-
-  for (i=nSite;i--;){
+  for (int i=0;i<nSite;i++){
 
     locs[i] = scales[i] = shapes[i] = 0;
 
-    for (j=nloccoeff;j--;)
+    for (int j=0;j<nloccoeff;j++)
       locs[i] += loccoeff[j] * locdsgnmat[i + nSite * j];
 
-    for (j=nscalecoeff;j--;)
+    for (int j=0;j<nscalecoeff;j++)
       scales[i] += scalecoeff[j] * scaledsgnmat[i + nSite * j];
 
     if (scales[i] <= 0)
       return MINF;
 
-    for (j=nshapecoeff;j--;)
+    for (int j=0;j<nshapecoeff;j++)
       shapes[i] += shapecoeff[j] * shapedsgnmat[i + nSite * j];
 
     if (shapes[i] <= -1)
@@ -232,18 +225,14 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 	 double *quant){
 
   //This function computes the GEV quantiles
-
-  int i;
   const double mlogProb = -log(*prob);
 
-  for (i=*n;i--;){
+  for (int i=0;i<*n;i++){
 
-    if (scales[i] <= 0){
+    if (scales[i] <= 0)
       quant[i] = NA_REAL;
 
-    }
-
-    if (shapes[i] == 0)
+    else if (shapes[i] == 0)
       quant[i] = locs[i] - scales[i] * log(mlogProb);
 
     else
@@ -260,11 +249,10 @@ void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff,
   //the 'alphas' are used in the schlatherind model
   //We use the expit function to ensure that the alphas always lie in
   //(0,1)
-  int i, j;
 
-  for (i=nSite;i--;){
+  for (int i=0;i<nSite;i++){
     alphas[i] = 0;
-    for (j=nalphacoeff;j--;)
+    for (int j=0;j<nalphacoeff;j++)
       alphas[i] += alphacoeff[j] * alphadsgnmat[i + nSite * j];
 
     //We use the expit function to ensure that the alphas lie in [0,1]
@@ -280,11 +268,9 @@ void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff,
 
   //This function computes the 'sigma2' values from the design matrix
   //the 'sigma2' are used in the non-stationary geometric gaussian model
-  int i, j;
-
-  for (i=nSite;i--;){
+  for (int i=0;i<nSite;i++){
     sigma2[i] = 0;
-    for (j=nsigma2coeff;j--;)
+    for (int j=0;j<nsigma2coeff;j++)
       sigma2[i] += sigma2coeff[j] * sigma2dsgnmat[i + nSite * j];
 
     //We use a log link function to ensure that the sigma2s lie are positive
@@ -303,13 +289,11 @@ double gev2unif(double *data, int nObs, int nSite, double *locs,
 
      When ans > 0.0, the GEV parameters are invalid. */
 
-  int i, j;
-
-  for (i=nSite;i--;){
+  for (int i=0;i<nSite;i++){
     double iscale = 1 / scales[i], logIscale = log(iscale);
 
     if (shapes[i] == 0.0)
-      for (j=nObs;j--;){
+      for (int j=0;j<nObs;j++){
 	unif[i * nObs + j] = (data[i * nObs + j] - locs[i]) * iscale;
 	logdens[i * nObs + j] = logIscale - unif[i * nObs + j] -
 	  exp(-unif[i * nObs + j]);
@@ -318,7 +302,7 @@ double gev2unif(double *data, int nObs, int nSite, double *locs,
 
     else {
       double ishape = 1 / shapes[i];
-      for (j=nObs;j--;){
+      for (int j=0;j<nObs;j++){
 	unif[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) *
 	  iscale;
 
@@ -345,10 +329,8 @@ double gev2unifTrend(double *data, int nObs, int nSite, double *locs,
 
      When ans > 0.0, the GEV parameters are invalid. */
 
-  int i, j;
-
-  for (i=nSite;i--;){
-    for (j=nObs;j--;){
+  for (int i=0;i<nSite;i++){
+    for (int j=0;j<nObs;j++){
       double loc = locs[i] + trendlocs[j], scale = scales[i] + trendscales[j],
 	shape = shapes[i] + trendshapes[j], iscale = 1 / scale,
 	logIscale = log(iscale), ishape = 1 / shape;
@@ -390,7 +372,7 @@ void getSiteIndex(int currentPair, int nSite, int *site1, int *site2){
   *site1 = 0;
 
   while (currentPair > cum){
-    *site1 = *site1 + 1;
+    (*site1)++;
     cum += nFree;
     nFree--;
   }

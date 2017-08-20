@@ -8,9 +8,9 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
   //sub-functions. It's named xxxfull as it either assume that the
   //margins are unit Frechet, or the GEV parameters are estimated at
   //each locations.
-  
+
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  
+
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (int i=0;i<*nSite;i++){
@@ -27,7 +27,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
   }
 
   double *rho = malloc(nPairs * sizeof(double));
-   
+
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
@@ -51,7 +51,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
     free(rho);
     return;
   }
-  
+
   //Stage 1: Transformation to unit Frechet
   double *jac = malloc(*nSite * *nObs * sizeof(double)),
     *frech = malloc(*nSite * *nObs * sizeof(double));
@@ -64,18 +64,18 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
       free(rho); free(jac); free(frech);
       return;
     }
-    
+
     if (*weighted)
       *dns = wlplikschlather(frech, rho, jac, *nObs, *nSite, weights);
 
     else
       *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
   }
-    
+
   else {
-    for (int i=(*nSite * *nObs);i--;)
+    for (int i=0;i<(*nSite * *nObs);i++)
       jac[i] = 0;
-        
+
     if (*weighted)
       *dns = wlplikschlather(data, rho, jac, *nObs, *nSite, weights);
 
@@ -104,17 +104,17 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      double *nugget, double *range, double *smooth, double *smooth2, double *dns){
   //This is the Schlather's model.
   //The GEV parameters are defined using a polynomial response surface
-  
+
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
-   
+
   if (*nugget >= 1){
     *dns = *nugget * *nugget * MINF;
     return;
   }
 
   double *rho = malloc(nPairs * sizeof(double));
-  
+
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
@@ -155,8 +155,8 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
 		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
 
-    for (int i=*nSite;i--;)
-      for (int j=*nObs;j--;)
+    for (int i=0;i<*nSite;i++)
+      for (int j=0;j<*nObs;j++)
 	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
 	  *dns = MINF;
 	  free(rho); free(locs); free(scales); free(shapes); free(trendlocs); free(trendscales);
@@ -198,11 +198,11 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   // 1- For the location parameter
   if (*locpenalty > 0)
     *dns -= penalization(locpenmat, loccoeff, *locpenalty, *nloccoeff, *npparloc);
-  
+
   // 2- For the scale parameter
-  if (*scalepenalty > 0)    
+  if (*scalepenalty > 0)
     *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty, *nscalecoeff, *npparscale);
-  
+
   // 3- For the shape parameter
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty, *nshapecoeff, *npparshape);
@@ -222,5 +222,5 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 
   free(locs); free(scales); free(shapes); free(trendlocs); free(trendscales);
   free(trendshapes); free(frech); free(jac); free(rho);
-  return;  
+  return;
 }

@@ -8,7 +8,7 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *fitmarge, double *dns){
   //This is the geometric gaussian model. It computes the pairwise
   //log-likelihood
-  
+
   const int nPairs = *nSite * (*nSite - 1) / 2;
 
   //Some preliminary steps: Valid points?
@@ -29,7 +29,7 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
    double *jac = malloc(*nSite * *nObs * sizeof(double)),
     *rho = malloc(nPairs * sizeof(double)),
      *frech = malloc(*nSite * *nObs * sizeof(double));
-   
+
   //Stage 0: Compute the covariance at each location
   *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
 			*nugget, *range, *smooth, *smooth2, rho);
@@ -38,7 +38,7 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
     free(jac); free(rho); free(frech);
     return;
   }
-    
+
   //Stage 1: Transformation to unit Frechet
   if (*fitmarge){
     *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
@@ -48,25 +48,25 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
       free(jac); free(rho); free(frech);
       return;
     }
-    
+
     if (*weighted)
       *dns = wlpliksmith(frech, rho, jac, *nObs, *nSite, weights);
 
     else
       *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
   }
-    
+
   else {
     for (int i=(*nSite * *nObs);i--;)
       jac[i] = 0;
-   
+
     if (*weighted)
       *dns = wlpliksmith(data, rho, jac, *nObs, *nSite, weights);
 
     else
       *dns = lpliksmith(data, rho, jac, *nObs, *nSite);
-  }  
-  
+  }
+
   if (!R_FINITE(*dns))
     *dns = MINF;
 
@@ -92,7 +92,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      double *smooth, double *smooth2, double *dns){
   //This is the geometric gaussian model
   //The GEV parameters are defined using a polynomial response surface
-  
+
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
 
@@ -110,7 +110,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
     free(rho);
     return;
   }
-    
+
   double *locs = malloc(*nSite * sizeof(double)),
     *scales = malloc(*nSite * sizeof(double)),
     *shapes = malloc(*nSite * sizeof(double)),
@@ -127,8 +127,8 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      tempcoeffscale, tempcoeffshape, *nSite, *nObs, usetempcov, *ntempcoeffloc,
 		      *ntempcoeffscale, *ntempcoeffshape, trendlocs, trendscales, trendshapes);
 
-    for (int i=*nSite;i--;)
-      for (int j=*nObs;j--;)
+    for (int i=0;i<*nSite;i++)
+      for (int j=0;j<*nObs;j++)
 	if (((scales[i] + trendscales[j]) <= 0) || ((shapes[i] + trendshapes[j]) <= -1)){
 	  *dns = MINF;
 	  free(locs); free(scales); free(shapes); free(trendlocs); free(trendscales);
@@ -150,7 +150,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   if (flag)
     *dns = gev2frechTrend(data, *nObs, *nSite, locs, scales, shapes, trendlocs, trendscales,
 			  trendshapes, jac, frech);
-  
+
   else
     *dns = gev2frech(data, *nObs, *nSite, locs, scales, shapes, jac, frech);
 
@@ -159,26 +159,26 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
     free(trendshapes); free(jac); free(frech);
     return;
   }
-  
+
   if (*weighted)
     *dns = wlpliksmith(frech, rho, jac, *nObs, *nSite, weights);
 
   else
     *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
-    
+
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
   if (*locpenalty > 0)
     *dns -= penalization(locpenmat, loccoeff, *locpenalty, *nloccoeff, *npparloc);
-  
+
   // 2- For the scale parameter
-  if (*scalepenalty > 0)    
+  if (*scalepenalty > 0)
     *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty, *nscalecoeff, *npparscale);
-  
+
   // 3- For the shape parameter
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty, *nshapecoeff, *npparshape);
-  
+
   // 4- Doing the same thing for the temporal component
   if (*temppenaltyloc > 0)
     *dns -= penalization(temppenmatloc, tempcoeffloc, *temppenaltyloc, *ntempcoeffloc,
@@ -195,5 +195,5 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   free(rho); free(locs); free(scales); free(shapes); free(trendlocs); free(trendscales);
   free(trendshapes); free(jac); free(frech);
   return;
-  
+
 }

@@ -1,3 +1,424 @@
+2017-08-18 12:46  mathieu_ribatet
+
+	* R/circulant.R: Remove an empty R file
+
+2017-08-17 13:29  mathieu_ribatet
+
+	* man/SpatialExtremes-package.Rd: Remove a non existing URL
+
+2017-08-17 13:28  mathieu_ribatet
+
+	* src/init.c: Add registration of C code as now required by CRAN
+
+2017-08-17 13:28  mathieu_ribatet
+
+	* src/utils.c: Remove pragma parallel instruction (slows my code
+	  :-()
+
+2017-08-17 13:26  mathieu_ribatet
+
+	* R/simmaxstab.R: A small fix
+
+2017-08-17 12:32  mathieu_ribatet
+
+	* R/exploratoryAnalysis.R: Fix a bug in the legend of symbol when
+	  using mean or median
+
+2017-08-16 14:00  mathieu_ribatet
+
+	* vignettes/SpatialExtremes.sty,
+	  vignettes/SpatialExtremesGuide.Rnw, vignettes/layout.sty: Rename
+	  layout.sty to SpatialExtremes.sty as I got an email about this
+	  from CRAN
+
+2017-08-16 13:59  mathieu_ribatet
+
+	* man/fitmaxstab.Rd: Minor change
+
+2017-08-16 13:58  mathieu_ribatet
+
+	* src/concurrence.c, src/covariance.c, src/direct.c,
+	  src/fitcovmat.c, src/header.h, src/latentVariable.c,
+	  src/madogram.c, src/maxStableExactSimulation.c,
+	  src/pairwiselik.c, src/weightedPairwiselik.c: Removing pragma
+	  parallel for instruction since it slows the code (at least on
+	  MacOS). Seems like I'm not very good at parallelizing my code :-(
+
+2017-08-16 13:55  mathieu_ribatet
+
+	* R/exploratoryAnalysis.R: Try to fix the legend anotation when
+	  using which != "gev"
+
+2017-01-24 15:32  mathieu_ribatet
+
+	* DESCRIPTION: Dummy modification (request from R-forge to check a
+	  problem)
+
+2017-01-18 12:01  mathieu_ribatet
+
+	* src/utils.c: small improvement
+
+2017-01-11 08:28  mathieu_ribatet
+
+	* DESCRIPTION, R/concurrence.R, R/simmaxstab.R, man/concprob.Rd,
+	  man/concurrencemap.Rd, src/concurrence.c, src/header.h: Add the
+	  exact simulation for max-stable processes and a fix for
+	  Brown-Resnick processes.
+	  
+	  Allows for parallelization throughout the code whenever possible
+	  
+	  Add the computation of standard errors for the concurrence
+	  probabilities
+
+2016-11-07 15:48  mathieu_ribatet
+
+	* NAMESPACE, R/concurrence.R, R/simmaxstab.R, man/concprob.Rd,
+	  src/brownResnick.c, src/concurrence.c, src/copula.c,
+	  src/direct.c, src/extcoeff.c, src/extremalt.c, src/geomgauss.c,
+	  src/kriging.c, src/latentVariable.c, src/madogram.c,
+	  src/maxStableExactSimulation.c, src/pairwiselik.c,
+	  src/schlather.c, src/schlatherind.c, src/univllik.c, src/utils.c,
+	  src/weightedPairwiselik.c: Try to (re)use openmp with the package
+
+2016-11-07 09:52  mathieu_ribatet
+
+	* src/covariance.c, src/direct.c, src/fitcovmat.c,
+	  src/maxStableExactSimulation.c, src/pairwiselik.c: Working on
+	  exact simulation for max-stable processes and (re)implementation
+	  of openmp support
+
+2016-11-04 16:41  mathieu_ribatet
+
+	* R/simmaxstab.R, src/header.h, src/maxStableExactSimulation.c:
+	  Exact simulation for Brown--Resnick processes are now available
+
+2016-11-04 16:40  mathieu_ribatet
+
+	* src/covariance.c, src/direct.c: Minor speed optimization
+
+2016-10-18 15:33  mathieu_ribatet
+
+	* R/modelChecking.R: Just add a short comment
+
+2016-10-18 15:15  mathieu_ribatet
+
+	* R/modelChecking.R: Summary: Faster version (and correct!) version
+	  for the bootstrap
+	  confidence intervals.
+
+2016-10-15 09:46  mathieu_ribatet
+
+	* src/maxStableExactSimulation.c: Just a small change to allow for
+	  compilation. The code is still broken though.
+
+2016-10-14 15:44  mathieu_ribatet
+
+	* R/utils.R: Summary: Fix a bug with handling NA values in the
+	  switch to unit
+	  Frechet margins using the empirical CDF. Thanks to Kate Robinson
+	  Saunders for this!!!
+
+2016-10-14 14:13  mathieu_ribatet
+
+	* R/simmaxstab.R: ## Lines starting with '## ' will be removed from
+	  the log message.
+	  ## File(s) to commit recursively:
+	  ## pkg/src/maxStableExactSimulation.c
+	  Start working on exact simulation for max-stable processes
+
+2016-10-14 14:07  mathieu_ribatet
+
+	* src/header.h: Start working on exact simulation for max-stable
+	  processes
+
+2016-10-14 14:07  mathieu_ribatet
+
+	* src/maxStableExactSimulation.c: Start working on exact simulation
+	  for max-stable processes
+
+2016-10-14 14:04  mathieu_ribatet
+
+	* R/modelChecking.R: Faster version for the bootstrap confidence
+	  intervals.
+
+2016-10-14 14:04  mathieu_ribatet
+
+	* DESCRIPTION: Update my email
+
+2016-08-31 11:09  mathieu_ribatet
+
+	* src/pairwiselik.c, src/weightedPairwiselik.c: Better handling of
+	  the pairwise likelihood for the Smith model
+
+2015-10-15 08:16  mathieu_ribatet
+
+	* R/concurrence.R: Summary: Add the option to get personalized x
+	  and y labels for the
+	  axis
+
+2015-06-10 06:13  mathieu_ribatet
+
+	* man/symbolplot.Rd: Summary: Document argument scale in
+	  symbolplot.
+
+2015-06-09 14:54  mathieu_ribatet
+
+	* R/exploratoryAnalysis.R:
+
+2015-06-09 12:54  mathieu_ribatet
+
+	* R/concurrence.R: Summary: Diverging version between computers.
+	  Grrrrr
+
+2015-06-09 12:47  mathieu_ribatet
+
+	* R/concurrence.R: Summary: Diverging version between computers.
+	  Grrrrr
+
+2015-06-09 09:14  mathieu_ribatet
+
+	* man/USHCNTemp.Rd: Summary: Add require(maps) in the example
+
+2015-06-08 18:03  mathieu_ribatet
+
+	* R/plots.R: Summary: Remove printing info while browsing the
+	  Markov chain
+
+2015-06-08 17:27  mathieu_ribatet
+
+	* man/concurrencemap.Rd: Faster example
+
+2015-06-08 17:26  mathieu_ribatet
+
+	* man/windgust.Rd: Doc. for wind gust data set
+
+2015-06-08 17:26  mathieu_ribatet
+
+	* DESCRIPTION, NAMESPACE, R/exploratoryAnalysis.R: Some update for
+	  EVA
+
+2015-06-08 16:19  mathieu_ribatet
+
+	* R/concurrence.R: Summary: Fix a bug with plot.border
+
+2015-06-08 15:22  mathieu_ribatet
+
+	* R/extremalt.R, R/madogram.R: Fix minor bugs
+
+2015-06-08 15:22  mathieu_ribatet
+
+	* inst/Copyright: Move copyright to the inst folder
+
+2015-06-08 15:21  mathieu_ribatet
+
+	* Copyright: Move copyright to the inst folder
+
+2015-06-08 15:21  mathieu_ribatet
+
+	* inst: Add the inst folder
+
+2015-06-08 15:13  mathieu_ribatet
+
+	* man/concurrencemap.Rd: Summary: Change the documentation to get
+	  faster executing example
+
+2015-06-08 15:05  mathieu_ribatet
+
+	* data/netherlands.RData: Remove the gadm Netherlands data set
+
+2015-06-08 15:05  mathieu_ribatet
+
+	* data/USHCNTemp.RData, man/USHCNTemp.Rd: Add the USHCN temperature
+	  data set
+
+2015-06-08 15:02  mathieu_ribatet
+
+	* man/logLik.maxstab.Rd: Unify log likelihood extraction methods
+	  into a single Rd file
+
+2015-06-08 15:01  mathieu_ribatet
+
+	* man/concurrencemap.Rd: Documenting the concurrencemap function
+
+2015-06-08 15:00  mathieu_ribatet
+
+	* man/logLik.Rd: Unify log likelihood extraction methods into a
+	  single Rd file
+
+2015-06-08 15:00  mathieu_ribatet
+
+	* man/predict.Rd: Unify predicting methods into a single Rd file
+
+2015-06-08 15:00  mathieu_ribatet
+
+	* man/predict.copula.Rd, man/predict.maxstab.Rd,
+	  man/predict.pspline.Rd, man/predict.spatgev.Rd: Unify predictin
+	  methods into a single Rd file
+
+2015-06-08 14:59  mathieu_ribatet
+
+	* man/print.Rd: Unify printing methods into a single Rd file
+
+2015-06-08 14:59  mathieu_ribatet
+
+	* man/print.copula.Rd, man/print.latent.Rd, man/print.maxstab.Rd,
+	  man/print.pspline.Rd, man/print.spatgev.Rd: Unify printing
+	  methods into a single Rd file
+
+2015-06-08 14:59  mathieu_ribatet
+
+	* man/windgust.Rd: Add the wind gust data set
+
+2015-06-08 14:58  mathieu_ribatet
+
+	* DESCRIPTION, R/concurrence.R, R/exploratoryAnalysis.R,
+	  R/predict.R, man/anova.Rd, man/internals.Rd, man/rainfall.Rd,
+	  man/swissalt.Rd, man/symbolplot.Rd: Minor changes
+
+2015-06-08 12:34  mathieu_ribatet
+
+	* R/concurrence.R: Add plot.border option to concarea
+
+2015-06-08 11:54  mathieu_ribatet
+
+	* DESCRIPTION: Update description file (not finalized though)
+
+2015-06-08 11:54  mathieu_ribatet
+
+	* R/exploratoryAnalysis.R: Fix partial arguments matching
+
+2015-06-08 11:54  mathieu_ribatet
+
+	* src/direct.c, src/latentVariable.c, src/simBrownResnick.c,
+	  src/simextremalt.c, src/simgeometric.c, src/simschlather.c,
+	  src/standardErrors.c: Fix compiler complaints/warnings
+
+2015-06-08 11:53  mathieu_ribatet
+
+	* man/symbolplot.Rd: Fix argument partial match
+
+2015-06-08 11:53  mathieu_ribatet
+
+	* R/swiss.R: Fix non ASCII character
+
+2015-06-05 11:29  mathieu_ribatet
+
+	* R/methods.R: Summary: Fix a typo (white spaces) in printing
+	  spatgev objects
+
+2015-06-02 15:58  mathieu_ribatet
+
+	* data/wind.RData: Update the wind gust data set
+
+2015-05-29 08:35  mathieu_ribatet
+
+	* R/exploratoryAnalysis.R: Summary: Try to improve symbolplot to
+	  allow for a legend. Not yet done!
+
+2015-05-28 21:17  mathieu_ribatet
+
+	* R/swiss.R: Fix the aspect ratio so that Switzerland will never be
+	  deformed ;-)
+
+2015-05-28 21:17  mathieu_ribatet
+
+	* data/wind.RData: Add wind gust data set
+
+2015-05-28 21:16  mathieu_ribatet
+
+	* R/exploratoryAnalysis.R, data/netherlands.RData,
+	  man/symbolplot.Rd: Add symbol plots
+
+2015-05-28 18:29  mathieu_ribatet
+
+	* data/wind.RData: Add wind gust data set
+
+2015-05-28 18:29  mathieu_ribatet
+
+	* DESCRIPTION, R/concurrence.R, R/utils.R: Work in progress for
+	  concurrence cell area
+
+2015-05-28 15:13  mathieu_ribatet
+
+	* vignettes/SpatialExtremesGuide.Rnw: Summary: One keyword per
+	  \VignetteKeyword macro
+
+2015-05-28 14:59  mathieu_ribatet
+
+	* man/condrmaxstab.Rd, src/header.h: Small edits
+
+2015-05-28 14:58  mathieu_ribatet
+
+	* R/concurrence.R, man/concprob.Rd, src/concurrence.c: Add code for
+	  the concurrence probabilities.
+
+2015-05-28 14:57  mathieu_ribatet
+
+	* R/brownresnick.R, R/extremalt.R, R/schlather.R: Add the extremal
+	  concurrence probability function to the fitted
+	  max-stable processes.
+
+2015-05-27 11:31  mathieu_ribatet
+
+	* R/condSimMaxStab.R: Small editing + fix
+
+2014-01-14 10:15  mathieu_ribatet
+
+	* R/fitcovmat.R: Change starting values for the extremal-t process
+
+2014-01-14 10:15  mathieu_ribatet
+
+	* R/condSimMaxStab.R, src/condsimMaxStab.c, src/header.h: Add
+	  routines for conditional simulation from extremal-t processes
+
+2014-01-14 10:14  mathieu_ribatet
+
+	* src/pairwiselik.c: Small improvements (factorize expression to
+	  speed up code)
+
+2013-06-06 07:27  mathieu_ribatet
+
+	* R/selection.R: Better formatting of the anova table
+
+2013-06-04 18:48  mathieu_ribatet
+
+	* R/brownresnick.R, R/extremalt.R, R/geomgauss.R, R/schlather.R,
+	  R/schlatherind.R, R/smith.R, R/spatgev.R, R/standardErrors.R: Fix
+	  a bug with recent changes on standard errors and missing values.
+	  Now fixed!
+
+2013-06-04 16:14  mathieu_ribatet
+
+	* src/standardErrors.c: Fix a bug!
+
+2013-06-03 11:48  mathieu_ribatet
+
+	* R/utils.R: Allows for missing values
+
+2013-06-03 11:47  mathieu_ribatet
+
+	* src/madogram.c: Allows for missing values in madogram (but *not*
+	  to the lambda madogram)
+
+2013-06-03 11:47  mathieu_ribatet
+
+	* R/modelChecking.R: Allows for missing values in model checking of
+	  max-stable processes
+
+2013-06-03 11:46  mathieu_ribatet
+
+	* R/madogram.R: Allows for missing values in madogram (but *not* to
+	  the lambda madogram)
+
+2013-05-30 15:28  mathieu_ribatet
+
+	* DESCRIPTION: update version number
+
+2013-03-04 10:21  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION, NEWS: Update the description, news and
+	  changlog files for release 2.0-0
+
 2013-03-04 10:13  mathieu_ribatet
 
 	* src/latentVariable.c: Fix a bug related to the mean of the prior
