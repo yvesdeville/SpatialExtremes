@@ -8,8 +8,8 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                          "brown")))
         stop("'cov.mod' must be one of 'gauss', '(i/g/t)whitmat', '(i/g/t)cauchy', '(i/g/t)powexp', '(i/g/t)bessel' or 'brown'")
 
-    if (!is.null(control$method) && !(control$method %in% c("direct", "tbm", "circ")))
-        stop("the argument 'method' for 'control' must be one of 'direct', 'tbm' and 'circ'")
+    if (!is.null(control$method) && !(control$method %in% c("direct", "tbm", "circ", "exact")))
+        stop("the argument 'method' for 'control' must be one of 'exact', 'direct', 'tbm' and 'circ'")
 
     if (cov.mod == "gauss")
         model <- "Smith"
@@ -126,19 +126,24 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                       "powexp" = 3, "bessel" = 4)
 
     if (grid){
-        ans <- rep(-1e10, n * n.site^dist.dim)
+        n.eff.site <- n.site^dist.dim
         reg.grid <- .isregulargrid(coord[,1], coord[,2])
         steps <- reg.grid$steps
         reg.grid <- reg.grid$reg.grid
     }
 
     else
-        ans <- rep(-1e10, n * n.site)
+        n.eff.site <- n.site
+
+    ans <- rep(-1e10, n * n.eff.site)
 
     ##Identify which simulation technique is the most adapted or use the
     ##one specified by the user --- this is useless for the Smith model.
     if (is.null(control$method)){
-        if (grid && reg.grid)
+        if (n.eff.site < 500)## <<-- If fixed it to 500 but need to modify it later maybe !!!
+            method <- "exact"
+
+        else if (grid && reg.grid)
             method <- "circ"
 
         else if ((length(ans) / n) > 600)
@@ -181,9 +186,9 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                       as.double(range), as.double(smooth), as.double(uBound), ans = ans)$ans
 
         else if (method == "exact")
-            ans <- .C(C_rschlatherdirect, as.double(coord), as.integer(n), as.integer(n.site), as.integer(dist.dim),
+            ans <- .C(C_rschlatherexact, as.double(coord), as.integer(n), as.integer(n.site), as.integer(dist.dim),
                       as.integer(cov.mod), as.integer(grid), as.double(nugget), as.double(range), as.double(smooth),
-                      as.double(uBound), ans = ans)$ans
+                      ans = ans)$ans
 
         else if (method == "circ")
             ans <- .C(C_rschlathercirc, as.integer(n), as.integer(n.site), as.double(steps),
@@ -236,6 +241,12 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                       as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                       as.double(range), as.double(smooth), as.double(DoF), as.double(uBound),
                       ans = ans)$ans
+
+        else if (method == "exact")
+            ans <- .C(C_rextremaltexact, as.double(coord), as.integer(n), as.integer(n.site),
+                      as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
+                      as.double(range), as.double(smooth), as.double(DoF), ans = ans)$ans
+
 
         else if (method == "circ")
             ans <- .C(C_rextremaltcirc, as.integer(n), as.integer(n.site), as.double(steps),
@@ -290,7 +301,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
         else
             idx.sub.orig <- n.sub.orig <- 0
 
-        if (method == "olddirect")
+        if (method == "direct")
             ans <- .C(C_rbrowndirect, as.double(coord), as.double(bounds),
                       as.integer(n), as.integer(n.site), as.integer(dist.dim),
                       as.integer(grid), as.double(range), as.double(smooth),
@@ -298,7 +309,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                       as.integer(nPP), as.integer(idx.sub.orig), as.integer(n.sub.orig),
                       ans = ans)$ans
 
-        ##if (method == "direct")
+        else if (method == "exact")
             ans <- .C(C_rbrownexact, as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(grid), as.double(range), as.double(smooth),
                       ans = ans)$ans

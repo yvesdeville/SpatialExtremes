@@ -4,7 +4,7 @@ void madogram(double *data, int *nObs, int *nSite, double *mado){
   /* This function computes the madogram */
   const int nPair = *nSite * (*nSite - 1) / 2;
 
-  //#pragma omp parallel for
+#pragma omp parallel for
   for (int currentPair=0;currentPair<nPair;currentPair++){
     int i,j;
     getSiteIndex(currentPair, *nSite, &i, &j);

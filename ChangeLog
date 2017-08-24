@@ -1,3 +1,37 @@
+2017-08-24 14:44  mathieu_ribatet
+
+	* DESCRIPTION, NEWS, src/madogram.c, src/pairwiselik.c: Use OpenMP
+	  when it does speed things (pairwise likelihood)
+
+2017-08-21 14:28  mathieu_ribatet
+
+	* R/simmaxstab.R, src/header.h, src/init.c,
+	  src/maxStableExactSimulation.c: Allows for exact simulation for
+	  all max-stable models (except geometric)
+
+2017-08-20 11:41  mathieu_ribatet
+
+	* DESCRIPTION: Summary: Spelling
+
+2017-08-18 13:03  mathieu_ribatet
+
+	* ChangeLog: Update ChangeLog
+
+2017-08-18 12:50  mathieu_ribatet
+
+	* NEWS: Update NEWS
+
+2017-08-18 12:47  mathieu_ribatet
+
+	* DESCRIPTION, NAMESPACE, R/brownresnick.R, R/concurrence.R,
+	  R/condSimMaxStab.R, R/conditionalSim.R, R/copula.R, R/extcoeff.R,
+	  R/extremalt.R, R/fitcovmat.R, R/geomgauss.R, R/kriging.R,
+	  R/latentVariable.R, R/madogram.R, R/maxLinear.R, R/randomlines.R,
+	  R/schlather.R, R/schlatherind.R, R/simgaussproc.R,
+	  R/simmaxstab.R, R/smith.R, R/spatgev.R, R/standardErrors.R,
+	  R/univfit.R, R/utils.R, src/Makevars, src/header.h, src/init.c:
+	  Finally the package now registers native routine (what a job!!!)
+
 2017-08-18 12:46  mathieu_ribatet
 
 	* R/circulant.R: Remove an empty R file

@@ -1,3 +1,12 @@
+		CHANGES IN SpatialExtremes VERSION 2.0-4
+
+NEW FEATURES
+
+    o Exact simulation for max-stable processes are now fully implemented.
+
+    o Parallelization is used for computing pairwise likelihood---should be faster (finally).
+
+
 		CHANGES IN SpatialExtremes VERSION 2.0-3
 
 NEW FEATURES
@@ -45,7 +54,7 @@ NEW FEATURES
 BUG FIXES
 
     o Fix a bug with the latent variable model that might crash R
-    
+
     o Fix a bug with temporal trends
 
 
@@ -70,7 +79,7 @@ NEW FEATURES
 BUG FIXES
 
     o Fix a bug with the Student-t copula model
-    
+
     o Fix a bug with standard errors and 3d Smith model
 
 

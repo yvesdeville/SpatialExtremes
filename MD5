@@ -1,7 +1,7 @@
-41be81f03b580d9d2673f6acc3876101 *ChangeLog
-22ff98f9a782d51c3cd4637afed76f1c *DESCRIPTION
+bfa59326ed0556ec8732c5503324bb93 *ChangeLog
+7305e56e1e0889cc1955cafbef10a2e4 *DESCRIPTION
 852cff816e4dfbcea0cb01155eb506b2 *NAMESPACE
-d85b620477ec9efbde612b6ba09daa33 *NEWS
+d45376f6c7cda433d39c06c1064229b5 *NEWS
 5a2a1319bb7ab91e26b47b6a424a749c *R/brownresnick.R
 398c877836a6f37058f56c56cb194569 *R/concurrence.R
 ae0a8e0905bc1861d7d7af7f8ed37e5c *R/condSimMaxStab.R
@@ -30,7 +30,7 @@ c569bad64482ab852d2f1d474c32e10e *R/randomlines.R
 1b1606cfa3653a16bc7f075a5905e63a *R/schlatherind.R
 f8253237395417764f6c46cd172c7462 *R/selection.R
 9ca583a47af1860086ace777ca60b314 *R/simgaussproc.R
-8fbd04ce7e8ea3a34efa40b2346bda93 *R/simmaxstab.R
+890249f76aa014ebc2f27379fcc19277 *R/simmaxstab.R
 ec4159b4b3fd003f0b132ecfedd97ea6 *R/smith.R
 34b5538b51690886478d3567e96922ca *R/spatgev.R
 207b2c350148628c62b20ff96fbb632e *R/standardErrors.R
@@ -39,7 +39,7 @@ ec4159b4b3fd003f0b132ecfedd97ea6 *R/smith.R
 968a52d485065cf56f710e01d171a414 *R/univdist.R
 fa040b62f3170c833bc87da5b25bf02c *R/univfit.R
 6cd6c106ceed8909e3d3bdc648758164 *R/utils.R
-7d16ddd5b5a7defd17cc48bc6c2e844e *build/vignette.rds
+2c6ad60c61705ebb0b6cea172d130fe5 *build/vignette.rds
 289e2cffcf5127101bb492bb23725031 *data/USHCNTemp.RData
 1607ac2f4e5330e4bf5ce6463737ea23 *data/rainfall.RData
 e84a631373eeea7c8b28bc71fa322037 *data/swissalt.RData
@@ -47,7 +47,7 @@ dfbb5f57a690f9a137a9b8a29456cde0 *data/wind.RData
 6e953f01284d77dbdd00ac9f677adc6d *inst/Copyright
 78853811f4a872ac7eae1381ea46e04b *inst/doc/SpatialExtremesGuide.R
 ff11d7ab64ee5999321660d68f79ab85 *inst/doc/SpatialExtremesGuide.Rnw
-e5f11b4b7bfcaab7968f4c7c9c9684d8 *inst/doc/SpatialExtremesGuide.pdf
+37faf8acc91536b46bf6bcab7b4e06f8 *inst/doc/SpatialExtremesGuide.pdf
 367aab88915f276167ea2117fa6d7cda *man/DIC.Rd
 9cf3761cae061fcd0f5d8b868a41d32a *man/GEV.Rd
 f5f0747c5b9daab0f6360f019f9f47f6 *man/GPD.Rd
@@ -55,7 +55,7 @@ f5f0747c5b9daab0f6360f019f9f47f6 *man/GPD.Rd
 569fc923af5c342df65d99beaa93c99b *man/TIC.Rd
 4100b96195a0d4a05b9779958eea8e00 *man/USHCNTemp.Rd
 ca2d21b30c4c6e48125341233a11a8d6 *man/anova.Rd
-410d8e437a9b79addf34e509fcc25d81 *man/concprob.Rd
+c9c4eaeb4398d4d630375b2b7a78e967 *man/concprob.Rd
 557a7ecc5915d835a05618a10de3f1bf *man/concurrencemap.Rd
 55c4500593e6855458bbac30bdc2699a *man/condmap.Rd
 904e93a5ea204629ccc684b6ab37e1d4 *man/condrgp.Rd
@@ -119,15 +119,15 @@ b093bc12b26fa8f5dde2738da21eabcc *src/extcoeff.c
 27415ee60486e1dcbbee0211678e6578 *src/fft.c
 c36a74428e86769097617c0732a36a1c *src/fitcovmat.c
 d003bb14887441b358c3fc77f4b180fd *src/geomgauss.c
-df3a8cef0de8a4dc13286fd14f58366e *src/header.h
-be6a0e55c378ee0906f5f966cde9a92c *src/init.c
+694ac977edc127a01e52227489330e23 *src/header.h
+c5e056fe81787be9a46d6fe5bccce699 *src/init.c
 c993213765194b64d40a85894d5fdfa6 *src/kriging.c
 ee7f0b3ec216cda11c0d1d936b74b102 *src/latentVariable.c
-ce6c37665b8105783ce180c03e24537e *src/madogram.c
+c58ca0d37fccc593fca8dfde5dcd0e6e *src/madogram.c
 d2382a059a76188d4dbdf5c88806e9f4 *src/maxLinear.c
-8107a910b25ca1642d1bda4c30820d6f *src/maxStableExactSimulation.c
+68bd53d70f6198e4b9acf2a8b6e9fde7 *src/maxStableExactSimulation.c
 eeb985b8adca647bb445bbc7dbd0aa08 *src/mcmc.c
-e973de3bca891327b340ebe198d206c3 *src/pairwiselik.c
+c442d952465b724b13ad1c27fb9a61e2 *src/pairwiselik.c
 e5946d6ae6d2bd6c76544a0ffb35d627 *src/penalizations.c
 546c5c44aede0be58e25106a8fc7013e *src/randomlines.c
 3ee5bded788eba7fca00ca16f53a98c9 *src/schlather.c
