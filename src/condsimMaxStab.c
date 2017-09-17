@@ -382,7 +382,7 @@ void getfvaluesSC(double *y, int *n, int *ntau, int *tau, double *cov,
   *f = (1 - *ntau) * M_LN_SQRT_PI - 0.5 * det - 0.5 * (*ntau + 1) *
     log(mahal) + lgammafn(0.5 * (*ntau + 1));
 
-  free(covjCholMean);
+  free(covjCholMean); free(covjchol);
   return;
 }
 
@@ -673,7 +673,7 @@ void condsimschlather(int *nsim, int *n, int *nCond, int *allPart, double *cov,
 
   PutRNGstate();
 
-  free(currentPart); free(x); free(z); free(prop);
+  free(currentPart); free(x); free(z); free(prop); free(covChol);
   return;
 }
 
@@ -1109,9 +1109,7 @@ void getStartingPartitionSC(int *nsim, int *n, double *covChol, int *startPart){
       startPart[i * *n + j] = dummy[j];
   }
 
-
-
-  free(x); free(prop);
+  free(x); free(prop); free(dummy);
 
   return;
 }
@@ -3021,7 +3019,7 @@ void getStartingPartitionExtt(int *nsim, int *n, double *nu, double *covChol,
     for (int j=0;j<*n;j++)
       startPart[i * *n + j] = dummy[j];
   }
-  
+
   PutRNGstate();
 
   free(x); free(prop);

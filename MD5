@@ -1,7 +1,7 @@
 bfa59326ed0556ec8732c5503324bb93 *ChangeLog
-7305e56e1e0889cc1955cafbef10a2e4 *DESCRIPTION
+02b31f4705c26ea630d6dd23044e54d0 *DESCRIPTION
 852cff816e4dfbcea0cb01155eb506b2 *NAMESPACE
-d45376f6c7cda433d39c06c1064229b5 *NEWS
+9e69e9c6f8394aea6f9fb4fb70cb8e31 *NEWS
 5a2a1319bb7ab91e26b47b6a424a749c *R/brownresnick.R
 398c877836a6f37058f56c56cb194569 *R/concurrence.R
 ae0a8e0905bc1861d7d7af7f8ed37e5c *R/condSimMaxStab.R
@@ -19,7 +19,7 @@ d74c4e528fdd93faa66193bf0904bdc6 *R/kriging.R
 18143aa76d2365dd733b2a69d476ba85 *R/madogram.R
 b71e07293e87ec7058e691906f4d60dd *R/maxLinear.R
 25d05ca4ea5960b1f84b580b96c02503 *R/methods.R
-bb3301e07bc26d5da3fc2dae2a1e6079 *R/modelChecking.R
+dfc6a7e1ad986a3a1ff97a302767a60d *R/modelChecking.R
 cb3551232a380e7f13a2c317010bb69a *R/modeldef.R
 8c33e6c44b81790b1116009c3f18e445 *R/plots.R
 4854e9aca1f0fa764012e004a3da875f *R/predict.R
@@ -30,7 +30,7 @@ c569bad64482ab852d2f1d474c32e10e *R/randomlines.R
 1b1606cfa3653a16bc7f075a5905e63a *R/schlatherind.R
 f8253237395417764f6c46cd172c7462 *R/selection.R
 9ca583a47af1860086ace777ca60b314 *R/simgaussproc.R
-890249f76aa014ebc2f27379fcc19277 *R/simmaxstab.R
+a85d04f96e90c4a5f16a035101052f20 *R/simmaxstab.R
 ec4159b4b3fd003f0b132ecfedd97ea6 *R/smith.R
 34b5538b51690886478d3567e96922ca *R/spatgev.R
 207b2c350148628c62b20ff96fbb632e *R/standardErrors.R
@@ -47,7 +47,7 @@ dfbb5f57a690f9a137a9b8a29456cde0 *data/wind.RData
 6e953f01284d77dbdd00ac9f677adc6d *inst/Copyright
 78853811f4a872ac7eae1381ea46e04b *inst/doc/SpatialExtremesGuide.R
 ff11d7ab64ee5999321660d68f79ab85 *inst/doc/SpatialExtremesGuide.Rnw
-37faf8acc91536b46bf6bcab7b4e06f8 *inst/doc/SpatialExtremesGuide.pdf
+eb934710e18127bb29f87f7298db1fa5 *inst/doc/SpatialExtremesGuide.pdf
 367aab88915f276167ea2117fa6d7cda *man/DIC.Rd
 9cf3761cae061fcd0f5d8b868a41d32a *man/GEV.Rd
 f5f0747c5b9daab0f6360f019f9f47f6 *man/GPD.Rd
@@ -110,7 +110,7 @@ df17b71da40d5b61fd7eba1b67203631 *src/Makevars
 6ff481ec79ef211e05dd00742c406a8e *src/brownResnick.c
 0b9a9b0e20b455a0a36766ff456909e0 *src/circulant.c
 a9c07e2323bb5030d439b494c28178f9 *src/concurrence.c
-d6cba8605655f056c4cdd3bcc317e609 *src/condsimMaxStab.c
+de1cb3d9c6a7bbc1b8c3a5122685e6c1 *src/condsimMaxStab.c
 ec7b486ee154ed516b10660eb6f8d7eb *src/copula.c
 c34a91bdc2b3874db8c987973246cdf5 *src/covariance.c
 de0a11b66d28d7e5c8f9ba8383aa5418 *src/direct.c

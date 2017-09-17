@@ -151,6 +151,9 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
         else
             method <- "direct"
+
+        if ((model == "Geometric") && (method == "exact"))##exact simulation for Geometric case not implemented yet
+            method <- "direct"
     }
 
     else

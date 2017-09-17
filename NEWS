@@ -1,3 +1,10 @@
+		CHANGES IN SpatialExtremes VERSION 2.0-5
+
+BUG FIXES
+
+    o Fix a bug with the simulation for the geometric model. Thanks to Zhuo Wang for finding it!
+
+
 		CHANGES IN SpatialExtremes VERSION 2.0-4
 
 NEW FEATURES
