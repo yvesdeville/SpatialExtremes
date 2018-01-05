@@ -110,7 +110,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
         }
 
         if (length(fixed.param) > 0){
-            args <- c(list(data = data, coord = coord, marge = "emp", iso = iso, fixed.param))
+            args <- c(list(data = data, coord = coord, marge = "emp", iso = iso), fixed.param)
             cov.start <- do.call("fitcovmat", args)$param
         }
 

@@ -268,7 +268,7 @@ profile2d <- function(fitted, ...){
   UseMethod("profile2d")
 }
 
-print.pspline <- function(x, ...){
+print.pspline2 <- function(x, ...){
   cat("Call:\n")
   print(x$call)
 

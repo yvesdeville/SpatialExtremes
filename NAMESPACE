@@ -47,9 +47,9 @@ S3method(plot, copula)
 S3method(predict, copula)
 S3method(print, copula)
 
-## Methods for class 'pspline'
-S3method(predict, pspline)
-S3method(print, pspline)
+## Methods for class 'pspline2'
+S3method(predict, pspline2)
+S3method(print, pspline2)
 
 ## Methods for class 'spatgev'
 S3method(anova, spatgev)

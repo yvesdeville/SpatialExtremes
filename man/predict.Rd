@@ -2,19 +2,19 @@
 \alias{predict}
 \alias{predict.maxstab}
 \alias{predict.copula}
-\alias{predict.pspline}
+\alias{predict.pspline2}
 \alias{predict.spatgev}
 
 \title{Prediction of the marginal parameters for various models}
 \description{This function predicts the marginal GEV parameters from a
-  fitted max-stable process, copula, penalized spline or spatial GEV model. 
+  fitted max-stable process, copula, penalized spline or spatial GEV model.
 }
 \usage{
 \method{predict}{maxstab}(object, newdata, ret.per = NULL, std.err =
 TRUE, \dots)
 \method{predict}{copula}(object, newdata, ret.per = NULL, std.err =
 TRUE, \dots)
-\method{predict}{pspline}(object, newdata, \dots)
+\method{predict}{pspline2}(object, newdata, \dots)
 \method{predict}{spatgev}(object, newdata, ret.per = NULL, \dots)
 }
 \arguments{

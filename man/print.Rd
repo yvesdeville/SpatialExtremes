@@ -1,6 +1,6 @@
 \name{print}
 \alias{print}
-\alias{print.pspline}
+\alias{print.pspline2}
 \alias{print.maxstab}
 \alias{print.copula}
 \alias{print.spatgev}
@@ -9,10 +9,10 @@
 \title{Printing objects of classes defined in the SpatialExtreme packages}
 \description{
   Methods for printing objects of classes introduced by the
-  SpatialExtremes package. 
+  SpatialExtremes package.
 }
 \usage{
-\method{print}{pspline}(x, \dots)
+\method{print}{pspline2}(x, \dots)
 \method{print}{maxstab}(x, digits = max(3, getOption("digits") - 3), \dots)
 \method{print}{copula}(x, digits = max(3, getOption("digits") - 3), \dots)
 \method{print}{spatgev}(x, digits = max(3, getOption("digits") - 3), \dots)

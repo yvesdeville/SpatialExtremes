@@ -1,3 +1,10 @@
+		CHANGES IN SpatialExtremes VERSION 2.0-6
+
+BUG FIXES
+
+    o Minor modification to suppress warnings with a new release of R.
+
+
 		CHANGES IN SpatialExtremes VERSION 2.0-5
 
 BUG FIXES

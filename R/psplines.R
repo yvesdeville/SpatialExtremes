@@ -44,20 +44,20 @@ rbpspline <- function(y, x, knots, degree, penalty = "gcv", ...){
   fitted.values <- A %*% (b / (1 + penalty^degree * svd.mat$d))
   smooth.mat <- A %*% diag(1 / (1 + penalty^degree * svd.mat$d)) %*% t(A)
   beta <- chol.mat.inv %*% svd.mat$u %*% (b / (1 + penalty^degree * svd.mat$d))
-  
+
   df <- sum(diag(smooth.mat))
   res.df <- length(y) - 2 * sum(diag(smooth.mat)) +
     sum(diag(smooth.mat %*% t(smooth.mat)))
   rank <- sum(eigen(smooth.mat, only.values = TRUE)$values != 0)
-  
-  
+
+
   fitted <- list(x = x, obs = y, penalty = penalty, knots = knots,
                  degree = degree, y = fitted.values,
                  dsgn.mat = dsgn.mat, pen.mat = pen.mat, cv = cv.hat,
                  smooth.mat = smooth.mat, df = df, res.df = res.df,
                  rank = rank, beta = beta, call = match.call())
 
-  class(fitted) <- "pspline"
+  class(fitted) <- "pspline2"
   return(fitted)
 }
 
@@ -75,7 +75,7 @@ cv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
 
   A <- dsgn.mat %*% chol.mat.inv %*% svd.mat$u
   b <- t(A) %*% y
-  
+
   obj.fun <- function(penalty){
 
     if (penalty < 0)
@@ -83,7 +83,7 @@ cv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
 
     fitted.values <- A %*% (b / (1 + penalty^degree * svd.mat$d))
     smooth.mat <- A %*% diag(1 / (1 + penalty^degree * svd.mat$d)) %*% t(A)
-    
+
     cv <- sum(((y - fitted.values) / (1 - diag(smooth.mat)))^2)
     return(cv)
   }
@@ -100,12 +100,12 @@ cv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
       cv.val <- c(cv.val, obj.fun(lambda))
 
     cv.val[cv.val == 1e6] <- NA
-         
+
     plot(lambda.vals, cv.val, xlab = expression(lambda), ylab = "CV",
          type = "l")
   }
-  
-  return(list(cv = opt$minimum, penalty = opt$estimate, nlm.code = opt$code))    
+
+  return(list(cv = opt$minimum, penalty = opt$estimate, nlm.code = opt$code))
 
 }
 
@@ -124,7 +124,7 @@ gcv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
   A <- dsgn.mat %*% chol.mat.inv %*% svd.mat$u
   b <- t(A) %*% y
   n <- length(y)
-  
+
   obj.fun <- function(penalty){
 
     if (penalty < 0)
@@ -132,7 +132,7 @@ gcv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
 
     fitted.values <- A %*% (b / (1 + penalty^degree * svd.mat$d))
     smooth.mat <- A %*% diag(1 / (1 + penalty^degree * svd.mat$d)) %*% t(A)
-    
+
     gcv <- n^2 * sum((y - fitted.values)^2) / (n - sum(diag(smooth.mat)))^2
     return(gcv)
   }
@@ -149,36 +149,36 @@ gcv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
       gcv.val <- c(gcv.val, obj.fun(lambda))
 
     gcv.val[gcv.val == 1e6] <- NA
-         
+
     plot(lambda.vals, gcv.val, xlab = expression(lambda), ylab = "GCV",
          type = "l")
   }
-  
-  return(list(gcv = opt$minimum, penalty = opt$estimate, nlm.code = opt$code))    
+
+  return(list(gcv = opt$minimum, penalty = opt$estimate, nlm.code = opt$code))
 
 }
 
 rb <- function(..., knots, degree, penalty){
 
   data <- cbind(...)
-    
+
   if ((degree %% 2) == 0)
     stop("''degree'' must be an odd number")
-  
+
   if (missing(penalty))
     penalty <- NULL
 
   X0 <- NULL
   for (i in 1:((degree - 1) / 2))
     X0 <- cbind(X0, data^i)
-  
+
   X0 <- cbind(1, X0)
-  
+
   ##Define the number of ``purely parametric'' parameters to be
   ##estimated i.e. weights related to radial basis function are not
   ##taken into account
   n.ppar <- ncol(X0)
-  
+
   X1 <- NULL
 
   if (is.null(dim(knots))){
@@ -193,7 +193,7 @@ rb <- function(..., knots, degree, penalty){
     n.knots <- nrow(knots)
     for (k in 1:n.knots)
       X1 <- cbind(X1, as.matrix(dist(rbind(knots[k,], data)))[-1,1])
-  }   
+  }
 
   X1 <- X1^degree
   dsgn.mat <- cbind(X0, X1)

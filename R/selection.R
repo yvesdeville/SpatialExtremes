@@ -130,7 +130,7 @@ anova.maxstab <- function(object, object2, method = "RJ",
             (M1$param[removed.param] - M0$fixed[removed.param]) /
               ((fitted(M1) - theta0) %*% ivar.cov %*%
              (fitted(M1) - theta0))
-        Dev <- Dev * c
+        Dev <- Dev * as.numeric(c)
 
       }
 
@@ -273,7 +273,7 @@ anova.spatgev <- function(object, object2, method = "RJ",
             (M1$param[removed.param] - M0$fixed[removed.param]) /
               ((fitted(M1) - theta0) %*% ivar.cov %*%
              (fitted(M1) - theta0))
-        Dev <- Dev * c
+        Dev <- Dev * as.numeric(c)
 
       }
 

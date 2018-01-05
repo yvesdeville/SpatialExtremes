@@ -2,9 +2,8 @@
 ### Encoding: UTF-8
 
 ###################################################
-### code chunk number 1: SpatialExtremesGuide.Rnw:32-42
+### code chunk number 1: SpatialExtremesGuide.Rnw:33-43
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 library(SpatialExtremes)
 set.seed(12)
 n.site <- 50
@@ -18,14 +17,14 @@ lmadogram(data, coord, n.bins = 25, border = "grey", box = FALSE)
 
 
 ###################################################
-### code chunk number 2: SpatialExtremesGuide.Rnw:55-57
+### code chunk number 2: SpatialExtremesGuide.Rnw:57-59
 ###################################################
 options(SweaveHooks=list(fig=function()
 par(mar=c(5.1, 4.1, 1.1, 2.1))))
 
 
 ###################################################
-### code chunk number 3: SpatialExtremesGuide.Rnw:98-99 (eval = FALSE)
+### code chunk number 3: SpatialExtremesGuide.Rnw:100-101 (eval = FALSE)
 ###################################################
 ## vignette("SpatialExtremesGuide")
 
@@ -103,9 +102,8 @@ legend("topright", c(expression(nu == 2), expression(nu == 1),
 
 
 ###################################################
-### code chunk number 6: SpatialExtremesGuide.Rnw:554-555
+### code chunk number 6: SpatialExtremesGuide.Rnw:556-557
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 par(mfrow=c(1,4), mar = c(4, 4, 0.2, 0.2))
 covariance(nugget = 0, sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
            xlim = c(0,9), ylim = c(0, 1))
@@ -157,7 +155,7 @@ legend("topright", c(expression(nu == 2), expression(nu == 1),
 
 
 ###################################################
-### code chunk number 7: SpatialExtremesGuide.Rnw:608-619 (eval = FALSE)
+### code chunk number 7: SpatialExtremesGuide.Rnw:610-621 (eval = FALSE)
 ###################################################
 ## covariance(nugget = 0, sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
 ##            xlim = c(0,9), ylim = c(0, 1))
@@ -217,9 +215,8 @@ contour(xs, ys, rho2, xlab = expression(paste(Delta, x)),
 
 
 ###################################################
-### code chunk number 10: SpatialExtremesGuide.Rnw:684-685
+### code chunk number 10: SpatialExtremesGuide.Rnw:686-687
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1,
                       cov.mod = "powexp", plot = FALSE)
 phi <- pi / 4
@@ -270,7 +267,7 @@ contour(xs, ys, rho2, xlab = expression(paste(Delta, x)),
 
 
 ###################################################
-### code chunk number 12: SpatialExtremesGuide.Rnw:1007-1008 (eval = FALSE)
+### code chunk number 12: SpatialExtremesGuide.Rnw:1009-1010 (eval = FALSE)
 ###################################################
 ## x <- y <- seq(0, 10, length = 100)
 ## coord <- cbind(x, y)
@@ -313,7 +310,7 @@ contour(xs, ys, rho2, xlab = expression(paste(Delta, x)),
 
 
 ###################################################
-### code chunk number 14: SpatialExtremesGuide.Rnw:1162-1163 (eval = FALSE)
+### code chunk number 14: SpatialExtremesGuide.Rnw:1164-1165 (eval = FALSE)
 ###################################################
 ## x <- y <- seq(0, 10, length = 100)
 ## coord <- cbind(x, y)
@@ -332,14 +329,14 @@ contour(xs, ys, rho2, xlab = expression(paste(Delta, x)),
 
 
 ###################################################
-### code chunk number 15: SpatialExtremesGuide.Rnw:1189-1191 (eval = FALSE)
+### code chunk number 15: SpatialExtremesGuide.Rnw:1191-1193 (eval = FALSE)
 ###################################################
 ## coord <- matrix(runif(100, 0, 10), ncol = 2)
 ## data1 <- rmaxstab(100, coord, "whitmat", nugget = 0, range = 1, smooth = 1)
 
 
 ###################################################
-### code chunk number 16: SpatialExtremesGuide.Rnw:1194-1198 (eval = FALSE)
+### code chunk number 16: SpatialExtremesGuide.Rnw:1196-1200 (eval = FALSE)
 ###################################################
 ## x <- seq(0, 10, length = 100)
 ## coord <- cbind(x, x)
@@ -362,9 +359,8 @@ legend("bottomright", c("Smith", "Schlather"), col = 1:2, lty = 1, inset = 0.05)
 
 
 ###################################################
-### code chunk number 18: SpatialExtremesGuide.Rnw:1303-1304
+### code chunk number 18: SpatialExtremesGuide.Rnw:1305-1306
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 smith <- function(h) 2 * pnorm(h/2)
 cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1, plot = FALSE)
 schlather <- function(h)
@@ -389,7 +385,7 @@ cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "wh
 ext.coeff <- function(h)
   1 + sqrt((1 - cov.fun(h))/2)
 
-par(mfrow=c(1,2))
+par(mfrow=c(1,2), ps=14)
 ST <- fitextcoeff(data, coord, loess = FALSE, ylim = c(1, 2))
 plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
 Smith <- fitextcoeff(data, coord, estim = "Smith", loess = FALSE, ylim = c(1, 2))
@@ -397,9 +393,8 @@ plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
 
 
 ###################################################
-### code chunk number 20: SpatialExtremesGuide.Rnw:1407-1408
+### code chunk number 20: SpatialExtremesGuide.Rnw:1409-1410
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -410,7 +405,7 @@ cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "wh
 ext.coeff <- function(h)
   1 + sqrt((1 - cov.fun(h))/2)
 
-par(mfrow=c(1,2))
+par(mfrow=c(1,2), ps=14)
 ST <- fitextcoeff(data, coord, loess = FALSE, ylim = c(1, 2))
 plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
 Smith <- fitextcoeff(data, coord, estim = "Smith", loess = FALSE, ylim = c(1, 2))
@@ -418,7 +413,7 @@ plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
 
 
 ###################################################
-### code chunk number 21: SpatialExtremesGuide.Rnw:1424-1433 (eval = FALSE)
+### code chunk number 21: SpatialExtremesGuide.Rnw:1426-1435 (eval = FALSE)
 ###################################################
 ## n.site <- 40
 ## n.obs <- 100
@@ -462,9 +457,8 @@ plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
 
 
 ###################################################
-### code chunk number 23: SpatialExtremesGuide.Rnw:1519-1520
+### code chunk number 23: SpatialExtremesGuide.Rnw:1521-1522
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 cov.fun1 <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1,
                        cov.mod = "whitmat", plot = FALSE)
 ext.coeff1 <- function(h)
@@ -493,7 +487,7 @@ plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
 
 
 ###################################################
-### code chunk number 24: SpatialExtremesGuide.Rnw:1552-1560 (eval = FALSE)
+### code chunk number 24: SpatialExtremesGuide.Rnw:1554-1562 (eval = FALSE)
 ###################################################
 ## n.site <- 50
 ## n.obs <- 100
@@ -528,9 +522,8 @@ plot(ext.coeff, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
 
 
 ###################################################
-### code chunk number 26: SpatialExtremesGuide.Rnw:1597-1598
+### code chunk number 26: SpatialExtremesGuide.Rnw:1599-1600
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -551,7 +544,7 @@ plot(ext.coeff, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
 
 
 ###################################################
-### code chunk number 27: SpatialExtremesGuide.Rnw:1615-1621 (eval = FALSE)
+### code chunk number 27: SpatialExtremesGuide.Rnw:1617-1623 (eval = FALSE)
 ###################################################
 ## n.site <- 40
 ## n.obs <- 100
@@ -582,9 +575,8 @@ plot(ext.coeff, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
 
 
 ###################################################
-### code chunk number 29: SpatialExtremesGuide.Rnw:1660-1661
+### code chunk number 29: SpatialExtremesGuide.Rnw:1662-1663
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -603,7 +595,7 @@ plot(ext.coeff, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
 
 
 ###################################################
-### code chunk number 30: SpatialExtremesGuide.Rnw:1744-1751 (eval = FALSE)
+### code chunk number 30: SpatialExtremesGuide.Rnw:1746-1753 (eval = FALSE)
 ###################################################
 ## n.site <- 40
 ## n.obs <- 100
@@ -629,9 +621,8 @@ lmadogram(data2, coord, n.bins = 60)
 
 
 ###################################################
-### code chunk number 32: SpatialExtremesGuide.Rnw:1899-1900
+### code chunk number 32: SpatialExtremesGuide.Rnw:1901-1902
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -644,7 +635,7 @@ lmadogram(data2, coord, n.bins = 60)
 
 
 ###################################################
-### code chunk number 33: SpatialExtremesGuide.Rnw:1914-1923 (eval = FALSE)
+### code chunk number 33: SpatialExtremesGuide.Rnw:1916-1925 (eval = FALSE)
 ###################################################
 ## n.site <- 40
 ## n.obs <- 100
@@ -658,7 +649,7 @@ lmadogram(data2, coord, n.bins = 60)
 
 
 ###################################################
-### code chunk number 34: SpatialExtremesGuide.Rnw:1977-1983
+### code chunk number 34: SpatialExtremesGuide.Rnw:1979-1985
 ###################################################
 n.site <- 40
 n.obs <- 80
@@ -669,7 +660,7 @@ fitcovmat(data, coord, marge = "emp")
 
 
 ###################################################
-### code chunk number 35: SpatialExtremesGuide.Rnw:2118-2125
+### code chunk number 35: SpatialExtremesGuide.Rnw:2120-2127
 ###################################################
 n.obs <- 80
 n.site <- 40
@@ -681,7 +672,7 @@ fitmaxstab(data, coord, cov.mod = "whitmat")
 
 
 ###################################################
-### code chunk number 36: SpatialExtremesGuide.Rnw:2146-2149 (eval = FALSE)
+### code chunk number 36: SpatialExtremesGuide.Rnw:2148-2151 (eval = FALSE)
 ###################################################
 ## fitmaxstab(data, coord, cov.mod = "whitmat", smooth = 1.2)
 ## fitmaxstab(data, coord, cov.mod = "whitmat", nugget = 0)
@@ -689,32 +680,32 @@ fitmaxstab(data, coord, cov.mod = "whitmat")
 
 
 ###################################################
-### code chunk number 37: SpatialExtremesGuide.Rnw:2155-2157 (eval = FALSE)
+### code chunk number 37: SpatialExtremesGuide.Rnw:2157-2159 (eval = FALSE)
 ###################################################
 ## fitmaxstab(data, coord, cov.mod = "cauchy")
 ## fitmaxstab(data, coord, cov.mod = "powexp")
 
 
 ###################################################
-### code chunk number 38: SpatialExtremesGuide.Rnw:2161-2162 (eval = FALSE)
+### code chunk number 38: SpatialExtremesGuide.Rnw:2163-2164 (eval = FALSE)
 ###################################################
 ## fitmaxstab(data, coord, cov.mod = "gauss")
 
 
 ###################################################
-### code chunk number 39: SpatialExtremesGuide.Rnw:2168-2169 (eval = FALSE)
+### code chunk number 39: SpatialExtremesGuide.Rnw:2170-2171 (eval = FALSE)
 ###################################################
 ## fitmaxstab(data, coord, cov.mod = "gauss", cov12 = 0, method = "BFGS")
 
 
 ###################################################
-### code chunk number 40: SpatialExtremesGuide.Rnw:2341-2342
+### code chunk number 40: SpatialExtremesGuide.Rnw:2343-2344
 ###################################################
 set.seed(1)
 
 
 ###################################################
-### code chunk number 41: SpatialExtremesGuide.Rnw:2345-2353
+### code chunk number 41: SpatialExtremesGuide.Rnw:2347-2355
 ###################################################
 n.obs <- 80
 n.site <- 40
@@ -727,13 +718,13 @@ TIC(M0, M1)
 
 
 ###################################################
-### code chunk number 42: SpatialExtremesGuide.Rnw:2419-2420
+### code chunk number 42: SpatialExtremesGuide.Rnw:2421-2422
 ###################################################
 set.seed(7)
 
 
 ###################################################
-### code chunk number 43: SpatialExtremesGuide.Rnw:2423-2431
+### code chunk number 43: SpatialExtremesGuide.Rnw:2425-2433
 ###################################################
 n.obs <- 50
 n.site <- 30
@@ -746,13 +737,13 @@ anova(M0, M1)
 
 
 ###################################################
-### code chunk number 44: SpatialExtremesGuide.Rnw:2509-2510
+### code chunk number 44: SpatialExtremesGuide.Rnw:2511-2512
 ###################################################
 anova(M0, M1, method = "CB")
 
 
 ###################################################
-### code chunk number 45: SpatialExtremesGuide.Rnw:2545-2548
+### code chunk number 45: SpatialExtremesGuide.Rnw:2547-2550
 ###################################################
 x <- c(2.2975896, 1.6448808, 1.3323833, -0.4464904, 2.2737603, -0.2581876,
        9.5184398, -0.5899699, 0.4974283, -0.8152157)
@@ -760,13 +751,13 @@ z <- gev2frech(x, 1, 2, .2)
 
 
 ###################################################
-### code chunk number 46: SpatialExtremesGuide.Rnw:2559-2560
+### code chunk number 46: SpatialExtremesGuide.Rnw:2561-2562
 ###################################################
 frech2gev(z, 1, 2, .2)
 
 
 ###################################################
-### code chunk number 47: SpatialExtremesGuide.Rnw:2617-2618 (eval = FALSE)
+### code chunk number 47: SpatialExtremesGuide.Rnw:2619-2620 (eval = FALSE)
 ###################################################
 ## fitmaxstab(data, coord, "gauss", fit.marge = TRUE)
 
@@ -798,9 +789,8 @@ lines(M2, col = 3)
 
 
 ###################################################
-### code chunk number 49: SpatialExtremesGuide.Rnw:2852-2853
+### code chunk number 49: SpatialExtremesGuide.Rnw:2854-2855
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 set.seed(12)
 x <- runif(100)
 fun <- function(x) sin(3 * pi * x)
@@ -825,7 +815,7 @@ lines(M2, col = 3)
 
 
 ###################################################
-### code chunk number 50: SpatialExtremesGuide.Rnw:2869-2870 (eval = FALSE)
+### code chunk number 50: SpatialExtremesGuide.Rnw:2871-2872 (eval = FALSE)
 ###################################################
 ## set.seed(12)
 ## x <- runif(100)
@@ -867,9 +857,8 @@ lines(M2, col = 3)
 
 
 ###################################################
-### code chunk number 52: SpatialExtremesGuide.Rnw:2895-2896
+### code chunk number 52: SpatialExtremesGuide.Rnw:2897-2898
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 M0 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0)
 M1 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0.1)
 M2 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 10)
@@ -884,7 +873,7 @@ lines(M2, col = 3)
 
 
 ###################################################
-### code chunk number 53: SpatialExtremesGuide.Rnw:2928-2929 (eval = FALSE)
+### code chunk number 53: SpatialExtremesGuide.Rnw:2930-2931 (eval = FALSE)
 ###################################################
 ## M0 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0)
 ## M1 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0.1)
@@ -915,9 +904,8 @@ lines(gcv.fit, col = 3)
 
 
 ###################################################
-### code chunk number 55: SpatialExtremesGuide.Rnw:3020-3021
+### code chunk number 55: SpatialExtremesGuide.Rnw:3022-3023
 ###################################################
-getOption("SweaveHooks")[["fig"]]()
 par(mfrow=c(1,3))
 lambda.cv <- cv(y, x, knots = knots3, degree = 3)$penalty
 abline(v = lambda.cv, lty = 2)
@@ -931,7 +919,7 @@ lines(gcv.fit, col = 3)
 
 
 ###################################################
-### code chunk number 56: SpatialExtremesGuide.Rnw:3036-3037 (eval = FALSE)
+### code chunk number 56: SpatialExtremesGuide.Rnw:3038-3039 (eval = FALSE)
 ###################################################
 ## par(mfrow=c(1,3))
 ## lambda.cv <- cv(y, x, knots = knots3, degree = 3)$penalty
@@ -946,13 +934,13 @@ lines(gcv.fit, col = 3)
 
 
 ###################################################
-### code chunk number 57: SpatialExtremesGuide.Rnw:3113-3114
+### code chunk number 57: SpatialExtremesGuide.Rnw:3115-3116
 ###################################################
 set.seed(15)
 
 
 ###################################################
-### code chunk number 58: SpatialExtremesGuide.Rnw:3117-3130
+### code chunk number 58: SpatialExtremesGuide.Rnw:3119-3132
 ###################################################
 n.site <- 20
 n.obs <- 50
@@ -970,7 +958,7 @@ for (i in 1:n.site)
 
 
 ###################################################
-### code chunk number 59: SpatialExtremesGuide.Rnw:3135-3142
+### code chunk number 59: SpatialExtremesGuide.Rnw:3137-3144
 ###################################################
 loc.form <- y ~ lat
 scale.form <- y ~ lon + I(lat^2)
@@ -982,7 +970,7 @@ M1
 
 
 ###################################################
-### code chunk number 60: SpatialExtremesGuide.Rnw:3149-3151
+### code chunk number 60: SpatialExtremesGuide.Rnw:3151-3153
 ###################################################
 anova(M1, M2)
 TIC(M1, M2)

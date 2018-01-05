@@ -9,9 +9,9 @@
 % \VignetteKeyword{Spatial Extremes}
 % \VignetteKeyword{Max-stable processes}
 % \VignettePackage{SpatialExtremes}
-\SweaveOpts{eps=FALSE,pdf=TRUE}
 
 \pagestyle{empty}
+
 \frontmatter
 \begin{titlepage}
   \vspace*{2cm}
@@ -28,8 +28,9 @@
     Switzerland\\
   \end{center}
   \vfill
-  \begin{center}
-<<echo=FALSE,fig=TRUE>>=
+  \begin{figure}[b]
+    \centering
+<<echo=FALSE>>=
 library(SpatialExtremes)
 set.seed(12)
 n.site <- 50
@@ -41,7 +42,8 @@ data <- rmaxstab(40, coord, "whitmat", nugget = 0, range = 1, smooth = 2)
 ##Compute the lambda-madogram
 lmadogram(data, coord, n.bins = 25, border = "grey", box = FALSE)
 @
-  \end{center}
+\end{figure}
+  \vfill
 \end{titlepage}
 
 \mainmatter
@@ -52,7 +54,7 @@ lmadogram(data, coord, n.bins = 25, border = "grey", box = FALSE)
 %%\listoftables
 \listoffigures
 
-<<echo=false>>=
+<<echo=FALSE>>=
 options(SweaveHooks=list(fig=function()
 par(mar=c(5.1, 4.1, 1.1, 2.1))))
 @
@@ -498,7 +500,7 @@ distance\index{distance!Euclidean} between location 1 and location
 2. Usually, $\rho(h)$, is chosen from one of the valid parametric
 families, such as
 
-<<label=covariances,echo=FALSE>>=
+<<label=covariances,echo=FALSE,fig.keep='none'>>=
 par(mfrow=c(1,4), mar = c(4, 4, 0.2, 0.2))
 covariance(nugget = 0, sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
            xlim = c(0,9), ylim = c(0, 1))
@@ -551,7 +553,7 @@ legend("topright", c(expression(nu == 2), expression(nu == 1),
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<covariances>>
 @
 \caption{Plots of the Whittle--Matérn, the powered exponential, the
@@ -653,7 +655,7 @@ covariance parameters, the slope of the powered exponential
 correlation function near the origin is steeper than the
 Whittle--Matérn.
 
-<<label=anisoCovFun,echo=FALSE>>=
+<<label=anisoCovFun,echo=FALSE,fig.keep='none'>>=
 cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1,
                       cov.mod = "powexp", plot = FALSE)
 phi <- pi / 4
@@ -681,7 +683,7 @@ contour(xs, ys, rho2, xlab = expression(paste(Delta, x)),
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<anisoCovFun>>
 @
 \caption{Contour plots of an isotropic (left panel) and anisotropic
@@ -1286,7 +1288,7 @@ we have:
 \end{tabular}
 \bigskip
 
-<<label=extCoeffModels,echo=FALSE>>=
+<<label=extCoeffModels,echo=FALSE,fig.keep='none'>>=
 smith <- function(h) 2 * pnorm(h/2)
 cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1, plot = FALSE)
 schlather <- function(h)
@@ -1300,7 +1302,7 @@ legend("bottomright", c("Smith", "Schlather"), col = 1:2, lty = 1, inset = 0.05)
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,height=3.5>>=
+<<echo=FALSE,fig.height=3.5,fig.width=3.5>>=
 <<extCoeffModels>>
 @
 \caption{Extremal coefficient functions for different max-stable
@@ -1384,7 +1386,7 @@ coefficient between locations $x_1$ and $x_2$:
     \{Z_i(x_1)^{-1}, Z_i(x_2)^{-1} \}}
 \end{equation}
 
-<<label=extCoeffST-Smith,echo=FALSE>>=
+<<label=extCoeffST-Smith,echo=FALSE,fig.keep='none'>>=
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -1395,7 +1397,7 @@ cov.fun <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1, cov.mod = "wh
 ext.coeff <- function(h)
   1 + sqrt((1 - cov.fun(h))/2)
 
-par(mfrow=c(1,2))
+par(mfrow=c(1,2), ps=14)
 ST <- fitextcoeff(data, coord, loess = FALSE, ylim = c(1, 2))
 plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
 Smith <- fitextcoeff(data, coord, estim = "Smith", loess = FALSE, ylim = c(1, 2))
@@ -1404,7 +1406,7 @@ plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
 
 \begin{figure}
   \centering
-<<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<extCoeffST-Smith>>
 @
 \caption{Pairwise extremal coefficient estimates from the Schlather
@@ -1486,7 +1488,7 @@ function and
   u_\beta(x) = \left(1 + \xi \frac{x - \mu}{\sigma} \right)_+^{1/\xi}
 \end{equation*}
 
-<<echo=FALSE,label=madogram>>=
+<<echo=FALSE,label=madogram,fig.keep='none'>>=
 cov.fun1 <- covariance(nugget = 0, sill = 1, range = 1, smooth = 1,
                        cov.mod = "whitmat", plot = FALSE)
 ext.coeff1 <- function(h)
@@ -1516,7 +1518,7 @@ plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<madogram>>
 @
 \caption{Madogram (left panel) and binned madogram (right panel) with
@@ -1572,7 +1574,7 @@ a simple estimator for $\theta(\cdot)$:
   \end{cases}
 \end{equation}
 
-<<label=madogramExtCoeff,echo=FALSE>>=
+<<label=madogramExtCoeff,echo=FALSE,fig.keep='none'>>=
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -1594,7 +1596,7 @@ plot(ext.coeff, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
 
 \begin{figure}
   \centering
-<<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<madogramExtCoeff>>
 @
 \caption{Pairwise madograms (left panel) and extremal coefficients
@@ -1637,7 +1639,7 @@ called the $F$-madogram\index{madogram!$F$-madogram}
 where $Z(\cdot)$ is a stationary max-stable random field with unit
 Fréchet margins and $F(z) = \exp(-1/z)$.
 
-<<echo=FALSE,label=F-madogram>>=
+<<echo=FALSE,label=F-madogram,fig.keep='none'>>=
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -1657,7 +1659,7 @@ plot(ext.coeff, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<F-madogram>>
 @
 \caption{Pairwise $F$-madogram (left panel) and extremal coefficient
@@ -1882,7 +1884,7 @@ get an estimator for the dependence measure
     -\hat{\nu}_\lambda(x_1 - x_2)}
 \end{equation}
 
-<<label=lambda-madogram,echo=FALSE>>=
+<<label=lambda-madogram,echo=FALSE,fig.keep='none'>>=
 n.site <- 40
 n.obs <- 100
 coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
@@ -1896,7 +1898,7 @@ lmadogram(data2, coord, n.bins = 60)
 
 \begin{figure}
   \centering
-<<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<lambda-madogram>>
 @
 \vspace{-1cm}
@@ -2823,7 +2825,7 @@ $\kappa$ so that equation~\eqref{eq:decompBasis} becomes
   f(x) = \beta_0 + \beta_1 x + \sum_{j=1}^q b_j(x - \kappa_j)
 \end{equation}
 
-<<label=knotsEffect,echo=FALSE>>=
+<<label=knotsEffect,echo=FALSE,fig.keep='none'>>=
 set.seed(12)
 x <- runif(100)
 fun <- function(x) sin(3 * pi * x)
@@ -2849,7 +2851,7 @@ lines(M2, col = 3)
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<knotsEffect>>
 @
   \caption{Impact of the number of knots in the fitted
@@ -2876,7 +2878,7 @@ to \emph{penalized splines} or \emph{p-splines}\index{p-splines}. The
 idea beyond this is to consider a large number of knots but to
 constrain, in a sense to be defined, their influence.
 
-<<label=smoothingParamEffect,echo=FALSE>>=
+<<label=smoothingParamEffect,echo=FALSE,fig.keep='none'>>=
 M0 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0)
 M1 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0.1)
 M2 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 10)
@@ -2892,7 +2894,7 @@ lines(M2, col = 3)
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<smoothingParamEffect>>
 @
   \caption{Impact of the smoothing parameter $\lambda$ on the
@@ -3002,7 +3004,7 @@ $\mathbf{Id}$ is the identity matrix, leading to the \emph{generalized
 GCV has computational advantages over CV, and it has also
 computational advantages in term of invariance \citep{Wood2006}.
 
-<<label=CVandGCV,echo=FALSE>>=
+<<label=CVandGCV,echo=FALSE,fig.keep='none'>>=
 par(mfrow=c(1,3))
 lambda.cv <- cv(y, x, knots = knots3, degree = 3)$penalty
 abline(v = lambda.cv, lty = 2)
@@ -3017,7 +3019,7 @@ lines(gcv.fit, col = 3)
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<echo=FALSE,fig.width=7,fig.height=3.5>>=
 <<CVandGCV>>
 @
   \caption{Cross-validation and generalized cross validation curves
