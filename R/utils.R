@@ -56,9 +56,6 @@ frech2gev <- function(x, loc, scale, shape){
     if ((min(p, na.rm = TRUE) <= 0) || (max(p, na.rm = TRUE) >=1))
       stop("'p' must contain probabilities in (0,1)")
 
-    if (min(scale) < 0)
-      warning("There are some invalid scale GEV parameters")
-
     if (length(p) != 1)
       stop("invalid p")
 
@@ -68,7 +65,7 @@ frech2gev <- function(x, loc, scale, shape){
     n <- length(loc)
 
     ans <- .C(C_gev, as.double(p), as.integer(n), as.double(loc),
-              as.double(scale), as.double(shape), quant = double(n))$quant
+              as.double(scale), as.double(shape), quant = double(n), NAOK = TRUE)$quant
 
     return(ans)
 }

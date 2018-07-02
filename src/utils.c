@@ -229,6 +229,11 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 
   for (int i=0;i<*n;i++){
 
+    if (ISNA(locs[i]) || ISNA(scales[i]) || ISNA(shapes[i])){
+      quant[i] = NA_REAL;
+      continue;
+    }
+
     if (scales[i] <= 0)
       quant[i] = NA_REAL;
 

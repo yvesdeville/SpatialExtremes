@@ -12,7 +12,7 @@ modeldef <- function(data, formula){
       stop("''coord'' and/or ``marg.cov'' must have named columns")
 
     cov.names.uniq <- unique(cov.names)
-    
+
     if (length(cov.names.uniq) != length(cov.names)){
       warning("''coord'' and/or ``marg.cov'' have duplicates named columns. Omiting.")
       data <- data[,cov.names.uniq]
@@ -32,13 +32,13 @@ modeldef.lm <- function(data, formula){
 
   init.fun <- function(y)
     lm(formula, data = as.data.frame(cbind(y = y, data)))$coeff
-  
+
   formula.tmp <- formula[-2]
-  dsgn.mat <- model.matrix(formula.tmp, data = as.data.frame(data))
+  dsgn.mat <- model.matrix(formula.tmp, model.frame(formula.tmp, data = as.data.frame(data), na.action = na.pass))
 
   ##The number of ``purely parametric'' parameters to be estimated
   n.ppar <- ncol(dsgn.mat)
-  
+
   return(list(dsgn.mat = dsgn.mat, pen.mat = 0, degree = 0, knots = 0,
               type = "lm", penalty.tot = 0, formula = formula, data = data,
               init.fun = init.fun, n.ppar = n.ppar))
@@ -57,7 +57,7 @@ modeldef.rb <- function(data, formula){
   penalty <- model$penalty
   data <- model$data
   n.ppar <- model$n.ppar
-  
+
   init.fun <- function(y)
     rbpspline(y, data, knots, degree, penalty)$beta
 

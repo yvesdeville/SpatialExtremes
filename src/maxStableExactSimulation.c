@@ -292,7 +292,7 @@ void rschlatherexact(double *coord, int *nObs, int *nSite, int *dim,
     for (int l=0;l<neffSite;l++)
       for (int m=l;m<neffSite;m++)
 	scalemat[l + m * neffSite] = scalemat[m + l * neffSite] =
-	  (covmat[l + m * neffSite] - covmat[j + l * neffSite] * covmat[j + m * neffSite]);
+	  (covmat[l + m * neffSite] - covmat[j + l * neffSite] * covmat[j + m * neffSite]) / 2.0;
 
     // By construction this matrix is singular since the j-th row is 0
     // so we regularize it
@@ -320,8 +320,9 @@ void rschlatherexact(double *coord, int *nObs, int *nSite, int *dim,
 
 	F77_CALL(dtrmv)("U", "T", "N", &neffSite, scalemat, &neffSite, gp, &oneInt);
 
+	double scale = sqrt(2 / rchisq(2));
 	for (int l=0;l<neffSite;l++)
-	  gp[l] = mu[l] + gp[l];
+	  gp[l] = mu[l] + gp[l] * scale;
 
 	// Update the max-stable realization (if any)
 	int valid = 1;

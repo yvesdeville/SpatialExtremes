@@ -64,7 +64,7 @@ colnames(locations) <- c("lon", "lat")
 ##Simulate a max-stable process - with unit Frechet margins
 n.obs <- 100
 data <- rmaxstab(n.obs, locations, cov.mod = "whitmat", nugget = 0, range = 1,
-smooth = 2)
+smooth = 1.75)
 
 ##Compute the F-madogram
 concprob(data, locations)
