@@ -124,7 +124,7 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
 
   /* Compute the Cholesky decomposition of the covariance matrix */
   int info = 0;
-  F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
+  F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info FCONE);
 
   if (info != 0)
     error("error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -137,7 +137,7 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
       ans[j * lagj + i * lagi] = norm_rand();
 
     F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite,
-		    ans + i * lagi, &lagj);
+		    ans + i * lagi, &lagj FCONE FCONE FCONE);
   }
 
   PutRNGstate();

@@ -96,7 +96,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     }
 
     // Finally compute its Cholesky decomposition
-    F77_CALL(dpotrf)("U", nSite, covMatChol + idxMarge * nSite2, nSite, &info);
+    F77_CALL(dpotrf)("U", nSite, covMatChol + idxMarge * nSite2, nSite, &info FCONE);
 
     if (info != 0)
       error("Impossible to get the Cholesky decomp. from the starting values\n");
@@ -128,7 +128,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     F77_CALL(dsymv)("U", nBeta + idxMarge, &one, hyperBetaIcov +
 		    cumBeta2[idxMarge], nBeta + idxMarge, hyperBetaMean +
 		    cumBeta[idxMarge], &oneInt, &zero, conjMeanCst + cumBeta[idxMarge],
-		    &oneInt);
+		    &oneInt FCONE);
 
   /*----------------------------------------------------*/
   /*                                                    */
@@ -182,9 +182,11 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 							 *nSite];
 
 	F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
-			idxMarge * nSite2, nSite, resTop, nSite);
+			idxMarge * nSite2, nSite, resTop, nSite
+			FCONE FCONE FCONE FCONE);
 	F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
-			idxMarge * nSite2, nSite, resBottom, nSite);
+			idxMarge * nSite2, nSite, resBottom, nSite
+			FCONE FCONE FCONE FCONE);
 
 	for (idxSite2=0;idxSite2<*nSite;idxSite2++){
 	  topGP += resTop[idxSite2] * resTop[idxSite2];
@@ -226,13 +228,14 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
       // Compute dummy = covMatChol^(-T) %*% dsgnMat
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, nBeta + idxMarge, &one,
-		      covMatChol + idxMarge * nSite2, nSite, dummy, nSite);
+		      covMatChol + idxMarge * nSite2, nSite, dummy, nSite
+		      FCONE FCONE FCONE FCONE);
 
       /* Compute conjCovMat = dummy^T %*% dummy + conjCovMat
 
 	 WARNING: Only the upper diagonal elements will be stored */
       F77_CALL(dsyrk)("U", "T", nBeta + idxMarge, nSite, &one, dummy, nSite,
-		      &one, conjCovMat, nBeta + idxMarge);
+		      &one, conjCovMat, nBeta + idxMarge FCONE FCONE);
 
       /* Rmk: The "real" conjugate cov. matrix is the inverse of
 	 conjCovMat but it is not necessary to compute it */
@@ -240,13 +243,14 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       //Compute its Cholesky decomposition
       memcpy(conjCovMatChol, conjCovMat, nBeta2[idxMarge] * sizeof(double));
       F77_CALL(dpotrf)("U", nBeta + idxMarge, conjCovMatChol, nBeta + idxMarge,
-		       &info);
+		       &info FCONE);
 
       // Compute dummy2 = covMatChol^(-T) %*% (locs or scales or shapes)
       double *dummy2 = malloc(*nSite * sizeof(double));
       memcpy(dummy2, gevParams + idxMarge * *nSite, *nSite * sizeof(double));
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
-		      idxMarge * nSite2, nSite, dummy2, nSite);
+		      idxMarge * nSite2, nSite, dummy2, nSite
+		      FCONE FCONE FCONE FCONE);
 
       // conjMean is the mean for the conjugate distribution i.e. MVN
       // Set conjMean = conjMeanCst := hyperBetaIcov %*% hyperBetaMean
@@ -256,11 +260,11 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
       // Compute conjMean = conjMean + dummy^T %*% dummy2 (dummy2 is a vector)
       F77_CALL(dgemv)("T", nSite, nBeta + idxMarge, &one, dummy, nSite, dummy2,
-		      &oneInt, &one, conjMean, &oneInt);
+		      &oneInt, &one, conjMean, &oneInt FCONE);
 
       // Compute conjMean = conjCovMat^(-1) %*% conjMean
       F77_CALL(dposv)("U", nBeta + idxMarge, &oneInt, conjCovMat, nBeta +
-		      idxMarge, conjMean, nBeta + idxMarge, &info);
+		      idxMarge, conjMean, nBeta + idxMarge, &info FCONE);
 
       /* The new state is a realisation from the MVN(conjMean,
 	 conjCovMat) so we simulate it from the Cholesky
@@ -285,7 +289,8 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	 Therefore we can use iSigma_*^(-1) for the simulation. */
       F77_CALL(dtrsm)("L", "U", "N", "N", nBeta + idxMarge, &oneInt,
 		      &one, conjCovMatChol, nBeta + idxMarge, stdNormal,
-		      nBeta + idxMarge);
+		      nBeta + idxMarge
+		      FCONE FCONE FCONE FCONE);
 
       for (idxBeta=0;idxBeta<nBeta[idxMarge];idxBeta++)
 	beta[cumBeta[idxMarge] + idxBeta] = stdNormal[idxBeta] +
@@ -322,7 +327,8 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
       // Compute resTop = covMatChol^(-T) %*% resTop
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
-		      idxMarge * nSite2, nSite, resTop, nSite);
+		      idxMarge * nSite2, nSite, resTop, nSite
+		      FCONE FCONE FCONE FCONE);
 
       double shape = 0.5 * *nSite + hyperSill[2 * idxMarge];
       double scale = 0;
@@ -368,7 +374,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
       // Cholesky decomposition of the covariance matrices
       F77_CALL(dpotrf)("U", nSite, covMatChol + idxMarge * nSite2, nSite,
-		       &info);
+		       &info FCONE);
 
       // Compute the log of the determinant of the proposal cov. mat.
       logDet[idxMarge] = 0;
@@ -429,7 +435,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       }
 
       // Cholesky decomposition of the proposal cov. mat.
-      F77_CALL(dpotrf)("U", nSite, covMatPropChol, nSite, &info);
+      F77_CALL(dpotrf)("U", nSite, covMatPropChol, nSite, &info FCONE);
 
       if (info != 0){
 	extRates[3 + idxMarge]++;
@@ -450,9 +456,11 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       memcpy(resTop, resBottom, *nSite * sizeof(double));
 
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
-		      idxMarge * nSite2, nSite, resBottom, nSite);
+		      idxMarge * nSite2, nSite, resBottom, nSite
+		      FCONE FCONE FCONE FCONE);
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatPropChol,
-		      nSite, resTop, nSite);
+		      nSite, resTop, nSite
+		      FCONE FCONE FCONE FCONE);
 
       double top = logDetProp, bottom = logDet[idxMarge],
 	logpriorRatio = (hyperRange[2 * idxMarge] - 1) *
@@ -525,7 +533,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       }
 
       // Cholesky decomposition of the proposal cov. mat.
-      F77_CALL(dpotrf)("U", nSite, covMatPropChol, nSite, &info);
+      F77_CALL(dpotrf)("U", nSite, covMatPropChol, nSite, &info FCONE);
 
       if (info != 0){
     	extRates[6 + idxMarge]++;
@@ -546,9 +554,11 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       memcpy(resTop, resBottom, *nSite * sizeof(double));
 
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatPropChol,
-		      nSite, resTop, nSite);
+		      nSite, resTop, nSite
+		      FCONE FCONE FCONE FCONE);
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
-		      idxMarge * nSite2, nSite, resBottom, nSite);
+		      idxMarge * nSite2, nSite, resBottom, nSite
+		      FCONE FCONE FCONE FCONE);
 
       double top = logDetProp, bottom = logDet[idxMarge],
     	logpriorRatio = (hyperSmooth[2 * idxMarge] - 1) *

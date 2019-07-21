@@ -151,7 +151,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
   
   /* Compute the Cholesky decomposition of the covariance matrix */
   int info = 0;
-  F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
+  F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info FCONE);
 
   if (info != 0)
     error("error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -173,7 +173,8 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
       for (j=neffSite;j--;)
 	gp[j] = norm_rand();
       
-      F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt
+		      FCONE FCONE FCONE);
       
       nKO = neffSite;
       double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;

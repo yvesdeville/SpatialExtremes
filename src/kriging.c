@@ -55,7 +55,7 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
   /* 3. Compute the kriging weights i.e. weights = icovMat %*%
      covariances */
   F77_CALL(dsymm)("L", "U", nSite, nSiteKrig, &one, icovMat, nSite,
-		  covariances, nSite, &zero, weights, nSite);
+		  covariances, nSite, &zero, weights, nSite FCONE FCONE);
 
   free(dist); free(covariances);
   return;

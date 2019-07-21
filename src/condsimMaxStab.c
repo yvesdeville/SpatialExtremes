@@ -136,7 +136,7 @@ void pmvt(double *bounds, int *n, double *DoF, double *mu, double *scaleMat,
 
   //Compute the Cholesky decomposition of newCor
   int info = 0;
-  F77_CALL(dpotrf)("L", n, newCor, n, &info);
+  F77_CALL(dpotrf)("L", n, newCor, n, &info FCONE);
 
   if (info != 0)
     error("1. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -351,7 +351,7 @@ void getfvaluesSC(double *y, int *n, int *ntau, int *tau, double *cov,
 
   /* Get the Cholesky decomposition of this submatrix */
   int info = 0;
-  F77_CALL(dpotrf)("U", ntau, covjchol, ntau, &info);
+  F77_CALL(dpotrf)("U", ntau, covjchol, ntau, &info FCONE);
 
   if (info != 0)
     error("4. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -373,7 +373,8 @@ void getfvaluesSC(double *y, int *n, int *ntau, int *tau, double *cov,
   double *covjCholMean = malloc(*ntau * sizeof(double));
   memcpy(covjCholMean, yj, *ntau * sizeof(double));
 
-  F77_CALL(dtrsv)("U", "T", "N", ntau, covjchol, ntau, covjCholMean, &oneInt);
+  F77_CALL(dtrsv)("U", "T", "N", ntau, covjchol, ntau, covjCholMean, &oneInt
+       FCONE FCONE FCONE);
 
   double mahal = 0;
   for (int i=0;i<*ntau;i++)
@@ -413,7 +414,7 @@ void getParametersSC(int *tau, int *taubar, int *ntau, int *ntaubar, double *cov
   getSubMatrix(cov, &dim, ntau, tau, ntau, tau, covCholx);
 
   int info = 0;
-  F77_CALL(dpotrf)("U", ntau, covCholx, ntau, &info);
+  F77_CALL(dpotrf)("U", ntau, covCholx, ntau, &info FCONE);
 
   if (info != 0)
     error("0. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -453,11 +454,12 @@ void getParametersSC(int *tau, int *taubar, int *ntau, int *ntaubar, double *cov
 
   double alpha = 1;
   F77_CALL(dtrsm)("R", "U", "N", "N", ntaubar, ntau, &alpha, covCholx, ntau,
-		  dummy1, ntaubar);
+		  dummy1, ntaubar FCONE FCONE FCONE FCONE);
 
   double *dummy2 = malloc(*ntau * sizeof(double));
   memcpy(dummy2, yx, *ntau * sizeof(double));
-  F77_CALL(dtrsv)("U", "T", "N", ntau, covCholx, ntau, dummy2, &oneInt);
+  F77_CALL(dtrsv)("U", "T", "N", ntau, covCholx, ntau, dummy2, &oneInt
+		  FCONE FCONE FCONE);
 
   double beta = 0;
   /*
@@ -469,7 +471,7 @@ void getParametersSC(int *tau, int *taubar, int *ntau, int *ntaubar, double *cov
   */
 
   F77_CALL(dgemv)("N", ntaubar, ntau, &alpha, dummy1, ntaubar, dummy2, &oneInt,
-		  &beta, mu, &oneInt);
+		  &beta, mu, &oneInt FCONE);
 
   /* Compute the scale matrix:
 
@@ -507,7 +509,8 @@ void getParametersSC(int *tau, int *taubar, int *ntau, int *ntaubar, double *cov
 
   memcpy(scaleMat, covs, *ntaubar * *ntaubar * sizeof(double));
   F77_CALL(dsyrk)("U", "N", ntaubar, ntau, &minusMahal, dummy1, ntaubar,
-		  &mahal, scaleMat, ntaubar);// Watch out only the upper part is stored.
+		  &mahal, scaleMat, ntaubar
+		  FCONE FCONE);// Watch out only the upper part is stored.
 
   // Fill the lower triangular part
   for (int i=0;i<*ntaubar;i++)
@@ -533,7 +536,7 @@ void condsimschlather(int *nsim, int *n, int *nCond, int *allPart, double *cov,
   int info = 0;
   double *covChol = malloc(*n * *n * sizeof(double));
   memcpy(covChol, cov, *n * *n * sizeof(double));
-  F77_CALL(dpotrf)("U", n, covChol, n, &info);
+  F77_CALL(dpotrf)("U", n, covChol, n, &info FCONE);
 
   if (info != 0)
     error("Error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -581,7 +584,7 @@ void condsimschlather(int *nsim, int *n, int *nCond, int *allPart, double *cov,
       memcpy(scaleMatChol, scaleMat, nr * nr * sizeof(double));
 
       int info = 0;
-      F77_CALL(dpotrf)("U", &nr, scaleMatChol, &nr, &info);
+      F77_CALL(dpotrf)("U", &nr, scaleMatChol, &nr, &info FCONE);
 
       if (info != 0)
 	error("2. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -602,7 +605,8 @@ void condsimschlather(int *nsim, int *n, int *nCond, int *allPart, double *cov,
 	for (int k=0;k<nr;k++)
 	  eps[k] = norm_rand();
 
-	F77_CALL(dtrmv)("U", "T", "N", &nr, scaleMatChol, &nr, eps, &oneInt);
+	F77_CALL(dtrmv)("U", "T", "N", &nr, scaleMatChol, &nr, eps, &oneInt
+	     FCONE FCONE FCONE);
 
 	for (int k=0;k<nr;k++)
 	  eps[k] = mu[k] + scaleFactor * eps[k];
@@ -640,7 +644,8 @@ void condsimschlather(int *nsim, int *n, int *nCond, int *allPart, double *cov,
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt
+		      FCONE FCONE FCONE);
 
       for (int j=0;j<*n;j++)
 	prop[j] *= ipoisson;
@@ -1027,7 +1032,7 @@ void totoSC(int *nsim, int *n, double *covChol, double *ans){
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt FCONE FCONE FCONE);
 
       for (int j=0;j<*n;j++)
 	prop[j] = fmax2(0, normCst * prop[j] * ipoisson);
@@ -1079,7 +1084,7 @@ void getStartingPartitionSC(int *nsim, int *n, double *covChol, int *startPart){
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt FCONE FCONE FCONE);
 
       for (int j=0;j<*n;j++)
 	prop[j] = fmax2(0, normCst * prop[j] * ipoisson);
@@ -1147,7 +1152,7 @@ void pmvnorm(double *bounds, int *n, double *cor, double *prob,
 
   //Compute the Cholesky decomposition of newCor
   int info = 0;
-  F77_CALL(dpotrf)("L", n, newCor, n, &info);
+  F77_CALL(dpotrf)("L", n, newCor, n, &info FCONE);
 
   if (info != 0)
     error("1. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -1297,7 +1302,7 @@ void computeWeightsBR(int *nCond, double *y, int *nPart, int *allPart, int *allS
       getSubMatrix(cov, nCond, &r, tau, &r, tau, covjchol);
 
       /* Get the Cholesky decomposition of this submatrix */
-      F77_CALL(dpotrf)("U", &r, covjchol, &r, &info);
+      F77_CALL(dpotrf)("U", &r, covjchol, &r, &info FCONE);
 
       if (info != 0)
 	error("4. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -1349,7 +1354,7 @@ void computeprobaBR(double *icovChol, double *mu, double *y, int *n,
 
   {
     int info = 0;
-    F77_CALL(dpotri)("U", &nr, B, &nr, &info);
+    F77_CALL(dpotri)("U", &nr, B, &nr, &info FCONE);
 
     if (info != 0)
       error("5. error code %d from Lapack routine '%s'", info, "dpotri");
@@ -1441,8 +1446,8 @@ void getfvaluesBR(double *y, double *sigma2, double *covjchol, int *r,
   memcpy(covjchol1, one, *r * sizeof(double));
   memcpy(covjcholmean, mean, *r * sizeof(double));
 
-  F77_CALL(dtrsv)("U", "T", "N", r, covjchol, r, covjchol1, &oneInt);
-  F77_CALL(dtrsv)("U", "T", "N", r, covjchol, r, covjcholmean, &oneInt);
+  F77_CALL(dtrsv)("U", "T", "N", r, covjchol, r, covjchol1, &oneInt FCONE FCONE FCONE);
+  F77_CALL(dtrsv)("U", "T", "N", r, covjchol, r, covjcholmean, &oneInt FCONE FCONE FCONE);
 
   double mahal1 = 0, mahalmean = 0, mahal1mean = 0;
   for (int i=0;i<*r;i++){
@@ -1512,7 +1517,8 @@ void getParametersBR(double *J, double *Jtilde, int *n, int *nr,
 
   alpha = 1;
   F77_CALL(dtrsm)("L", "U", "T", "N", n, nr, &alpha, covChol, n,
-		  bread, n);
+		  bread, n 
+		  FCONE FCONE FCONE FCONE);
 
   /* Finally the inverse of the covariance matrix is iB = bread^T
      %*% ham %*% bread */
@@ -1529,10 +1535,10 @@ void getParametersBR(double *J, double *Jtilde, int *n, int *nr,
 
     // Since ham is symmetric we first compute ham %*% bread
     F77_CALL(dsymm)("L", "U", n, nr, &alpha, ham, n, bread, n, &beta,
-		    dummy, n);
+		    dummy, n FCONE FCONE);
     // And then bread^T %*% dummy
     F77_CALL(dgemm)("T", "N", nr, nr, n, &alpha, bread, n, dummy,
-		    n, &beta, iB, nr);
+		    n, &beta, iB, nr  FCONE FCONE);
 
     free(dummy);
   }
@@ -1548,11 +1554,11 @@ void getParametersBR(double *J, double *Jtilde, int *n, int *nr,
   memcpy(breadr, Jtilde, *n * *n * sizeof(double));
   alpha = 1;
   F77_CALL(dtrsm)("L", "U", "T", "N", n, n, &alpha, covChol, n,
-		  breadr, n);
+		  breadr, n FCONE FCONE FCONE FCONE);
 
   /* Compute the Cholesky decomposition of iB */
   memcpy(iBchol, iB, *nr * *nr * sizeof(double));
-  F77_CALL(dpotrf)("U", nr, iBchol, nr, &info);
+  F77_CALL(dpotrf)("U", nr, iBchol, nr, &info FCONE);
 
   if (info != 0)
     error("3. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -1565,13 +1571,15 @@ void getParametersBR(double *J, double *Jtilde, int *n, int *nr,
   // First solve Y iBchol = bread, i.e., Y = bread %*% iBchol^{-1}
   alpha = 1;
   F77_CALL(dtrsm)("R", "U", "N", "N", n, nr, &alpha, iBchol, nr,
-		  breadl, n);
+		  breadl, n
+		  FCONE FCONE FCONE FCONE);
   /* Then solve X iBchol^T = Y, i.e., X = Y %*% iBchol^{-T} =
      bread %*% iBchol^{-1} %*% iBchol^{-T} = bread %*% (iBchol^T %*%
      iBchol)^{-1} = bread %*% iB^{-1} = bread %*% B */
 
   F77_CALL(dtrsm)("R", "U", "T", "N", n, nr, &alpha, iBchol, nr,
-		  breadl, n);
+		  breadl, n
+		  FCONE FCONE FCONE FCONE);
 
   /* Finally mu = breadl^T %*% (mean1 - ham %*% breadr %*% ytilde) */
   for (int k=0;k<*nr;k++)
@@ -1586,7 +1594,7 @@ void getParametersBR(double *J, double *Jtilde, int *n, int *nr,
     alpha = 1;
     beta = 0;
     F77_CALL(dgemv)("N", n, n, &alpha, breadr, n, ytilde, &oneInt, &beta,
-		    dummy1, &oneInt);
+		    dummy1, &oneInt FCONE);
 
     /* Then we compute dummy2 = mean1 - ham %*% dummy1 */
     double *dummy2 = malloc(*n * sizeof(double));
@@ -1595,13 +1603,13 @@ void getParametersBR(double *J, double *Jtilde, int *n, int *nr,
     alpha = -1;
     beta = 1;
     F77_CALL(dsymv)("U", n, &alpha, ham, n, dummy1, &oneInt, &beta,
-		    dummy2, &oneInt);
+		    dummy2, &oneInt FCONE);
 
     /* Lastly we compute mu = breadl^T %*% dummy2 */
     alpha = 1;
     beta = 0;
     F77_CALL(dgemv)("T", n, nr, &alpha, breadl, n, dummy2, &oneInt,
-		    &beta, mu, &oneInt);
+		    &beta, mu, &oneInt FCONE);
 
     free(dummy1); free(dummy2);
   }
@@ -1683,7 +1691,8 @@ void condsimbrown(int *nsim, int *n, int *nCond, int *allPart, double *covChol,
 	for (int k=0;k<nr;k++)
 	  eps[k] = norm_rand();
 
-	F77_CALL(dtrsv)("U", "N", "N", &nr, iBchol, &nr, eps, &oneInt);
+	F77_CALL(dtrsv)("U", "N", "N", &nr, iBchol, &nr, eps, &oneInt
+	     FCONE FCONE FCONE);
 
 	for (int k=0;k<nr;k++)
 	  eps[k] += mu[k];
@@ -1720,7 +1729,8 @@ void condsimbrown(int *nsim, int *n, int *nCond, int *allPart, double *covChol,
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt
+		      FCONE FCONE FCONE);
 
       for (int j=0;j<*n;j++)
 	prop[j] = prop[j] - vario[j] - log(poisson);
@@ -1814,7 +1824,8 @@ void condsimbrown2(int *nsim, int *n, int *nCond, int *allPart, double *covChol,
 	for (int k=0;k<nr;k++)
 	  eps[k] = norm_rand();
 
-	F77_CALL(dtrsv)("U", "N", "N", &nr, iBchol, &nr, eps, &oneInt);
+	F77_CALL(dtrsv)("U", "N", "N", &nr, iBchol, &nr, eps, &oneInt
+			FCONE FCONE FCONE);
 
 	for (int k=0;k<nr;k++)
 	  eps[k] += mu[k];
@@ -1859,7 +1870,7 @@ void condsimbrown2(int *nsim, int *n, int *nCond, int *allPart, double *covChol,
 
 	//Cholesky decomposition
 	int info = 0;
-	F77_CALL(dpotrf)("U", n, covShift, n, &info);
+	F77_CALL(dpotrf)("U", n, covShift, n, &info FCONE);
 
 	if (info != 0)
 	  error("Error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -1867,7 +1878,8 @@ void condsimbrown2(int *nsim, int *n, int *nCond, int *allPart, double *covChol,
 	for (int j=0;j<*n;j++)
 	  prop[j] = norm_rand();
 
-	F77_CALL(dtrmv)("U", "T", "N", n, covShift, n, prop, &oneInt);
+	F77_CALL(dtrmv)("U", "T", "N", n, covShift, n, prop, &oneInt
+	     FCONE FCONE FCONE);
 
 	poisson += nPoissSup * exp_rand();
 	for (int j=0;j<*n;j++)
@@ -2076,7 +2088,7 @@ double computeWeightForOneSetBR(int *idxSet, int *nCond, int *partition, double 
 
   /* Get the Cholesky decomposition of this submatrix */
   int info = 0;
-  F77_CALL(dpotrf)("U", &r, covjchol, &r, &info);
+  F77_CALL(dpotrf)("U", &r, covjchol, &r, &info FCONE);
 
   if (info != 0)
     error("4. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -2121,7 +2133,7 @@ void totoBR(int *nSim, int *n, double *coord, double *ans, double *range,
 
   // Compute the Cholesky decomposition
   int info = 0;
-  F77_CALL(dpotrf)("U", n, covChol, n, &info);
+  F77_CALL(dpotrf)("U", n, covChol, n, &info FCONE);
 
   if (info != 0)
     error("Error code %d in Lapack routine '%s'", info, "dpotrf");
@@ -2141,7 +2153,8 @@ void totoBR(int *nSim, int *n, double *coord, double *ans, double *range,
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt
+	   FCONE FCONE FCONE);
 
       poisson += exp_rand();
 
@@ -2203,7 +2216,7 @@ void totoBR2(int *nSim, int *n, double *coord, double *ans, double *range,
 
 	// Cholesky decomposition
 	int info = 0;
-	F77_CALL(dpotrf)("U", n, covShift, n, &info);
+	F77_CALL(dpotrf)("U", n, covShift, n, &info FCONE);
 
 	if (info != 0)
 	  error("Error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -2211,7 +2224,8 @@ void totoBR2(int *nSim, int *n, double *coord, double *ans, double *range,
 	for (int j=0;j<*n;j++)
 	  prop[j] = norm_rand();
 
-	F77_CALL(dtrmv)("U", "T", "N", n, covShift, n, prop, &oneInt);
+	F77_CALL(dtrmv)("U", "T", "N", n, covShift, n, prop, &oneInt
+	     FCONE FCONE FCONE);
 
 	poisson += nPoissSup * exp_rand();
 
@@ -2255,7 +2269,7 @@ void getStartingPartitionBR(int *nSim, int *n, double *coord, double *range, dou
 
   // Compute the Cholesky decomposition
   int info = 0;
-  F77_CALL(dpotrf)("U", n, covChol, n, &info);
+  F77_CALL(dpotrf)("U", n, covChol, n, &info FCONE);
 
   if (info != 0)
     error("Error code %d in Lapack routine '%s'", info, "dpotrf");
@@ -2278,7 +2292,8 @@ void getStartingPartitionBR(int *nSim, int *n, double *coord, double *range, dou
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt
+	   FCONE FCONE FCONE);
 
       poisson += exp_rand();
 
@@ -2432,7 +2447,7 @@ void getfvaluesExtt(double *y, int *n, int *ntau, int *tau, double *cov,
 
   /* Get the Cholesky decomposition of this submatrix */
   int info = 0;
-  F77_CALL(dpotrf)("U", ntau, covjchol, ntau, &info);
+  F77_CALL(dpotrf)("U", ntau, covjchol, ntau, &info FCONE);
 
   if (info != 0)
     error("4. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -2455,7 +2470,8 @@ void getfvaluesExtt(double *y, int *n, int *ntau, int *tau, double *cov,
   for (int i=0;i<*ntau;i++)
     covjCholMean[i] = R_pow(yj[i], 1 / *nu);
 
-  F77_CALL(dtrsv)("U", "T", "N", ntau, covjchol, ntau, covjCholMean, &oneInt);
+  F77_CALL(dtrsv)("U", "T", "N", ntau, covjchol, ntau, covjCholMean, &oneInt
+       FCONE FCONE FCONE);
 
   double mahal = 0;
 for (int i=0;i<*ntau;i++){
@@ -2488,8 +2504,7 @@ void getParametersExtt(int *tau, int *taubar, int *ntau, int *ntaubar, double *c
   getSubMatrix(cov, &dim, ntau, tau, ntau, tau, covCholx);
 
   int info = 0;
-  F77_CALL(dpotrf)("U", ntau, covCholx, ntau, &info);
-
+  F77_CALL(dpotrf)("U", ntau, covCholx, ntau, &info FCONE);
   if (info != 0)
     error("0. error code %d from Lapack routine '%s'", info, "dpotrf");
 
@@ -2528,16 +2543,18 @@ void getParametersExtt(int *tau, int *taubar, int *ntau, int *ntaubar, double *c
 
   double alpha = 1;
   F77_CALL(dtrsm)("R", "U", "N", "N", ntaubar, ntau, &alpha, covCholx, ntau,
-		  dummy1, ntaubar);
+		  dummy1, ntaubar
+		  FCONE FCONE FCONE FCONE);
 
   double *dummy2 = malloc(*ntau * sizeof(double));
   for (int i=0;i<*ntau;i++)
     dummy2[i] = R_pow(y[i], 1 / *nu);
-  F77_CALL(dtrsv)("U", "T", "N", ntau, covCholx, ntau, dummy2, &oneInt);
+  F77_CALL(dtrsv)("U", "T", "N", ntau, covCholx, ntau, dummy2, &oneInt
+		  FCONE FCONE FCONE);
 
   double beta = 0;
   F77_CALL(dgemv)("N", ntaubar, ntau, &alpha, dummy1, ntaubar, dummy2, &oneInt,
-		  &beta, mu, &oneInt);
+		  &beta, mu, &oneInt FCONE);
 
   /* Compute the scale matrix:
 
@@ -2575,7 +2592,8 @@ void getParametersExtt(int *tau, int *taubar, int *ntau, int *ntaubar, double *c
 
   memcpy(scaleMat, covs, *ntaubar * *ntaubar * sizeof(double));
   F77_CALL(dsyrk)("U", "N", ntaubar, ntau, &minusMahal, dummy1, ntaubar,
-		  &mahal, scaleMat, ntaubar);// Watch out only the upper part is stored.
+		  &mahal, scaleMat, ntaubar
+		  FCONE FCONE);// Watch out only the upper part is stored.
 
   // Fill the lower triangular part
   for (int i=0;i<*ntaubar;i++)
@@ -2601,7 +2619,7 @@ void condsimextt(int *nsim, int *n, int *nCond, int *allPart, double *nu,
   int info = 0;
   double *covChol = malloc(*n * *n * sizeof(double));
   memcpy(covChol, cov, *n * *n * sizeof(double));
-  F77_CALL(dpotrf)("U", n, covChol, n, &info);
+  F77_CALL(dpotrf)("U", n, covChol, n, &info FCONE);
 
   if (info != 0)
     error("Error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -2649,7 +2667,7 @@ void condsimextt(int *nsim, int *n, int *nCond, int *allPart, double *nu,
       memcpy(scaleMatChol, scaleMat, nr * nr * sizeof(double));
 
       int info = 0;
-      F77_CALL(dpotrf)("U", &nr, scaleMatChol, &nr, &info);
+      F77_CALL(dpotrf)("U", &nr, scaleMatChol, &nr, &info FCONE);
 
       if (info != 0)
 	error("2. error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -2670,7 +2688,8 @@ void condsimextt(int *nsim, int *n, int *nCond, int *allPart, double *nu,
 	for (int k=0;k<nr;k++)
 	  eps[k] = norm_rand();
 
-	F77_CALL(dtrmv)("U", "T", "N", &nr, scaleMatChol, &nr, eps, &oneInt);
+	F77_CALL(dtrmv)("U", "T", "N", &nr, scaleMatChol, &nr, eps, &oneInt
+			FCONE FCONE FCONE);
 
 	for (int k=0;k<nr;k++)
 	  eps[k] = R_pow(fmax2(0, mu[k] + scaleFactor * eps[k]), *nu);
@@ -2709,7 +2728,8 @@ void condsimextt(int *nsim, int *n, int *nCond, int *allPart, double *nu,
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt
+		      FCONE FCONE FCONE);
 
       for (int j=0;j<*n;j++)
 	prop[j] = ipoisson * R_pow(fmax(0, prop[j]), *nu);
@@ -2938,7 +2958,8 @@ void totoExtt(int *nsim, int *n, double *nu, double *covChol, double *ans){
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt
+		      FCONE FCONE FCONE);
 
       for (int j=0;j<*n;j++)
 	prop[j] = normCst * ipoisson * R_pow(fmax2(0, prop[j]), *nu);
@@ -2990,7 +3011,8 @@ void getStartingPartitionExtt(int *nsim, int *n, double *nu, double *covChol,
       for (int j=0;j<*n;j++)
 	prop[j] = norm_rand();
 
-      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt);
+      F77_CALL(dtrmv)("U", "T", "N", n, covChol, n, prop, &oneInt
+		      FCONE FCONE FCONE);
 
       for (int j=0;j<*n;j++)
 	prop[j] = ipoisson * R_pow(fmax2(0, prop[j]), *nu);

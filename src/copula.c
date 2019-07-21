@@ -193,7 +193,7 @@ double gaussianCopula(double *data, double sd, double *covMat, int nObs,
   double ans = 0, logDet = 0, one = 1;
 
   // Cholesky decomposition
-  F77_CALL(dpotrf)("U", &nSite, covMat, &nSite, &info);
+  F77_CALL(dpotrf)("U", &nSite, covMat, &nSite, &info FCONE);
 
   if (info != 0)
     return MINF;
@@ -213,7 +213,8 @@ double gaussianCopula(double *data, double sd, double *covMat, int nObs,
       dummy[j] = data[i + j * nObs];
 
     F77_CALL(dtrsm)("L", "U", "T", "N", &nSite, &oneInt, &one, covMat,
-		    &nSite, dummy, &nSite);
+		    &nSite, dummy, &nSite
+		    FCONE FCONE FCONE FCONE);
 
     for (int j=0;j<nSite;j++)
       ans -= 0.5 * dummy[j] * dummy[j];
@@ -236,7 +237,7 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
   double logDet = 0, one = 1, iDoF = 1 / DoF;
 
   // Cholesky decomposition
-  F77_CALL(dpotrf)("U", &nSite, covMat, &nSite, &info);
+  F77_CALL(dpotrf)("U", &nSite, covMat, &nSite, &info FCONE);
 
   if (info != 0)
     return MINF;
@@ -258,7 +259,8 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
       dummy[j] = data[i + j * nObs];
 
     F77_CALL(dtrsm)("L", "U", "T", "N", &nSite, &oneInt, &one, covMat,
-		    &nSite, dummy, &nSite);
+		    &nSite, dummy, &nSite
+		    FCONE FCONE FCONE FCONE);
 
     for (int j=0;j<nSite;j++)
       dummy2 += dummy[j] * dummy[j];

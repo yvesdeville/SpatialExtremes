@@ -1,6 +1,7 @@
 #ifdef _OPENMP
 # include <omp.h>
 #endif
+#define USE_FC_LEN_T
 #include <R.h>
 #include <Rmath.h>
 #include <Rinternals.h>

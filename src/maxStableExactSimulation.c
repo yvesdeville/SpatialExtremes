@@ -45,7 +45,7 @@ void rbrownexact(double *coord, int *nObs, int *nSite, int *dim,
 
   /* Compute the Cholesky decomposition of the covariance matrix once for all */
   int info = 0;
-  F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
+  F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info FCONE);
 
   if (info != 0)
     error("error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -85,7 +85,9 @@ void rbrownexact(double *coord, int *nObs, int *nSite, int *dim,
 	for (int l=0;l<neffSite;l++)
 	  gp[l] = norm_rand();
 
-	F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
+	F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt
+
+			FCONE FCONE FCONE);
 
 	double dummy = gp[j];
 	for (int l=0;l<neffSite;l++)
@@ -185,7 +187,7 @@ void rextremaltexact(double *coord, int *nObs, int *nSite, int *dim,
 
     // Compute the Cholesky decomposition of this matrix
     int info = 0;
-    F77_CALL(dpotrf)("U", &neffSite, scalemat, &neffSite, &info);
+    F77_CALL(dpotrf)("U", &neffSite, scalemat, &neffSite, &info FCONE);
 
     if (info != 0)
       error("error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -204,7 +206,8 @@ void rextremaltexact(double *coord, int *nObs, int *nSite, int *dim,
 	for (int l=0;l<neffSite;l++)
 	  gp[l] = norm_rand();
 
-	F77_CALL(dtrmv)("U", "T", "N", &neffSite, scalemat, &neffSite, gp, &oneInt);
+	F77_CALL(dtrmv)("U", "T", "N", &neffSite, scalemat, &neffSite, gp, &oneInt
+			FCONE FCONE FCONE);
 
 	double scale = sqrt((1 + *DoF) / rchisq(1 + *DoF));
 	for (int l=0;l<neffSite;l++)
@@ -300,7 +303,7 @@ void rschlatherexact(double *coord, int *nObs, int *nSite, int *dim,
 
     // Compute the Cholesky decomposition of this matrix
     int info = 0;
-    F77_CALL(dpotrf)("U", &neffSite, scalemat, &neffSite, &info);
+    F77_CALL(dpotrf)("U", &neffSite, scalemat, &neffSite, &info FCONE);
 
     if (info != 0)
       error("error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -318,7 +321,8 @@ void rschlatherexact(double *coord, int *nObs, int *nSite, int *dim,
 	for (int l=0;l<neffSite;l++)
 	  gp[l] = norm_rand();
 
-	F77_CALL(dtrmv)("U", "T", "N", &neffSite, scalemat, &neffSite, gp, &oneInt);
+	F77_CALL(dtrmv)("U", "T", "N", &neffSite, scalemat, &neffSite, gp, &oneInt
+	     FCONE FCONE FCONE);
 
 	double scale = sqrt(2 / rchisq(2));
 	for (int l=0;l<neffSite;l++)
