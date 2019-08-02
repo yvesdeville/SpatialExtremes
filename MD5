@@ -1,5 +1,5 @@
 bfa59326ed0556ec8732c5503324bb93 *ChangeLog
-8b0f0c234913c28a86ad44a47e2e9e8e *DESCRIPTION
+271fc7e2c69e39692a49e18a385f2448 *DESCRIPTION
 4bbab8c0e750e8f02b7f66e0e878c20e *NAMESPACE
 907ec1c8051666cf26c2b99e6fab0945 *NEWS
 5a2a1319bb7ab91e26b47b6a424a749c *R/brownresnick.R
@@ -119,7 +119,7 @@ b093bc12b26fa8f5dde2738da21eabcc *src/extcoeff.c
 27415ee60486e1dcbbee0211678e6578 *src/fft.c
 c36a74428e86769097617c0732a36a1c *src/fitcovmat.c
 d003bb14887441b358c3fc77f4b180fd *src/geomgauss.c
-f86cd165877b9435cd98386a0b592d36 *src/header.h
+7972b035f6b7c5c7c72492f6c387e0e5 *src/header.h
 c5e056fe81787be9a46d6fe5bccce699 *src/init.c
 b79c840cd4562cc5a550cd60547ce3e3 *src/kriging.c
 78cd807452761a39cf9251426511165c *src/latentVariable.c

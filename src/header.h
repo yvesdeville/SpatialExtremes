@@ -6,6 +6,9 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 #include <R_ext/Lapack.h>
+#ifndef FCONE
+# define FCONE
+#endif
 //#include <R_ext/Applic.h>
 #include <R_ext/Utils.h>
 #include <time.h>
