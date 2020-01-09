@@ -1,6 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995--2013	R Core Team
+ *  Copyright (C) 1998--2019  The R Core Team
+ *  Copyright (C) 1995, 1996, 1997  Robert Gentleman and Ross Ihaka
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,12 +15,16 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, a copy is available at
- *  http://www.r-project.org/Licenses/
+ *  https://www.R-project.org/Licenses/
  */
 
-#include "header.h"
+#include <limits.h> /* for INT_MAX */
+#include <stddef.h> /* for size_t */
 #include <stdlib.h> /* for abs */
 #include <math.h>
+#include <Rmath.h> /* for imax2(.),..*/
+
+// #include "header.h"
 
 /*  Fast Fourier Transform
  *
@@ -28,7 +33,8 @@
  *
  *  I have translated them to C and moved the memory allocation
  *  so that it takes place under the control of the algorithm
- *  which calls these; for R, see src/library/stats/src/fourier.c
+ *  which calls these; for R, see ./fourier.c
+                                  ~~~~~~~~~~~
  *
  *  void fft_factor(int n, int *maxf, int *maxp)
  *
@@ -111,6 +117,8 @@
  * nfac[15] (array) is working storage for factoring n.	 the smallest
  *	number exceeding the 15 locations provided is 12,754,584.
  *
+ * Update in R 3.1.0: nfac[20], increased array size. It is now possible to
+ * factor any positive int n, up to 2^31 - 1.
  */
 
 static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
@@ -133,9 +141,9 @@ static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
     int k, k1, k2, k3=0, k4, kk, klim, ks, kspan, kspnn;
     int lim, maxf, mm, nn, nt;
 
-    a--; b--; at--; ck--; bt--; sk--;
-    np--;
-    nfac--;/*the global one!*/
+    // converted from Fortran, so 1-based indexing
+    a--; b--; at--; ck--; bt--; sk--; np--;
+    // nfac has had indexing converted to avoid compiler warnings
 
     inc = abs(isn);
     nt = inc*ntot;
@@ -153,7 +161,7 @@ static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
 #ifdef SCALING
 	/* scale by 1/n for isn > 0 */
 	ak = 1.0/n;
-	for(j=1 ; j<=nt ; j+=inc) {
+	for(j = 1 ; j <= nt ; j += inc) {
 	    a[j] *= ak;
 	    b[j] *= ak;
 	}
@@ -170,8 +178,8 @@ static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
     klim = lim*jc;
     i = 0;
     jf = 0;
-    maxf = nfac[m - kt];
-    if(kt > 0) maxf = imax2(nfac[kt],maxf);
+    maxf = nfac[m - kt - 1];
+    if(kt > 0) maxf = imax2(nfac[kt-1], maxf);
 
 	/* compute fourier transform */
 
@@ -182,7 +190,7 @@ L_start:
     sd = sin(dr*rad);
     kk = 1;
     i++;
-    if( nfac[i] != 2) goto L110;
+    if( nfac[i-1] != 2) goto L110;
 
 /* transform for factor of 2 (including rotation factor) */
 
@@ -281,7 +289,7 @@ L100:
 /* transform for factor of 4 */
 
 L110:
-    if( nfac[i] != 4) goto L_f_odd;
+    if( nfac[i-1] != 4) goto L_f_odd;
     kspnn = kspan;
     kspan /= 4;
 L120:
@@ -418,7 +426,7 @@ L220:
 /* transform for odd factors */
 
 L_f_odd:
-    k = nfac[i];
+    k = nfac[i-1];
     kspnn = kspan;
     kspan /= k;
     if(k == 3) goto L100;
@@ -474,7 +482,7 @@ L270:
     aj = 0.0;
     bj = 0.0;
     k = 1;
-    for(k=2; k < jf; k++) {
+    for(k = 2; k < jf; k++) {
 	ak += at[k]*ck[jj];
 	bk += bt[k]*ck[jj];
 	k++;
@@ -558,8 +566,8 @@ L_fin:
     if( m < k) k--;
     np[k+1] = jc;
     for(j = 1; j < k; j++, k--) {
-	np[j+1] = np[j]/nfac[j];
-	np[k] = np[k+1]*nfac[j];
+	np[j+1] = np[j]/nfac[j-1];
+	np[k] = np[k+1]*nfac[j-1];
     }
     k3 = np[k+1];
     kspan = np[2];
@@ -628,11 +636,11 @@ L440:
 
     /* Here, nfac[] is overwritten... -- now CUMULATIVE ("cumprod") factors */
     nn = m - kt;
-    nfac[nn+1] = 1;
+    nfac[nn] = 1;
     for(j = nn; j > kt; j--)
-	nfac[j] *= nfac[j+1];
+	nfac[j-1] *= nfac[j];
     kt++;
-    nn = nfac[kt] - 1;
+    nn = nfac[kt-1] - 1;
     jj = 0;
     j = 0;
     goto L480;
@@ -640,15 +648,15 @@ L460:
     jj -= k2;
     k2 = kk;
     k++;
-    kk = nfac[k];
+    kk = nfac[k-1];
 L470:
     jj += kk;
     if( jj >= k2) goto L460;
     np[j] = jj;
 L480:
-    k2 = nfac[kt];
+    k2 = nfac[kt-1];
     k = kt + 1;
-    kk = nfac[k];
+    kk = nfac[k-1];
     j++;
     if( j <= nn) goto L470;
 
@@ -680,7 +688,7 @@ L520:
     k = np[j];
     kk = jc*k + i + jj;
 
-    for(k1= kk + kspan, k2= 1; k1 != kk;
+    for(k1 = kk + kspan, k2 = 1; k1 != kk;
 	k1 -= inc, k2++) {
 	at[k2] = a[k1];
 	bt[k2] = b[k1];
@@ -699,7 +707,7 @@ L520:
 	kk = k2;
     } while(k != j);
 
-    for(k1= kk + kspan, k2= 1; k1 > kk;
+    for(k1 = kk + kspan, k2 = 1; k1 > kk;
 	k1 -= inc, k2++) {
 	a[k1] = at[k2];
 	b[k1] = bt[k2];
@@ -717,15 +725,15 @@ L570:
 
 static int old_n = 0;
 
-static int nfac[15];
+static int nfac[20];
 static int m_fac;
 static int kt;
 static int maxf;
 static int maxp;
 
-/* At the end of factorization,	 
+/* At the end of factorization,
  *	nfac[]	contains the factors,
- *	m_fac	contains the number of factors and 
+ *	m_fac	contains the number of factors and
  *	kt	contains the number of square factors  */
 
 /* non-API, but used by package RandomFields */
@@ -740,9 +748,9 @@ void fft_factor(int n, int *pmaxf, int *pmaxp)
  * If *pmaxf == 0, there was an error, the error type is indicated by *pmaxp:
  *
  *  If *pmaxp == 0  There was an illegal zero parameter among nseg, n, and nspn.
- *  If *pmaxp == 1  There we more than 15 factors to ntot.  */
+ *  If *pmaxp == 1  There were more than 20 factors to ntot.  */
 
-    int j, jj, k;
+    int j, jj, k, sqrtk, kchanged;
 
 	/* check series length */
 
@@ -769,10 +777,18 @@ void fft_factor(int n, int *pmaxf, int *pmaxp)
     }
 
     /* extract 3^2, 5^2, ... */
-    for(j = 3; (jj= j*j) <= k; j += 2) {
+    kchanged = 0;
+    sqrtk = (int)sqrt(k);
+    for(j = 3; j <= sqrtk; j += 2) {
+	jj = j * j;
 	while(k % jj == 0) {
 	    nfac[m_fac++] = j;
 	    k /= jj;
+	    kchanged = 1;
+	}
+	if (kchanged) {
+	    kchanged = 0;
+	    sqrtk = (int)sqrt(k);
 	}
     }
 
@@ -797,6 +813,8 @@ void fft_factor(int n, int *pmaxf, int *pmaxp)
 		nfac[m_fac++] = j;
 		k /= j;
 	    }
+	    if (j > INT_MAX - 2)
+		break;
 	    j = ((j+1)/2)*2 + 1;
 	}
 	while(j <= k);
@@ -804,7 +822,7 @@ void fft_factor(int n, int *pmaxf, int *pmaxp)
 
     if (m_fac <= kt+1)
 	maxp = m_fac+kt+1;
-    if (m_fac+kt > 15) {		/* error - too many factors */
+    if (m_fac+kt > 20) {		/* error - too many factors */
 	old_n = 0; *pmaxf = 0; *pmaxp = 0;
 	return;
     }
@@ -828,8 +846,6 @@ void fft_factor(int n, int *pmaxf, int *pmaxp)
 Rboolean fft_work(double *a, double *b, int nseg, int n, int nspn, int isn,
 		  double *work, int *iwork)
 {
-    int nf, nspan, ntot;
-
 	/* check that factorization was successful */
 
     if(old_n == 0) return FALSE;
@@ -841,12 +857,11 @@ Rboolean fft_work(double *a, double *b, int nseg, int n, int nspn, int isn,
 
 	/* perform the transform */
 
-    nf = n;
-    nspan = nf * nspn;
-    ntot = nspan * nseg;
+    size_t mf = maxf;
+    int nspan = n * nspn, ntot = nspan * nseg;
 
-    fftmx(a, b, ntot, nf, nspan, isn, m_fac, kt,
-	  &work[0], &work[maxf], &work[2*maxf], &work[3*maxf],
+    fftmx(a, b, ntot, n, nspan, isn, m_fac, kt,
+	  work, work+mf, work+2*mf, work+3*mf,
 	  iwork, nfac);
 
     return TRUE;

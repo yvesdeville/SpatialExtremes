@@ -1,5 +1,5 @@
 bfa59326ed0556ec8732c5503324bb93 *ChangeLog
-271fc7e2c69e39692a49e18a385f2448 *DESCRIPTION
+671f47b2d94d1209831f15fb5cf26fcd *DESCRIPTION
 4bbab8c0e750e8f02b7f66e0e878c20e *NAMESPACE
 907ec1c8051666cf26c2b99e6fab0945 *NEWS
 5a2a1319bb7ab91e26b47b6a424a749c *R/brownresnick.R
@@ -116,7 +116,7 @@ c34a91bdc2b3874db8c987973246cdf5 *src/covariance.c
 c83936a80dae32a3c0615cacf2ed4020 *src/direct.c
 b093bc12b26fa8f5dde2738da21eabcc *src/extcoeff.c
 421c7e8824006c4053780debbabf15c2 *src/extremalt.c
-27415ee60486e1dcbbee0211678e6578 *src/fft.c
+068e9eb89ee7aeff26b1b809535b41b4 *src/fft.c
 c36a74428e86769097617c0732a36a1c *src/fitcovmat.c
 d003bb14887441b358c3fc77f4b180fd *src/geomgauss.c
 7972b035f6b7c5c7c72492f6c387e0e5 *src/header.h
