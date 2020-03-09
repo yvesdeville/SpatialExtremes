@@ -50,12 +50,13 @@ static const R_CMethodDef CEntries[] = {
     {"gibbsForPartExtt",         (DL_FUNC) &gibbsForPartExtt,         10},
     {"gibbsForPartSC",           (DL_FUNC) &gibbsForPartSC,            9},
     {"gpdlik",                   (DL_FUNC) &gpdlik,                    6},
-    {"latentgev",                (DL_FUNC) &latentgev,                29},
+    {"latentgev",                (DL_FUNC) &latentgev,                30},
     {"listAllPartOfASet",        (DL_FUNC) &listAllPartOfASet,         4},
     {"lmadogram",                (DL_FUNC) &lmadogram,                 6},
     {"madogram",                 (DL_FUNC) &madogram,                  4},
     {"maxLinDsgnMat",            (DL_FUNC) &maxLinDsgnMat,             8},
     {"maxLinear",                (DL_FUNC) &maxLinear,                 7},
+    {"pmvnorm2",                 (DL_FUNC) &pmvnorm2,                  6},
     {"rbrowndirect",             (DL_FUNC) &rbrowndirect,             15},
     {"rbrownexact",              (DL_FUNC) &rbrownexact,               8},
     {"rcondMaxLin",              (DL_FUNC) &rcondMaxLin,               6},
@@ -89,6 +90,7 @@ static const R_CMethodDef CEntries[] = {
     {"tbm",                      (DL_FUNC) &tbm,                      12},
     {"vandercorput",             (DL_FUNC) &vandercorput,              2},
     {"variogram",                (DL_FUNC) &variogram,                 4},
+    {"rhitscenbrown",            (DL_FUNC) &rhitscenbrown,             9},
     {NULL, NULL, 0}
 };
 

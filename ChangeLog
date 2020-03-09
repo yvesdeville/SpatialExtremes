@@ -1,3 +1,66 @@
+2018-07-02 11:52  mathieu_ribatet
+
+	* NAMESPACE: Import model.frame and na.pass from 'stats'
+
+2018-06-20 11:28  mathieu_ribatet
+
+	* R/utils.R, src/utils.c: Allows NA values in predictions. Thanks
+	  to Joel Zeder for finding this gap ;-)
+
+2018-05-28 11:15  mathieu_ribatet
+
+	* NAMESPACE, R/methods.R, R/predict.R, R/psplines.R,
+	  man/predict.Rd, man/print.Rd, vignettes/SpatialExtremesGuide.Rnw:
+	  Rename pspline methods to pspline2 (issue with another package)
+
+2018-05-28 11:09  mathieu_ribatet
+
+	* R/modeldef.R: Fix a bug with the design matrix when there are
+	  missing values. Thanks to Joel Zeder!
+
+2018-05-28 09:10  mathieu_ribatet
+
+	* src/maxStableExactSimulation.c: Fix a bug for the exact
+	  simulation from Schlather process. Thanks to Alec Stephenson for
+	  this bug hunt!!!
+
+2018-01-05 12:58  mathieu_ribatet
+
+	* DESCRIPTION, NEWS: Fix some warnings that appear with a new
+	  release of R.
+
+2018-01-05 12:56  mathieu_ribatet
+
+	* R/selection.R, R/smith.R, vignettes/SpatialExtremes.sty,
+	  vignettes/SpatialExtremesGuide.Rnw: Fix some warnings that appear
+	  with a new release of R.
+
+2017-12-12 11:17  mathieu_ribatet
+
+	* src/condsimMaxStab.c: Free some "unfreed" objects--sorry about
+	  that memory ;-)
+
+2017-09-15 11:16  mathieu_ribatet
+
+	* DESCRIPTION, NEWS, R/modelChecking.R, R/simmaxstab.R: Fix a bug
+	  with the simulation from geometric processes. Thanks Zhuo Wang!
+
+2017-08-24 15:14  mathieu_ribatet
+
+	* R/simmaxstab.R: Fix a bug in allocation
+
+2017-08-24 14:56  mathieu_ribatet
+
+	* man/concprob.Rd: Update the reference article
+
+2017-08-24 14:55  mathieu_ribatet
+
+	* man/concprob.Rd: Change the example (now nicer)
+
+2017-08-24 14:46  mathieu_ribatet
+
+	* ChangeLog: Update ChangeLog
+
 2017-08-24 14:44  mathieu_ribatet
 
 	* DESCRIPTION, NEWS, src/madogram.c, src/pairwiselik.c: Use OpenMP
@@ -98,9 +161,9 @@
 	  man/concurrencemap.Rd, src/concurrence.c, src/header.h: Add the
 	  exact simulation for max-stable processes and a fix for
 	  Brown-Resnick processes.
-	  
+
 	  Allows for parallelization throughout the code whenever possible
-	  
+
 	  Add the computation of standard errors for the concurrence
 	  probabilities
 

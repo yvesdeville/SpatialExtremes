@@ -6,10 +6,10 @@ extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
   if (!missing(fitted)){
     if (all(class(fitted) != "maxstab"))
       stop("The 'extcoeff' function is only available for object of class 'maxstab'")
-  
+
     if (ncol(fitted$coord) > 2)
       stop("It's not possible to use this function when the coordinate space has a dimension > 2")
-  
+
     model <- fitted$model
     extCoeff <- fitted$ext.coeff
     param <- fitted$param
@@ -21,21 +21,21 @@ extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
   else{
     if (length(param) != 3)
       stop("You must specify all parameters in the Smith's or Schalther's model")
-  
+
     if (cov.mod == "gauss"){
       model <- "Smith"
       names(param) <- c("cov11", "cov12", "cov22")
       Sigma <- matrix(c(param[1:2], param[2:3]), 2, 2)
       iSigma <- try(solve(Sigma), silent = TRUE)
-      
+
       if (!is.matrix(iSigma) || (det(Sigma) <= 0) ||
           (param[1] <= 0))
         stop("You defined a non semi-definite positive matrix")
-      
+
       extCoeff <- function(h)
         2 * pnorm(0.5 * sqrt(h %*% iSigma %*% h))
     }
-    
+
     else{
       model <- "Schlather"
       names(param) <- c("nugget", "range", "smooth")
@@ -45,12 +45,12 @@ extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
                                          cov.mod = cov.mod, plot = FALSE, dist = h)))
     }
   }
-  
+
   ##Define an appropriate range for the x-y axis
   if (model == "Smith"){
     A <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
                   param["cov22"]), 2, 2)
-    
+
     eigen.values <- eigen(solve(A))
     eigen.vectors <- eigen.values$vectors
     eigen.values <- eigen.values$values
@@ -61,10 +61,10 @@ extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
 
     x.max <- max(abs(axis1[1]), abs(axis2[1]))
     y.max <- max(abs(axis1[2]), abs(axis2[2]))
-    
+
     x.range <- 1.3 * c(-x.max, x.max)
     y.range <- 1.3 * c(-y.max, y.max)
-    
+
   }
 
   if (model == "Schlather"){
@@ -77,7 +77,7 @@ extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
       else
         h^2
     }
-    
+
     opt1 <- optimize(fun, c(0, 100 * param[2]))$minimum
     y.range <- x.range <- c(-abs(opt1), abs(opt1))
   }
@@ -121,10 +121,10 @@ extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
 
   if (missing(ylab))
     ylab <- coord.names[2]
-  
+
   contour(xs, ys, extcoeff.hat, xlab = xlab, ylab = ylab, ...)
 }
-    
+
 map <- function(fitted, x, y, covariates = NULL, param = "quant",
                 ret.per = 100, col = terrain.colors(64),
                 plot.contour = TRUE, ...){
@@ -137,7 +137,7 @@ map <- function(fitted, x, y, covariates = NULL, param = "quant",
 
   if (is.null(covariates) && !is.null(fitted$marg.cov))
     stop("Your model seems to make use of covariate but you supplied none")
-  
+
   if (!is.null(covariates)){
     if (missing(x) || missing(y))
       stop("if 'covariates' is supplied 'x' and 'y' must be too")
@@ -155,7 +155,7 @@ map <- function(fitted, x, y, covariates = NULL, param = "quant",
       stop("Some required covariates are missing. Please check")
 
     dim.cov <- dim(covariates)
-    
+
     if ((dim.cov[1] != length(x)) || (dim.cov[2] != length(y)))
       stop("'covariates' doesn't match with 'x' and 'y'")
   }
@@ -214,7 +214,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
 
   if (is.null(covariates) && !is.null(fitted$marg.cov))
     stop("Your model seems to make use of covariate but you supplied none")
-  
+
   if (!is.null(covariates)){
     if (missing(x) || missing(y))
       stop("if 'covariates' is supplied 'x' and 'y' must be too")
@@ -232,7 +232,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
       stop("Some required covariates are missing. Please check")
 
     dim.cov <- dim(covariates)
-    
+
     if ((dim.cov[1] != length(x)) || (dim.cov[2] != length(y)))
       stop("'covariates' doesn't match with 'x' and 'y'")
   }
@@ -252,7 +252,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
 
   if (any(x == fix.coord[1]) & any(y == fix.coord[2]))
     stop("'fix.coord' belongs to your grid. This is not possible!")
-  
+
   n.x <- length(x)
   n.y <- length(y)
 
@@ -284,7 +284,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
       a <- sqrt(delta %*% iSigma %*% delta)
       ans[i] <- uniroot(cond.prob, c(1e-4, 1e5))$root
     }
-  }    
+  }
 
   if (fitted$model == "Schlather"){
     cond.prob <- function(z2)
@@ -297,13 +297,13 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
       h <- sqrt(sum((fix.coord - new.data[i,1:2])^2))
       ans[i] <- uniroot(cond.prob, c(1e-4, 1e5))$root
     }
-  }    
+  }
 
   if (fitted$model == "Geometric"){
     cond.prob <- function(z2){
       c1 <-  0.5 * a + log(z2/z1)  /a
       c2 <- a - c1
-      
+
       - 1/ret.per2 + ret.per1 * (1 / ret.per1 - exp(-1/z2) +
                                  exp(-pnorm(c1) / z1 - pnorm(c2) / z2))
     }
@@ -319,7 +319,7 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
     cond.prob <- function(z2){
       c1 <-  0.5 * a + log(z2/z1)  /a
       c2 <- a - c1
-      
+
       - 1/ret.per2 + ret.per1 * (1 / ret.per1 - exp(-1/z2) +
                                  exp(-pnorm(c1) / z1 - pnorm(c2) / z2))
     }
@@ -330,10 +330,10 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
       ans[i] <- uniroot(cond.prob, c(1e-4, 1e5))$root
     }
   }
-  
+
   ans <- matrix(.frech2gev(ans, param[,"loc"], param[,"scale"], param[,"shape"]),
                 n.x, n.y, byrow = TRUE)
-  
+
   image(x, y, ans, ..., col = col)
 
   if (plot.contour)
@@ -355,7 +355,7 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
 
   if (is.null(covariates) && !is.null(fitted$marg.cov))
     stop("Your model seems to make use of covariate but you supplied none")
-  
+
   if (!is.null(covariates)){
     if (missing(x) || missing(y))
       stop("if 'covariates' is supplied 'x' and 'y' must be too")
@@ -373,7 +373,7 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
       stop("Some required covariates are missing. Please check")
 
     dim.cov <- dim(covariates)
-    
+
     if ((dim.cov[1] != length(x)) || (dim.cov[2] != length(y)))
       stop("'covariates' doesn't match with 'x' and 'y'")
   }
@@ -442,7 +442,10 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                                  range = fitted$chain.scale[i,"range"],
                                  smooth = fitted$chain.shape[i,"smooth"], grid = TRUE,
                                  control = control)$cond.sim
-        
+
+        if (fitted$use.log.link)
+            scale <- exp(scale)
+
         flag <- all(scale > 0)
         n.trials <- n.trials + 1
 
@@ -463,7 +466,7 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                       byrow = TRUE)
       res <- as.numeric(fitted$chain.shape[i,-(1:(n.shapecoeff+3))] -
                         fitted$shape.dsgn.mat %*% fitted$chain.shape[i,1:n.shapecoeff])
-    
+
       ans[,,i] <- shape + condrgp(1, cbind(x, y), fitted$coord, res,
                                   cov.mod = fitted$cov.mod[1],
                                   sill = fitted$chain.shape[i,"sill"], range = fitted$chain.shape[i,"range"],
@@ -478,13 +481,13 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                     byrow = TRUE)
       res <- as.numeric(fitted$chain.loc[i,-(1:(n.loccoeff+3))] -
                         fitted$loc.dsgn.mat %*% fitted$chain.loc[i,1:n.loccoeff])
-      
+
       loc <- loc + condrgp(1, cbind(x, y), fitted$coord, res,
                            cov.mod = fitted$cov.mod[1],
                            sill = fitted$chain.loc[i,"sill"], range = fitted$chain.loc[i,"range"],
                            smooth = fitted$chain.loc[i,"smooth"], grid = TRUE,
                            control = control)$cond.sim
-      
+
       flag <- FALSE
       scale <- matrix(scale.dsgn.mat %*% fitted$chain.scale[i, 1:n.scalecoeff], n.x, n.y,
                         byrow = TRUE)
@@ -492,14 +495,17 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                         fitted$scale.dsgn.mat %*% fitted$chain.scale[i,1:n.scalecoeff])
 
       n.trials <- 1
-      while (!flag){        
+      while (!flag){
         scale <- scale + condrgp(1, cbind(x, y), fitted$coord, res,
                                  cov.mod = fitted$cov.mod[2],
                                  sill = fitted$chain.scale[i,"sill"],
                                  range = fitted$chain.scale[i,"range"],
                                  smooth = fitted$chain.shape[i,"smooth"], grid = TRUE,
                                  control = control)$cond.sim
-        
+
+        if (fitted$use.log.link)
+            scale <- exp(scale)
+
         flag <- all(scale > 0)
         n.trials <- n.trials + 1
 
@@ -512,13 +518,13 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
                         byrow = TRUE)
         res <- as.numeric(fitted$chain.shape[i,-(1:(n.shapecoeff+3))] -
                           fitted$shape.dsgn.mat %*% fitted$chain.shape[i,1:n.shapecoeff])
-        
+
         shape <- shape + condrgp(1, cbind(x, y), fitted$coord, res,
                                  cov.mod = fitted$cov.mod[1],
                                  sill = fitted$chain.shape[i,"sill"], range = fitted$chain.shape[i,"range"],
                                  smooth = fitted$chain.shape[i,"smooth"], grid = TRUE,
                                  control = control)$cond.sim
-        
+
         ans[,,i] <- .qgev(1 - 1 / ret.per, loc, scale, shape)
       }
 
@@ -526,7 +532,7 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
         ans[,,i] <- NA
     }
   }
-  
+
   prob.low <- (1 - level) /2
   prob.up <- 1 - prob.low
   post.sum <- ci.low <- ci.up <- matrix(NA, n.x, n.y)
@@ -539,7 +545,7 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
 
   op <- par(no.readonly = TRUE)
   layout(matrix(1:6,1), widths = rep(c(1, .4), 3))
-  
+
   for (i in 1:3){
     par(mar = rep(0.5, 4))
 
@@ -547,7 +553,7 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
     breaks <- seq(min(dummy), max(dummy), length = length(col) + 1)
     image(x, y, dummy, ..., col = col, breaks = breaks, xaxt = "n",
           yaxt = "n")
-  
+
     if (plot.contour)
       contour(x, y, dummy, add = TRUE)
 

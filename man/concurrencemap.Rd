@@ -51,7 +51,7 @@ compute.std.err = FALSE, ...)
   \code{\link{concprob}}
 }
 \examples{
-require(maps)
+##require(maps) ## <<-- to plot US borders
 data(USHCNTemp)
 coord <- as.matrix(metadata[,2:3])
 
@@ -66,7 +66,8 @@ border <- function(add = FALSE) maps::map("usa", add = add)
 
 par(mar = rep(0, 4))
 ## Produce a pairwise concurrence probability map w.r.t. station number 15
-concurrencemap(maxima.summer, coord, type = 15, plot.border = border, compute.std.err = TRUE)
+concurrencemap(maxima.summer, coord, type = 15, plot.border = border,
+ compute.std.err = TRUE)
 
 ## Produce the expected concurrence cell area
 concurrencemap(maxima.summer, coord, plot.border = border)

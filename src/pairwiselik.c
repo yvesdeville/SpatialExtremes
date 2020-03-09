@@ -166,7 +166,7 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 
   else if (alpha == 1){
     //The process is a pure noise
-    //#pragma omp parallel for reduction(+:dns)
+#pragma omp parallel for reduction(+:dns)
     for (int currentPair=0;currentPair<nPairs;currentPair++){
       int i, j;
       getSiteIndex(currentPair, nSite, &i, &j);
@@ -184,7 +184,7 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 
   else {
     //This is a mixture between noise and Schlather
-    //#pragma omp parallel for reduction(+:dns)
+#pragma omp parallel for reduction(+:dns)
     for (int currentPair=0;currentPair<nPairs;currentPair++){
       int i, j;
       getSiteIndex(currentPair, nSite, &i, &j);

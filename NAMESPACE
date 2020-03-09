@@ -1,6 +1,7 @@
 useDynLib(SpatialExtremes, .registration = TRUE, .fixes = "C_")
 
-importFrom(maps, map)
+importFrom("maps", "map")
+importFrom("fields", "Tps")
 importFrom("grDevices", "cm.colors", "terrain.colors")
 importFrom("graphics", "abline", "axis", "box", "contour", "curve",
            "filled.contour", "hist", "image", "layout", "legend",

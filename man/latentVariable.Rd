@@ -10,7 +10,7 @@
 \usage{
 latent(data, coord, cov.mod = "powexp", loc.form, scale.form,
 shape.form, marg.cov = NULL, hyper, prop, start, n = 5000, thin = 1,
-burn.in = 0)
+burn.in = 0, use.log.link = FALSE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -37,6 +37,10 @@ burn.in = 0)
     1, i.e., no thinning.}
   \item{burn.in}{An integer specifying the burnin period. The default is
     0, i.e., no burnin.}
+  \item{use.log.link}{An integer. Should a log-link function should be
+    use for the GEV scale parameters, i.e., assuming that the GEV scale
+    parameters a drawn from a log-normal process rather than a gaussian
+    process.}
 }
 \details{
   This function generates a Markov chain from the following model. For

@@ -6,7 +6,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	       double *gevParams, double *hyperSill, double *hyperRange,
 	       double *hyperSmooth, double *hyperBetaMean,
 	       double *hyperBetaIcov, double *propGev, double *propRanges,
-	       double *propSmooths, double *mcLoc, double *mcScale,
+	       double *propSmooths, int *useLogLink, double *mcLoc, double *mcScale,
 	       double *mcShape, double *accRates, double *extRates, int *thin,
 	       int *burnin){
 
@@ -138,6 +138,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
   GetRNGstate();
   while (iterThin<*n){
+    void R_CheckUserInterrupt(void);
 
     /*----------------------------------------------------*/
     /*                                                    */
@@ -173,13 +174,22 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	       *nSite + idxSite, gevParams + 2 * *nSite + idxSite, &bottomGEV);
 
 	double topGP = 0, bottomGP = 0;
-	for (idxSite2=0;idxSite2<*nSite;idxSite2++)
-	  resBottom[idxSite2] = gevParams[idxSite2 + idxMarge * *nSite] -
-	    GPmean[idxSite2 + idxMarge * *nSite];
+	if ((idxMarge==1) && (*useLogLink)){
+	  for (idxSite2=0;idxSite2<*nSite;idxSite2++)
+	    resBottom[idxSite2] = log(gevParams[idxSite2 + idxMarge * *nSite]) -
+	      GPmean[idxSite2 + idxMarge * *nSite];
+	  
+	  memcpy(resTop, resBottom, *nSite * sizeof(double));
+	  resTop[idxSite] = log(proposalGEV[idxMarge]) - GPmean[idxSite + idxMarge * *nSite];
+	} else {
+	  for (idxSite2=0;idxSite2<*nSite;idxSite2++)
+	    resBottom[idxSite2] = gevParams[idxSite2 + idxMarge * *nSite] -
+	      GPmean[idxSite2 + idxMarge * *nSite];
 
-	memcpy(resTop, resBottom, *nSite * sizeof(double));
-	resTop[idxSite] = proposalGEV[idxMarge] - GPmean[idxSite + idxMarge *
-							 *nSite];
+	  memcpy(resTop, resBottom, *nSite * sizeof(double));
+	  resTop[idxSite] = proposalGEV[idxMarge] - GPmean[idxSite + idxMarge *
+							   *nSite];
+	}
 
 	F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
 			idxMarge * nSite2, nSite, resTop, nSite
@@ -195,6 +205,11 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
 	topGP *= -0.5;
 	bottomGP *= -0.5;
+
+	if ((idxMarge==1) && (*useLogLink)){
+	  topGP -= log(proposalGEV[idxMarge]);
+	  bottomGP -= log(gevParams[*nSite + idxSite]);
+	}
 
 	if (unif_rand() < exp(topGEV - bottomGEV + topGP - bottomGP +
 			      logpropRatio)){
@@ -248,6 +263,12 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       // Compute dummy2 = covMatChol^(-T) %*% (locs or scales or shapes)
       double *dummy2 = malloc(*nSite * sizeof(double));
       memcpy(dummy2, gevParams + idxMarge * *nSite, *nSite * sizeof(double));
+
+      if ((idxMarge==1) && *useLogLink){
+	for (idxSite=0;idxSite<*nSite;idxSite++)
+	  dummy2[idxSite] = log(dummy2[idxSite]);
+      }
+      
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
 		      idxMarge * nSite2, nSite, dummy2, nSite
 		      FCONE FCONE FCONE FCONE);
@@ -321,9 +342,15 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     /*----------------------------------------------------*/
 
     for (idxMarge=0;idxMarge<3;idxMarge++){
-      for (idxSite=0;idxSite<*nSite;idxSite++)
-	resTop[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
-	  GPmean[idxSite + idxMarge * *nSite];
+      if ((idxMarge==1) && *useLogLink){
+	for (idxSite=0;idxSite<*nSite;idxSite++)
+	  resTop[idxSite] = log(gevParams[idxSite + idxMarge * *nSite]) -
+	    GPmean[idxSite + idxMarge * *nSite];
+      } else {
+	for (idxSite=0;idxSite<*nSite;idxSite++)
+	  resTop[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
+	    GPmean[idxSite + idxMarge * *nSite];
+      }
 
       // Compute resTop = covMatChol^(-T) %*% resTop
       F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
@@ -449,9 +476,15 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
       logDetProp *= 2;
 
-      for (idxSite=0;idxSite<*nSite;idxSite++)
-	resBottom[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
-	  GPmean[idxSite + idxMarge * *nSite];
+      if ((idxMarge==1) && *useLogLink){
+	for (idxSite=0;idxSite<*nSite;idxSite++)
+	  resBottom[idxSite] = log(gevParams[idxSite + idxMarge * *nSite]) -
+	    GPmean[idxSite + idxMarge * *nSite];
+      } else {
+	for (idxSite=0;idxSite<*nSite;idxSite++)
+	  resBottom[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
+	    GPmean[idxSite + idxMarge * *nSite];
+      }
 
       memcpy(resTop, resBottom, *nSite * sizeof(double));
 
@@ -547,9 +580,15 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 
       logDetProp *= 2;
 
-      for (idxSite=0;idxSite<*nSite;idxSite++)
-    	resBottom[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
-    	  GPmean[idxSite + idxMarge * *nSite];
+      if ((idxMarge==1) && *useLogLink){
+	for (idxSite=0;idxSite<*nSite;idxSite++)
+	  resBottom[idxSite] = log(gevParams[idxSite + idxMarge * *nSite]) -
+	    GPmean[idxSite + idxMarge * *nSite];
+      } else {
+	for (idxSite=0;idxSite<*nSite;idxSite++)
+	  resBottom[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
+	    GPmean[idxSite + idxMarge * *nSite];
+      }
 
       memcpy(resTop, resBottom, *nSite * sizeof(double));
 
@@ -631,7 +670,7 @@ void DIC(int *nChain, int *nSite, int *nObs, double *data, double *chainLoc,
 	 double *dbar){
 
   double tmp=0;
-  //#pragma omp parallel for reduction(+:tmp)
+#pragma omp parallel for reduction(+:tmp)
   for (int i=0;i<*nChain;i++)
     for (int j=0;j<*nSite;j++){
       double dummy = 0;
@@ -644,7 +683,7 @@ void DIC(int *nChain, int *nSite, int *nObs, double *data, double *chainLoc,
   *dbar = -2 * tmp / ((double) *nChain);
 
   tmp=0;
-  //#pragma omp parallel for reduction(+:tmp)
+#pragma omp parallel for reduction(+:tmp)
   for (int i=0;i<*nSite;i++){
     double dummy = 0;
     gevlik(data + i * *nObs, nObs, postLoc + i, postScale + i, postShape + i,

@@ -140,7 +140,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     ##Identify which simulation technique is the most adapted or use the
     ##one specified by the user --- this is useless for the Smith model.
     if (is.null(control$method)){
-        if (n.eff.site < 500)## <<-- If fixed it to 500 but need to modify it later maybe !!!
+        if (n.eff.site < 1000)## <<-- I fixed it to 1000 but need to modify it later maybe !!!
             method <- "exact"
 
         else if (grid && reg.grid)

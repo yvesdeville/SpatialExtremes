@@ -12,7 +12,7 @@
   35 by 3 matrix giving the longitude (degree), latitude (degree) and
   elevation (m).}
 \examples{
-require(maps)
+##require(maps)
 data(wind)
 par(mar = rep(0, 4))
 maps::map(xlim = c(0, 9), ylim = c(47.5, 57.5))

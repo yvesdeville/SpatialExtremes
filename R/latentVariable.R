@@ -1,6 +1,6 @@
 latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
                    shape.form, marg.cov = NULL, hyper, prop, start, n = 5000,
-                   thin = 1, burn.in = 0){
+                   thin = 1, burn.in = 0, use.log.link = FALSE){
 
     if (!(all(cov.mod %in% c("whitmat","cauchy","powexp","bessel"))))
         stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
@@ -122,9 +122,9 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
                as.double(unlist(hyper$ranges)), as.double(unlist(hyper$smooths)),
                as.double(unlist(hyper$betaMeans)), as.double(unlist(hyper$betaIcov)),
                as.double(prop$gev), as.double(prop$ranges), as.double(prop$smooths),
-               chain.loc = chain.loc, chain.scale = chain.scale,  chain.shape = chain.shape,
-               acc.rates = double(9), ext.rates = double(9), as.integer(thin),
-               burn.in = as.integer(burn.in), NAOK = TRUE)
+               as.integer(use.log.link), chain.loc = chain.loc, chain.scale = chain.scale,
+               chain.shape = chain.shape, acc.rates = double(9), ext.rates = double(9),
+               as.integer(thin), burn.in = as.integer(burn.in), NAOK = TRUE)
 
     chain.loc <- matrix(temp$chain.loc, n, byrow = TRUE)
     chain.scale <- matrix(temp$chain.scale, n, byrow = TRUE)
@@ -154,7 +154,8 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
                  acc.rates = rbind(acc.rates = acc.rates, ext.rates = ext.rates),
                  hyper = hyper, cov.mod = cov.mod, burn.in = burn.in, thin = thin,
                  data = data, coord = coord, marg.cov = marg.cov, loc.form = loc.form,
-                 scale.form = scale.form, shape.form = shape.form)
+                 scale.form = scale.form, shape.form = shape.form,
+                 use.log.link = use.log.link)
     class(mcmc) <- "latent"
     dummy <- DIC(mcmc)
     mcmc <- c(mcmc, list(eNoP = dummy["eNoP"], DIC = dummy["DIC"],

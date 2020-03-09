@@ -16,9 +16,9 @@
   latitude, elevation and the state for each station.}
 \examples{
 data(USHCNTemp)
-require(maps)
+##require(maps) ## <<-- to plot US borders
 maps::map("usa")
-points(metadata[,2:3], pch = 15)
+plot(metadata[,2:3], pch = 15)
 }
 \author{Mathieu Ribatet}
 \keyword{datasets}

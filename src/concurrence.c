@@ -63,7 +63,7 @@ void concProbKendall(double *data, int *nSite, int *nObs, double *concProb,
   const int nPair = *nSite * (*nSite - 1) / 2;
 
   if (!*computeStdErr){
-    //#pragma omp parallel for
+#pragma omp parallel for          
     for (int currentPair=0;currentPair<nPair;currentPair++){
       int i,j;
       getSiteIndex(currentPair, *nSite, &i, &j);
@@ -94,6 +94,7 @@ void concProbKendall(double *data, int *nSite, int *nObs, double *concProb,
     //the number of effective observation for the jackknife estimates
     int *nEffObsJack = malloc(*nObs * sizeof(int));
 
+#pragma omp parallel for       
     for (int currentPair=0;currentPair<nPair;currentPair++){
       int i,j;
       getSiteIndex(currentPair, *nSite, &i, &j);
@@ -157,7 +158,7 @@ void empiricalBootConcProb(double *data, int *nSite, int *nObs, int *blockSize,
   const double normCst = lchoose(*nObs, *blockSize);
   const int nPair = *nSite * (*nSite - 1) / 2;
 
-  //#pragma omp parallel for
+#pragma omp parallel for
   for (int currentPair=0;currentPair<nPair;currentPair++){
     int i, j;
     getSiteIndex(currentPair, *nSite, &i, &j);

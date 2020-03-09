@@ -27,7 +27,7 @@ void variogram(double *data, int *nObs, int *nSite, double *vario){
   /* This function computes the (semi) variogram */
   const int nPair = *nSite * (*nSite - 1) / 2;
 
-  //#pragma omp parallel for
+#pragma omp parallel for
   for (int currentPair=0;currentPair<nPair;currentPair++){
     int i,j;
     getSiteIndex(currentPair, *nSite, &i, &j);
@@ -53,7 +53,7 @@ void lmadogram(double *data, int *nObs, int *nSite, double *lambda,
   const int nPair = *nSite * (*nSite - 1) / 2;
   const double cst = 0.5 / *nObs;
 
-  //#pragma omp parallel for
+#pragma omp parallel for
   for (int currentPair=0;currentPair<nPair;currentPair++){
     int i,j;
     getSiteIndex(currentPair, *nSite, &i, &j);

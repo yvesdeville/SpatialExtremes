@@ -1,9 +1,9 @@
 Package: SpatialExtremes
-Version: 2.0-7.3
-Date: 2018-07-02
+Version: 2.0-8
+Date: 2020-09-03
 Title: Modelling Spatial Extremes
 Authors@R: c(person("Mathieu", "Ribatet", role = c("aut", "cre"),
-	   email = "mathieu.ribatet@umontpellier.fr"),
+	   email = "mathieu.ribatet@ec-nantes.fr"),
 	   person("Richard", "Singleton", role = "ctb"),
 	   person("R Core team", role = "ctb"))
 Depends: R (>= 1.8.0)
@@ -12,10 +12,10 @@ Description: Tools for the statistical modelling of spatial extremes using max-s
 License: GPL (>= 2)
 URL: http://spatialextremes.r-forge.r-project.org/
 NeedsCompilation: yes
-Packaged: 2020-01-01 09:00:04 UTC; ripley
+Packaged: 2020-03-09 14:34:13 UTC; mathieu
 Author: Mathieu Ribatet [aut, cre],
   Richard Singleton [ctb],
   R Core team [ctb]
-Maintainer: Mathieu Ribatet <mathieu.ribatet@umontpellier.fr>
+Maintainer: Mathieu Ribatet <mathieu.ribatet@ec-nantes.fr>
 Repository: CRAN
-Date/Publication: 2020-01-09 09:19:41 UTC
+Date/Publication: 2020-03-09 15:20:02 UTC

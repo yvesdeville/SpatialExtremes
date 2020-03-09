@@ -581,7 +581,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	       double *sills, double *ranges, double *smooths, double *gevParams,
 	       double *hyperSill, double *hyperRange, double *hyperSmooth,
 	       double *hyperBetaMean, double *hyperBetaIcov, double *propGev,
-	       double *propRanges, double *propSmooths, double *mcLoc,
+	       double *propRanges, double *propSmooths, int *useLogLink, double *mcLoc,
 	       double *mcScale, double *mcShape, double *accRates,
 	       double *extRates, int *thin, int *burnin);
 void DIC(int *n, int *nSite, int *nObs, double *data, double *chainLoc,
@@ -763,4 +763,25 @@ void rextremaltexact(double *coord, int *nObs, int *nSite, int *dim,
 void rschlatherexact(double *coord, int *nObs, int *nSite, int *dim,
 		     int *covmod, int *grid, double *nugget, double *range,
 		     double *smooth, double *ans);
+
+
+///////////////////////////////////
+//  From newCode.c
+//
+void rhitscenbrown(double *coord, int *nObs, int *nSite, int *dim,
+		   int *grid, double *range, double *smooth,
+		   double *ans, int *ans2);
+
+///////////////////////////////////
+//  From fondeville.c
+//
+double pointEstimate(int j, int *dim, double *shift, double *upper, double *chol);
+void pmvnorm2(int *nMC, int *dim, double *covmat, double *upper, double *est, double *err);
+
+///////////////////////////////////
+//  From debugUtils.c
+//
+void printMatrix(int n, int p, double *mat);
+
+
 

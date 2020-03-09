@@ -8,7 +8,7 @@ void distance(double *coord, int *nDim, int *nSite,
   const int nPair = *nSite * (*nSite - 1) / 2;
 
   if (*vec){
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (int pair=0;pair<nPair;pair++){
       int i, j;
       getSiteIndex(pair, *nSite, &i, &j);
@@ -19,7 +19,7 @@ void distance(double *coord, int *nDim, int *nSite,
   }
 
   else{
-    //#pragma omp parallel for
+#pragma omp parallel for
     for (int pair=0;pair<nPair;pair++){
       int i, j;
       getSiteIndex(pair, *nSite, &i, &j);
