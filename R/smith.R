@@ -750,7 +750,6 @@ as.double(cov22), as.double(cov23), as.double(cov33), dns = double(1), NAOK = TR
             warning("Observed information matrix is singular. No standard error will be computed.")
 
         std.err.type <- "none"
-        return
     }
 
     else{

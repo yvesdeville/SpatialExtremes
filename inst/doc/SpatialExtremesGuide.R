@@ -1,5 +1,4 @@
 ### R code from vignette source 'SpatialExtremesGuide.Rnw'
-### Encoding: UTF-8
 
 ###################################################
 ### code chunk number 1: SpatialExtremesGuide.Rnw:33-43

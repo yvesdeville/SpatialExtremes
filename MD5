@@ -1,5 +1,5 @@
 70bd36a04a246bda3f1ab31cfb6a7a04 *ChangeLog
-4f278bfedea562e455c870e71dd7b119 *DESCRIPTION
+0735e566896efc46757c57cf43b340ec *DESCRIPTION
 b4b528daabee4ca5ada296461f23ddce *NAMESPACE
 907ec1c8051666cf26c2b99e6fab0945 *NEWS
 5a2a1319bb7ab91e26b47b6a424a749c *R/brownresnick.R
@@ -31,7 +31,7 @@ c569bad64482ab852d2f1d474c32e10e *R/randomlines.R
 4ab5fefa3b9d56e114097ace8231c015 *R/selection.R
 9ca583a47af1860086ace777ca60b314 *R/simgaussproc.R
 aac58704acc31a16f65248abbb4ad3fd *R/simmaxstab.R
-638a65b1110e07a3656e447454d28f93 *R/smith.R
+9cca3e20004124d71d6103d34bd5364d *R/smith.R
 34b5538b51690886478d3567e96922ca *R/spatgev.R
 207b2c350148628c62b20ff96fbb632e *R/standardErrors.R
 762648b993f12230099c924ec82c1e9b *R/starting.values.R
@@ -39,15 +39,15 @@ aac58704acc31a16f65248abbb4ad3fd *R/simmaxstab.R
 968a52d485065cf56f710e01d171a414 *R/univdist.R
 fa040b62f3170c833bc87da5b25bf02c *R/univfit.R
 e9889fcf3d5b01a6cee6c5692d2d69ec *R/utils.R
-3efe063a4d4961692b6a230c8e731a33 *build/vignette.rds
+63d6290b10c37fddd2ac5cbc474ffd0b *build/vignette.rds
 289e2cffcf5127101bb492bb23725031 *data/USHCNTemp.RData
 1607ac2f4e5330e4bf5ce6463737ea23 *data/rainfall.RData
 e84a631373eeea7c8b28bc71fa322037 *data/swissalt.RData
 dfbb5f57a690f9a137a9b8a29456cde0 *data/wind.RData
 6e953f01284d77dbdd00ac9f677adc6d *inst/Copyright
-0bb07cac7ef76fd0d6b1f295a77ff5b0 *inst/doc/SpatialExtremesGuide.R
+6f4d4068c0ede5f3bde5aae0655dcdc8 *inst/doc/SpatialExtremesGuide.R
 3cd14fe5450b9a5b3962bae1d3bd7179 *inst/doc/SpatialExtremesGuide.Rnw
-4b942ce7798180f6bc49135e02b9afbb *inst/doc/SpatialExtremesGuide.pdf
+1a315e09ee19c130a51121e1840fe723 *inst/doc/SpatialExtremesGuide.pdf
 367aab88915f276167ea2117fa6d7cda *man/DIC.Rd
 9cf3761cae061fcd0f5d8b868a41d32a *man/GEV.Rd
 f5f0747c5b9daab0f6360f019f9f47f6 *man/GPD.Rd
