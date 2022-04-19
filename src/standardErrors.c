@@ -338,7 +338,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
   // h is used for numerical derivative (whitmat and bessel)
   const double sill = 1 - *nugget;
 
-  h = sqrt(DOUBLE_EPS) * *smooth;
+  h = sqrt(EPS) * *smooth;
   double temp = *smooth + h;
   h = temp - *smooth;
 
@@ -547,7 +547,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
   double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech, h;
   const double sill = 1 - *nugget;
 
-  h = sqrt(DOUBLE_EPS) * *smooth;
+  h = sqrt(EPS) * *smooth;
   double temp = *smooth + h;
   h = temp - *smooth;
 
@@ -778,7 +778,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     *trendscales, *trendshapes, h;
   const double sill = 1 - *nugget;
 
-  h = sqrt(DOUBLE_EPS) * *smooth;
+  h = sqrt(EPS) * *smooth;
   double temp = *smooth + h;
   h = temp - *smooth;
 
@@ -1230,13 +1230,13 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 
 
   if (*covmod == 1){
-    h = sqrt(DOUBLE_EPS) * *smooth;
+    h = sqrt(EPS) * *smooth;
     double temp = *smooth + h;
     h = temp - *smooth;
   }
 
   else if (*covmod == 4){
-    h = sqrt(DOUBLE_EPS) * (*smooth + 1);
+    h = sqrt(EPS) * (*smooth + 1);
     double temp = (*smooth + 1) + h;
     h = temp - (*smooth + 1);
   }

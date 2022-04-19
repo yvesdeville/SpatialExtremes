@@ -1,5 +1,5 @@
 70bd36a04a246bda3f1ab31cfb6a7a04 *ChangeLog
-0735e566896efc46757c57cf43b340ec *DESCRIPTION
+72e513c92137a0f5f3d604b05c1886fd *DESCRIPTION
 b4b528daabee4ca5ada296461f23ddce *NAMESPACE
 907ec1c8051666cf26c2b99e6fab0945 *NEWS
 5a2a1319bb7ab91e26b47b6a424a749c *R/brownresnick.R
@@ -39,7 +39,7 @@ aac58704acc31a16f65248abbb4ad3fd *R/simmaxstab.R
 968a52d485065cf56f710e01d171a414 *R/univdist.R
 fa040b62f3170c833bc87da5b25bf02c *R/univfit.R
 e9889fcf3d5b01a6cee6c5692d2d69ec *R/utils.R
-63d6290b10c37fddd2ac5cbc474ffd0b *build/vignette.rds
+e13fc3704b63bbb279342e93ad05ec6b *build/vignette.rds
 289e2cffcf5127101bb492bb23725031 *data/USHCNTemp.RData
 1607ac2f4e5330e4bf5ce6463737ea23 *data/rainfall.RData
 e84a631373eeea7c8b28bc71fa322037 *data/swissalt.RData
@@ -47,7 +47,7 @@ dfbb5f57a690f9a137a9b8a29456cde0 *data/wind.RData
 6e953f01284d77dbdd00ac9f677adc6d *inst/Copyright
 6f4d4068c0ede5f3bde5aae0655dcdc8 *inst/doc/SpatialExtremesGuide.R
 3cd14fe5450b9a5b3962bae1d3bd7179 *inst/doc/SpatialExtremesGuide.Rnw
-1a315e09ee19c130a51121e1840fe723 *inst/doc/SpatialExtremesGuide.pdf
+f3217a83a0feab1a65c467d5df1cd716 *inst/doc/SpatialExtremesGuide.pdf
 367aab88915f276167ea2117fa6d7cda *man/DIC.Rd
 9cf3761cae061fcd0f5d8b868a41d32a *man/GEV.Rd
 f5f0747c5b9daab0f6360f019f9f47f6 *man/GPD.Rd
@@ -122,10 +122,10 @@ b093bc12b26fa8f5dde2738da21eabcc *src/extcoeff.c
 d9333ff416fde1f6dac80a7f4f693367 *src/fitcovmat.c
 33fad587f1ed8e50c9ce0ad7e739a989 *src/fondeville.c
 d003bb14887441b358c3fc77f4b180fd *src/geomgauss.c
-6e1b820eae564deaafd664b8a0e96b93 *src/header.h
+81636840fa5a85ab2a69ab814500356f *src/header.h
 ae55f2cfec523d3f182a83158282729e *src/init.c
 b79c840cd4562cc5a550cd60547ce3e3 *src/kriging.c
-5c11020903fc7251546d4f463eac84bb *src/latentVariable.c
+b87a0b4c2c65ef37db1604ddb8e734c6 *src/latentVariable.c
 7e49205b86f6931b8d31df27ff91a901 *src/lattice_data.h
 4c1ece9f1cbb757b6003914c596a93aa *src/madogram.c
 d2382a059a76188d4dbdf5c88806e9f4 *src/maxLinear.c
@@ -145,7 +145,7 @@ a6bb744d1f6c7318b5423b7e5942c89e *src/simsmith.c
 33cd3dcad09f6378e1d38eee82364c7e *src/smith.c
 9443f712ff31a5799b00813dc8b63f26 *src/smith3d.c
 b6e80d5a6022d1230f75af19dd075b05 *src/spatgevlik.c
-83f9d06f09f43e4649efe53deeb44418 *src/standardErrors.c
+4b1822a645f70f4718ae1076352b2569 *src/standardErrors.c
 7591bcea961812329a9447a280c57883 *src/standardErrorsCommonPart.c
 07f02e5f8956e6fa8aee693dbbac2742 *src/turningbands.c
 0f84b19ba3b9cb26a0e6d2aa4f2590d1 *src/univllik.c

@@ -654,7 +654,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       iterThin++;
     }
   }
-  GetRNGstate();
+  PutRNGstate();
 
   for (int i=0;i<9;i++){
     accRates[i] /= (double) iter;

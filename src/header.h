@@ -3,6 +3,7 @@
 #endif
 #define USE_FC_LEN_T
 #include <R.h>
+#include <float.h>
 #include <Rmath.h>
 #include <Rinternals.h>
 #include <R_ext/Lapack.h>
