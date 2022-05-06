@@ -9,7 +9,9 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
     if (n.site != nrow(covariables))
         stop("'data' and 'covariates' doesn't match")
 
-    use.temp.cov <- c(!is.null(temp.form.loc), !is.null(temp.form.scale), !is.null(temp.form.shape))
+    use.temp.cov <- c("loc" = !is.null(temp.form.loc),
+                      "scale" = !is.null(temp.form.scale),
+                      "shape" = !is.null(temp.form.shape))
 
     if (any(use.temp.cov) && (n.obs != nrow(temp.cov)))
         stop("'data' and 'temp.cov' doesn't match")
@@ -330,7 +332,10 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
                 shape.form = shape.form, convergence = opt$convergence, nllh = nllh,
                 deviance = 2 * opt$value, ihessian = ihessian, var.score = var.score,
                 data = data, fixed = unlist(fixed.param), hessian = opt$hessian,
-                use.temp.cov = use.temp.cov)
+                use.temp.cov = use.temp.cov,
+                temp.form = list("loc" = temp.form.loc, "scale" = temp.form.scale,
+                                 "shape" = temp.form.shape),
+                temp.cov = temp.cov)
 
     class(ans) <- "spatgev"
     return(ans)
