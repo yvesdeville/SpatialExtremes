@@ -333,10 +333,16 @@ predict.spatgev <- function(object,
 
         ## Return levels
         if (length(ret.per)) {
-            RL <- aperm(RL, perm = c(2, 1, 3, 4))
-            RLnms <- paste("RL", dimnames(RL)[[4]], sep = "_")
-            dim(RL) <- c(spatnNew * tempnNew, dim(RL)[3], dim(RL)[4])
-       
+
+            if (length(level)) {
+                RL <- aperm(RL, perm = c(2, 1, 3, 4))
+                RLnms <- paste("RL", dimnames(RL)[[4]], sep = "_")
+                dim(RL) <- c(spatnNew * tempnNew, dim(RL)[3], dim(RL)[4])
+            } else {
+                RL <- aperm(RL, perm = c(2, 1, 3))
+                dim(RL) <- c(spatnNew * tempnNew, dim(RL)[3], 1)
+                RLnms <- "RL_Est"
+            }
             RLOut <- data.frame(Where, When, Period = ret.per[1], RL[ , 1, ])
             
             colnames(RLOut) <- c("Where", "When", "Period", RLnms)
