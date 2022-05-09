@@ -3,7 +3,7 @@
 \alias{predict.maxstab}
 \alias{predict.copula}
 \alias{predict.pspline2}
-\alias{predict.spatgev}
+%% \alias{predict.spatgev}
 
 \title{Prediction of the marginal parameters for various models}
 \description{This function predicts the marginal GEV parameters from a
@@ -15,7 +15,7 @@ TRUE, \dots)
 \method{predict}{copula}(object, newdata, ret.per = NULL, std.err =
 TRUE, \dots)
 \method{predict}{pspline2}(object, newdata, \dots)
-\method{predict}{spatgev}(object, newdata, ret.per = NULL, \dots)
+%% \method{predict}{spatgev}(object, newdata, ret.per = NULL, \dots)
 }
 \arguments{
   \item{object}{An object of class 'maxstab', 'copula', 'pspline' or
