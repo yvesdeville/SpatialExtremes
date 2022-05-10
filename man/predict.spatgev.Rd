@@ -34,8 +34,8 @@ yet}.}
 \item{ret.per}{A vector of return periods.}
 
 \item{level}{A confidence level between 0.0 and 1.0. If
-\code{NULL} of of length zero the confidence limits will not
-be computed.}
+\code{level} is \code{NULL} or has length zero, the confidence
+limits will not be computed.}
 
 \item{out}{Character telling what kind of output is wanted. See
 \bold{Details}.}
@@ -53,21 +53,21 @@ Predict method for the \code{"spatgev"} class.
 The output depends on the choice given by the formal
     argument \code{out}. In both cases this is a list with two
     elements \code{GEVParam} and \code{RL} giving the GEV
-    parameters and the Return Level (provided that \code{ret.lev}
-    was not of length zero.
+    parameters and the Return Levels (provided that \code{ret.lev}
+    was not of length zero).
 
 \itemize{ 
     \item{\code{"data"} }{
-        The elements \code{GEVParam} and \code{RL} ate \emph{data
+        The elements \code{GEVParam} and \code{RL} are \emph{data
         frames}. Both have columns with understandable names such
-        as \code{"Quant"} for the return level a.k.a. quantile.
-        This choice is relevant when plots are to be produced
-        using \pkg{ggplot2}. The variables specified with
-        \code{keep} can then be used to define the aesthetics or
-        the facets in trellis graphics.
-     }
+        as \code{"RL_Est"} for the estimated return level
+        a.k.a. quantile.  This choice is relevant when plots are
+        to be produced using \pkg{ggplot2}. The variables
+        specified with \code{keep} can then be used to define the
+        aesthetics or the facets in trellis graphics.
+     } 
      \item{\code{"array"} }{
-        The elements \code{GEVParam} and \code{RL} arre two
+        The elements \code{GEVParam} and \code{RL} are two
         \emph{arrays}. In both cases the first two dimensions
         match the spatial and the temporal dimensions. The other
         dimensions give the the return period, the return level,
@@ -83,21 +83,22 @@ The output depends on the choice given by the formal
     \itemize{
     \item{\code{data} }{
         Should have rownames allowing the identification of the
-         observations. These can be years or dates in POSIX format
-         like \code{"2020-01-01"}. Should also have colnames
-         allowing the identification of the sites.
+        observations. These can be years or dates in POSIX format
+        like \code{"2020-01-01"}. Should also have colnames
+        allowing the identification of the sites.
     }
     \item{\code{covariables} }{
         Should have rownames allowing the identification of the
         sites, identical to the colnames of \code{data}.
     }
    \item{\code{temp.data} } {
-       If used whould have rownames allowing the identification of
-     the observations, identical to the rownames of \code{data}.
+        If used whould have rownames allowing the identification of
+        the observations, identical to the rownames of \code{data}.
    }
    }
-   The same rules should apply to \code{newdata} and \code{temp.newdata}.
-   Note that when \code{temp.data} was used at the creation of \code{object}
-   \code{temp.newdata} should be given.
+   The same rules apply to \code{newdata} and \code{temp.newdata}.
+   Note that when \code{temp.data} has been used at the creation of
+   \code{object}, the formal argument \code{temp.newdata} should
+   be used in \code{predict}.
 }
  
